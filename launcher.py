@@ -6,6 +6,7 @@ import socket
 import shutil
 import webbrowser
 import sqlite3
+import stat
 
 # streamlit CLI (solo en modo hijo si se usa stcli)
 try:
@@ -40,10 +41,22 @@ def wait_for_port(host: str, port: int, timeout: int = 60) -> bool:
             time.sleep(0.5)
     return False
 
+def make_writable(path: str):
+    """Quita atributo de solo lectura y asegura escritura en el archivo."""
+    try:
+        # Quitar flag de solo lectura en Python
+        os.chmod(path, stat.S_IWRITE | stat.S_IREAD)
+        # Quitar flag en Windows con attrib (por si acaso)
+        if os.name == "nt":
+            subprocess.call(["attrib", "-R", path])
+        print(f"[OK] Archivo listo para escritura: {path}")
+    except Exception as e:
+        print(f"[WARN] No se pudo ajustar permisos en {path}: {e}")
+
 def prepare_writable_db():
     """
     Asegura que la base de datos hospital.db exista en %LOCALAPPDATA%\Epi
-    - Si ya está allí, la usa.
+    - Si ya está allí, la usa y la deja escribible.
     - Si no, copia hospital.db desde el launcher.
     """
     user_data_dir = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "Epi")
@@ -66,6 +79,9 @@ def prepare_writable_db():
         except Exception as e:
             raise RuntimeError(f"No se pudo copiar la BD a {db_user_path}: {e}")
 
+    # Quitar solo lectura cada vez
+    make_writable(db_user_path)
+
     return db_user_path
 
 # -----------------------
@@ -79,7 +95,7 @@ def child_run_streamlit():
     db_path = prepare_writable_db()
     if not os.path.exists(db_path):
         sys.exit(f"Error: La base de datos {db_path} no existe o no es accesible")
-    os.environ["hospital.db"] = db_path  # Cambiado de AUTH_DB_PATH a hospital.db
+    os.environ["DB_PATH"] = db_path  # Cambiado de AUTH_DB_PATH a hospital.db
     os.environ["AUTH_PEPPER"] = os.getenv("AUTH_PEPPER", "pepper_inseguro_cambiar")
     os.environ["STREAMLIT_SERVER_HEADLESS"] = "true"
 
@@ -118,7 +134,7 @@ def parent_launch_local():
         print(f"Error: La base de datos {db_path} no existe o no es accesible")
         return
 
-    os.environ["hospital.db"] = db_path  # Cambiado de AUTH_DB_PATH a hospital.db
+    os.environ["DB_PATH"] = db_path  # Cambiado de AUTH_DB_PATH a hospital.db
     os.environ["AUTH_PEPPER"] = os.getenv("AUTH_PEPPER", "pepper_inseguro_cambiar")
 
     exe = sys.executable
