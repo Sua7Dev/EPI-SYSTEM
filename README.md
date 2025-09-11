@@ -46,7 +46,7 @@ pip install -r requirements.txt
 
 ### - step 6. we compile to .exe:
 ```bash
-pyinstaller --icon=iconito.ico --onedir --noconsole launcher.py --name EPI-SYSTEM --collect-all streamlit --collect-all streamlit_extras --add-data "src;src" --add-data "static;static" --add-data ".streamlit;.streamlit" --add-data "src/hospital.db;." --hidden-import=streamlit.web.cli --hidden-import=importlib.metadata --hidden-import=fpdf --noupx
+pyinstaller --clean --icon=../iconito.ico --onedir launcher.py --name EPI-SYSTEM --collect-all streamlit --collect-all streamlit_extras --add-data "../static;static" --add-data "../.streamlit;.streamlit" --add-data "hospital.db;." --add-data "main.py;." --add-data "launcher.py;." --add-data "utils;utils" --add-data "db.py;." --add-data "pages;pages" --add-data "reportes;reportes" --add-data "descargas;descargas" --add-data "stats;stats" --hidden-import=streamlit.web.cli --hidden-import=importlib.metadata --hidden-import=fpdf --hidden-import=db --hidden-import=utils.sql_control --hidden-import=pandas --hidden-import=numpy --hidden-import=pyarrow --hidden-import=snowflake.connector --hidden-import=streamlit_extras --noupx --noconsole
 ```
 
 
