@@ -29,22 +29,30 @@ cd myproject
 git clone https://github.com/Sua7Dev/EPI-SYSTEM.git
 ```
 
-### - step 3. creates a virtual environment:
+### - step 3. rename the "streamlit" folder to ".streamlit" in the main and src:
+
+
+### - step 4. creates a virtual environment:
 ```bash
 python -m venv .venv
 ```
 
-### - step 4. activate the virtual environment (this is for Windows PowerShell):
+### - step 5. activate the virtual environment (this is for Windows PowerShell):
 ```bash
 .venv\Scripts\Activate.ps1
 ```
 
-### - step 5. installs the necessary libraries:
+### - step 6. installs the necessary libraries:
 ```bash
 pip install -r requirements.txt
 ```
 
-### - step 6. we compile to .exe:
+### - step 7. access the src folder:
+```bash
+cd src
+```
+
+### - step 8. we compile to .exe:
 ```bash
 pyinstaller --clean --icon=../iconito.ico --onedir launcher.py --name EPI-SYSTEM --collect-all streamlit --collect-all streamlit_extras --add-data "../static;static" --add-data "../.streamlit;.streamlit" --add-data "hospital.db;." --add-data "main.py;." --add-data "launcher.py;." --add-data "utils;utils" --add-data "db.py;." --add-data "pages;pages" --add-data "reportes;reportes" --add-data "descargas;descargas" --add-data "stats;stats" --hidden-import=streamlit.web.cli --hidden-import=importlib.metadata --hidden-import=fpdf --hidden-import=db --hidden-import=utils.sql_control --hidden-import=pandas --hidden-import=numpy --hidden-import=pyarrow --hidden-import=snowflake.connector --hidden-import=streamlit_extras --noupx --noconsole
 ```
@@ -55,10 +63,10 @@ pyinstaller --clean --icon=../iconito.ico --onedir launcher.py --name EPI-SYSTEM
 
 To test the page locally before compiling to .exe, you can run
 ```bash
-    cd src
+cd src
 ```
 ```bash
-    streamlit run main.py
+streamlit run main.py
 ```
 
 ## Screenshots
