@@ -88,3 +88,24 @@ User manuals (in Spanish)
 
 [Secretaria](https://docs.google.com/document/d/1WJNMI8rx49F1U1FKIIaTP3K53h5kYPzYZaAn1-Vx-1Q/edit?usp=sharing )
 
+## FAQ
+
+#### 1. My PowerShell won't let me run scripts.
+
+In the PowerShell window, type the following command and press Enter:
+```bash
+Set-ExecutionPolicy RemoteSigned
+```
+PowerShell will ask you to confirm the change. Type Y (or Y on some systems) and press Enter.
+
+#### 2. error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft C++ Build Tools"
+
+- Go to the download page: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
+- Download the installer.
+
+- Run it and, when it asks you which components to install, make sure you select "Desktop Development with C++."
+
+- Once installed, restart your terminal or code editor.
+
+Try installing the packages again with pip install -r requirements.txt.
