@@ -87,3 +87,25 @@ Manuales de usuario (en español)
 [Doctor](https://docs.google.com/document/d/1SEgjlOTY88uGNEyolEECzOKYe6gAYwX2ukD0BNJ3tao/edit?usp=sharing)
 
 [Secretaria](https://docs.google.com/document/d/1WJNMI8rx49F1U1FKIIaTP3K53h5kYPzYZaAn1-Vx-1Q/edit?usp=sharing )
+
+## FAQ
+
+#### 1. Mi PowerShell no me permite ejecutar scripts.
+
+En la ventana de PowerShell, escriba el siguiente comando y presione Entrar:
+```bash
+Set-ExecutionPolicy RemoteSigned
+```
+PowerShell le pedirá que confirme el cambio. Escriba Y (o Y en algunos sistemas) y presione Enter.
+
+#### 2. error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft C++ Build Tools"
+
+- Ve a la página de descarga: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
+- Descarga el instalador.
+
+- Ejecútalo y, cuando te pregunte qué componentes instalar, asegúrate de seleccionar "Desarrollo para el escritorio con C++".
+
+- Una vez instalado, reinicia tu terminal o editor de código.
+
+Vuelve a intentar instalar los paquetes con pip install -r requirements.txt.
