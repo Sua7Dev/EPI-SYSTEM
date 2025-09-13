@@ -4,7 +4,8 @@ import time
 import os
 import sqlite3
 
-DB_PATH = os.environ.get("DB_PATH", "hospital.db")
+DB_PATH = os.getenv("hospital.db", "hospital.db")
+
 
 def obtener_usuarios():
     conn = sqlite3.connect(DB_PATH)
