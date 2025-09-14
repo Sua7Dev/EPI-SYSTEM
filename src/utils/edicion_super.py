@@ -7,8 +7,15 @@ from utils.contra import borro_cassette
 from utils.validaciones import validar_texto, validar_nombre_usuario, val_mail, validar_contraseña
 import time
 from utils.sql_edicion import obtener_usuarios, eliminar_usuarios_seleccionados, actualizar_usuario, eliminar_datos_seguridad, agregar_contra_nueva
+import os
 
+DB_PATH = os.getenv("hospital.db", "hospital.db")
 
+# Initialize session state
+if "autenticado_usuario" not in st.session_state:
+    st.session_state["autenticado_usuario"] = None
+if "edit_mode" not in st.session_state:
+    st.session_state["edit_mode"] = False
 ################################## DIALOGS #############################################
 
 @st.dialog(":material/preview_off: Ingrese la nueva contraseña", width="medium")
@@ -42,11 +49,11 @@ def contras_nuevas(nombre_usuario):
             contrasena_hasheada = borro_cassette(contrasena)
         
             # eliminar preguntas/respuestas y actualizar contraseña para ese usuario
-            ok_del = eliminar_datos_seguridad(nombre_usuario, db='hospital.db')
-            ok_upd = agregar_contra_nueva(nombre_usuario, contrasena_hasheada, db='hospital.db')
+            ok_del = eliminar_datos_seguridad(nombre_usuario)
+            ok_upd = agregar_contra_nueva(nombre_usuario, contrasena_hasheada)
             if ok_upd:
                 st.success(f"Contraseña restablecida exitosamente para '{nombre_usuario}'.", icon=":material/check_circle:")
-                time.sleep(5)
+                time.sleep(2)
                 st.rerun()
             else:
                 st.error("No se pudo restablecer la contraseña.", icon=":material/error:")
@@ -101,11 +108,10 @@ def extras():
             
 
 def mostrar_modo_normal():
-    #prueba:
-    if "autenticado_usuario" not in st.session_state:
+    nombre_usuario = st.session_state.get("autenticado_usuario")
+    if not nombre_usuario:
         st.error("Debes iniciar sesión para acceder a configuracion.", icon=":material/error:")
         return
-    nombre_usuario = st.session_state["autenticado_usuario"]
     info_usuario = obtener_info_usuario(nombre_usuario)
     if not info_usuario:
         st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
@@ -150,7 +156,7 @@ def mostrar_modo_normal():
                     if verificar:
                         if verificar_superusuario(nombre, contra):
                         # agregar aqui otro if para verificar que el usuario y contraseña son correctos
-                            st.session_state['edit_mode'] = True
+                            st.session_state.edit_mode = True
                             st.rerun()
                 acceso_editar()
 
@@ -191,7 +197,7 @@ def mostrar_modo_edicion():
         btn_eliminar = st.button("Eliminar usuario(s) seleccionado(s)", icon=":material/delete:", width="stretch")
     # logica botones
     if btn_volver:
-        del st.session_state['edit_mode']
+        st.session_state.edit_mode = False
         st.rerun()      
     if btn_eliminar:
         confirmar_eliminar_multiples(usuarios_seleccionados)
@@ -237,7 +243,7 @@ def mostrar_modo_edicion():
                             st.rerun()
                     if reestablecer_contra:
                         try:
-                            conn_tmp = sqlite3.connect('hospital.db')
+                            conn_tmp = sqlite3.connect(DB_PATH)
                             cur_tmp = conn_tmp.cursor()
                             cur_tmp.execute("SELECT nombre_usuario FROM usuario WHERE id_usuario = ?", (row['id_usuario'],))
                             fila_usuario = cur_tmp.fetchone()
@@ -250,7 +256,7 @@ def mostrar_modo_edicion():
                             contras_nuevas(nombre_usuario)  
                     if eliminar_usuario:
                         try:
-                            conn_tmp = sqlite3.connect('hospital.db')
+                            conn_tmp = sqlite3.connect(DB_PATH)
                             cur_tmp = conn_tmp.cursor()
                             cur_tmp.execute("SELECT nombre_usuario FROM usuario WHERE id_usuario = ?", (row['id_usuario'],))
                             fila_usuario = cur_tmp.fetchone()
@@ -261,4 +267,3 @@ def mostrar_modo_edicion():
                         else:
                             nombre_usuario = fila_usuario[0]
                             confirmar_eliminar_solitario(nombre_usuario)
-
