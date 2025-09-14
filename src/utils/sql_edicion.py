@@ -123,14 +123,14 @@ def actualizar_usuario(id_usuario, nuevo_rol, nuevo_correo):
         conn.close()
 
 # --- FUNCIONES NUEVAS ---  LISTA
-def eliminar_datos_seguridad(nombre_usuario, db='hospital.db'):
+def eliminar_datos_seguridad(nombre_usuario):
     """
     Pone a NULL la contraseña y las 3 preguntas/respuestas del usuario,
     buscando primero el id_usuario por nombre_usuario.
     """
     conn = None
     try:
-        conn = sqlite3.connect(db)
+        conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("SELECT id_usuario FROM usuario WHERE nombre_usuario = ?", (nombre_usuario,))
         fila = cur.fetchone()
@@ -159,13 +159,13 @@ def eliminar_datos_seguridad(nombre_usuario, db='hospital.db'):
         if conn:
             conn.close()
 
-def agregar_contra_nueva(nombre_usuario, contrasena_hasheada, db='hospital.db'): # NO ESTA LISTA
+def agregar_contra_nueva(nombre_usuario, contrasena_hasheada): # NO ESTA LISTA
     """
     Guarda la contraseña (ya hasheada) en la fila del usuario identificado por nombre_usuario.
     """
     conn = None
     try:
-        conn = sqlite3.connect(db)
+        conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("SELECT id_usuario FROM usuario WHERE nombre_usuario = ?", (nombre_usuario,))
         fila = cur.fetchone()
