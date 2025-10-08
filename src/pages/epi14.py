@@ -4,7 +4,7 @@ import sqlite3
 import pandas as pd
 from pathlib import Path
 from utils.sql_control import operaciones_sql_epi14, eliminar_registros_epi14
-from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez
+from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_al_final
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
 from utils.filtro import descargar_pdf, descargar_registros_seleccionados, filtrar_por_fechas
@@ -312,5 +312,6 @@ def mostrar_epi14_semanal():
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     logo(tamano="100%")
     formulario_epi14_semanal()
+    copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
 
 mostrar_epi14_semanal()

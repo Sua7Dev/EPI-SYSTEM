@@ -3,7 +3,7 @@ import datetime
 import pandas as pd
 from pathlib import Path
 from utils.sql_control import operaciones_sql_neonatal, eliminar_registros_neonatal, operaciones_sql_infantil, eliminar_registros_infantil, operaciones_sql_materna, eliminar_registros_materna, operaciones_sql_mensual_infantil, eliminar_registros_mensual_infantil, operaciones_sql_mensual_neonatal, eliminar_registros_mensual_neonatal, operaciones_sql_mensual_general, eliminar_registros_mensual_general, calcular_tasa_por_ano, calcular_tasa_por_ano_infantil, calcular_tasa_por_ano_neonatal
-from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez
+from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_al_final
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
 from dateutil.relativedelta import relativedelta
@@ -1143,5 +1143,6 @@ def mostrar_morta():
         #st.markdown("---")
         with col_der:
             formulario_reporte_mensual_general()
+    copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
         
 mostrar_morta()

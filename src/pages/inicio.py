@@ -3,7 +3,7 @@ import os
 from stats.dash_stats import obtener_totales, obtener_top_areas_registro, obtener_totales_por_anio
 from pages.menu import menu
 from utils.base_64 import img_a_base64
-from utils.visuales import reloj, logo, configurar_pagina_espanol, recargar_una_vez
+from utils.visuales import reloj, logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer, copyright_al_final, copyright_footer_dos
 import altair as alt
 import pandas as pd
 import numpy as np
@@ -144,6 +144,10 @@ def dashboard():
     contenedores_totales()
     # graficas
     graficas_dashboard()
+    #copyright_footer("SAMUEL URBANO & GUSTAVO HEREDIA")
+    #copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
+
  
 def inicio():
     logo_bandera  = ASSETS_DIR / "imagebanderanueva2.png"

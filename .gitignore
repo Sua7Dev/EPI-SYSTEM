@@ -1,0 +1,14 @@
+__pychache__
+.venv
+*.pyc
+
+# Archivos y carpetas de Python
+*.pyc
+__pycache__/
+*.pyd
+*.$py.class
+
+# Entornos virtuales (el más importante)
+venv/
+env/
+.venv/

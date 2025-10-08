@@ -121,3 +121,97 @@ def recargar_una_vez(caller_file, delay=0.01):
         st.session_state[session_key] = True
         time.sleep(delay)
         st.rerun()
+
+def copyright_footer(autor_o_empresa):
+    """
+    Muestra un footer fijo en la parte inferior de la aplicación Streamlit.
+    NOTA: Esto usa HTML/CSS inseguro para forzar el footer.
+    """
+    # 1. CSS y HTML inyectados
+    footer_html = f"""
+    <style>
+        /* Asegura que el footer se fije en la parte inferior de la ventana 
+        y no solo del contenido. Se usa 'position: fixed' para esto.
+        */
+        .footer {{
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #f2f2f2; /* Color de fondo */
+            color: #555;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 0.85em;
+            border-top: 1px solid #ccc;
+            z-index: 100; /* Asegura que esté por encima de otros elementos */
+        }}
+        .footer a {{
+            color: #007bff; /* Color de enlace */
+            text-decoration: none;
+        }}
+        .footer a:hover {{
+            text-decoration: underline;
+        }}
+    </style>
+    
+    <div class="footer">
+        &copy; 2025 {autor_o_empresa}. Todos los derechos reservados.
+        | <a href="https://ejemplo.com/politica-privacidad" target="_blank">Política de Privacidad</a>
+    </div>
+    """
+    
+    # 2. Inyectar en Streamlit, permitiendo HTML inseguro
+    st.markdown(footer_html, unsafe_allow_html=True)
+
+def copyright_al_final(autor):
+    footer_content = f"""
+    <div style="text-align: center; padding: 20px; border-top: 1px solid #ccc; margin-top: 40px; color: #555;">
+        &copy; 2025 {autor}. Todos los derechos reservados.
+    </div>
+    """
+    st.markdown(footer_content, unsafe_allow_html=True)
+
+def copyright_footer_dos(autor_o_empresa):
+    """
+    Muestra un footer fijo en la parte inferior de la aplicación Streamlit.
+    NOTA: Esto usa HTML/CSS inseguro para forzar el footer.
+    """
+    # 1. CSS y HTML inyectados
+    footer_html = f"""
+    <style>
+        /* Asegura que el footer se fije en la parte inferior de la ventana 
+        y no solo del contenido. Se usa 'position: fixed' para esto.
+        */
+        .footer {{
+            position: absolute;        
+            left: -83px;
+            bottom: -100px;
+            width: 100vw;
+            background-color: #f2f2f2; /* Color de fondo */
+            color: #555;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 0.85em;
+            border-top: 10px; /*  solid #ccc */
+            z-index: 100; /* Asegura que esté por encima de otros elementos */
+        }}
+        .footer a {{
+            color: #007bff; /* Color de enlace */
+            text-decoration: none;
+            margin-right: 260px;
+        }}
+        .footer a:hover {{
+            text-decoration: underline;
+        }}
+    </style>
+    
+    <div class="footer">
+        &copy; 2025 {autor_o_empresa}. Todos los derechos reservados.
+        | <a href="https://ejemplo.com/politica-privacidad" target="_blank">Política de Privacidad</a>
+    </div>
+    """
+    
+    # 2. Inyectar en Streamlit, permitiendo HTML inseguro
+    st.markdown(footer_html, unsafe_allow_html=True)
+

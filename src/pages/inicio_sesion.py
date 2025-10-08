@@ -3,7 +3,7 @@ from pathlib import Path
 import time
 import os
 import sys
-from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez
+from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer
 from utils.validaciones import val_solo_numeros, validar_contraseña, validar_texto, val_mail
 from utils.base_64 import img_a_base64
 from utils.verificaciones import verificar_usuario, obtener_info_usuario, guardar_preguntas_seguridad, verificar_preg_res_seg
@@ -153,6 +153,7 @@ def login():
     with coltext:
         with st.container():
             iniciar_sesion()
+            copyright_footer("SAMUEL URBANO & GUSTAVO HEREDIA")
     
 
 login()

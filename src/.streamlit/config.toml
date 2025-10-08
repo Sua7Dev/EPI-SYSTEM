@@ -1,0 +1,21 @@
+[theme]
+primaryColor = "#00416A"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#9EB9D4"
+textColor = "#000000"
+font = "sans serif"
+borderColor = "#536878"
+baseRadius="0.7rem"
+
+[client]
+toolbarMode = "minimal"
+showSidebarNavigation = false
+
+[server]
+fileWatcherType = "poll"
+
+[global]
+disableWidgetStateDuplicationWarning = true
+
+[browser]
+gatherUsageStats = false

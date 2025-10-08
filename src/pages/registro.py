@@ -10,7 +10,7 @@ from utils.verificaciones import guardar_usuario
 from utils.validaciones import validar_texto, validar_nombre_usuario, val_mail, val_solo_numeros, validar_contraseña, mayor_de_edad, validar_cinco_espacios
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_registro_usuario
-from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez
+from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_al_final
 
 import sqlite3
 
@@ -168,5 +168,6 @@ def registro():
     _, col_centro, _ = st.columns([3, 6, 3])
     with col_centro:    
         registro_formulario()
+    copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
 
 registro()
