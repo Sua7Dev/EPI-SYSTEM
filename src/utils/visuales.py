@@ -157,22 +157,15 @@ def copyright_footer(autor_o_empresa):
     
     <div class="footer">
         &copy; 2025 {autor_o_empresa}. Todos los derechos reservados.
-        | <a href="https://ejemplo.com/politica-privacidad" target="_blank">Política de Privacidad</a>
+        <a href="" target="_blank"></a>
     </div>
     """
     
     # 2. Inyectar en Streamlit, permitiendo HTML inseguro
     st.markdown(footer_html, unsafe_allow_html=True)
 
-def copyright_al_final(autor):
-    footer_content = f"""
-    <div style="text-align: center; padding: 20px; border-top: 1px solid #ccc; margin-top: 40px; color: #555;">
-        &copy; 2025 {autor}. Todos los derechos reservados.
-    </div>
-    """
-    st.markdown(footer_content, unsafe_allow_html=True)
 
-def copyright_footer_dos(autor_o_empresa):
+def copyright_footer_dos(autor_o_empresa, left="-83px", bottom="-160px", margin_right="260px"):
     """
     Muestra un footer fijo en la parte inferior de la aplicación Streamlit.
     NOTA: Esto usa HTML/CSS inseguro para forzar el footer.
@@ -185,8 +178,8 @@ def copyright_footer_dos(autor_o_empresa):
         */
         .footer {{
             position: absolute;        
-            left: -83px;
-            bottom: -100px;
+            left: {left};
+            bottom: {bottom};
             width: 100vw;
             background-color: #f2f2f2; /* Color de fondo */
             color: #555;
@@ -199,7 +192,7 @@ def copyright_footer_dos(autor_o_empresa):
         .footer a {{
             color: #007bff; /* Color de enlace */
             text-decoration: none;
-            margin-right: 260px;
+            margin-right: {margin_right};
         }}
         .footer a:hover {{
             text-decoration: underline;
@@ -208,7 +201,7 @@ def copyright_footer_dos(autor_o_empresa):
     
     <div class="footer">
         &copy; 2025 {autor_o_empresa}. Todos los derechos reservados.
-        | <a href="https://ejemplo.com/politica-privacidad" target="_blank">Política de Privacidad</a>
+        <a href="" target="_blank"></a>
     </div>
     """
     

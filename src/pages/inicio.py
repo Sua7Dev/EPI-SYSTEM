@@ -3,10 +3,11 @@ import os
 from stats.dash_stats import obtener_totales, obtener_top_areas_registro, obtener_totales_por_anio
 from pages.menu import menu
 from utils.base_64 import img_a_base64
-from utils.visuales import reloj, logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer, copyright_al_final, copyright_footer_dos
+from utils.visuales import reloj, logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 import altair as alt
 import pandas as pd
-import numpy as np
+import numpy as npv
+from utils.informaciones import mostrar_usuario_activo, usuario_activo_fixed
 from pathlib import Path
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 
@@ -28,6 +29,7 @@ PROJECT_ROOT = get_project_root()
 ASSETS_DIR = PROJECT_ROOT / "static" / "assets" / "imagenes"
 
 menu()
+
 
 def contenedores_totales():
     _, col_total = st.columns([1.5, 2.8])
@@ -131,6 +133,7 @@ def graficas_dashboard():
             )
             st.altair_chart(donut + text, use_container_width=True)
 def dashboard():
+
     logo(tamano="100%")
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder al inicio.", icon=":material/error:")
@@ -144,8 +147,6 @@ def dashboard():
     contenedores_totales()
     # graficas
     graficas_dashboard()
-    #copyright_footer("SAMUEL URBANO & GUSTAVO HEREDIA")
-    #copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
     copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
 
  
@@ -159,6 +160,7 @@ def inicio():
     dashboard()
 # Aquí va el contenido que quieres mostrar después de que termine el "cargando"
 inicio()
+
 
 
 

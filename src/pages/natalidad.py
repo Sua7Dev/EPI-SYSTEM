@@ -3,7 +3,7 @@ import datetime
 from pathlib import Path
 from utils.sql_control import operaciones_sql_natalidad, eliminar_registros_natalidad
 from dateutil.relativedelta import relativedelta
-from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_al_final
+from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
@@ -194,6 +194,6 @@ def mostrar_nata():
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     logo(tamano="100%")
     formulario_natalidad()
-    copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
 
 mostrar_nata()

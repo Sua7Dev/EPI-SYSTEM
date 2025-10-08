@@ -3,7 +3,7 @@ import os
 from utils.sql_control import operaciones_sql_morb_extenso, operaciones_sql_morb_simplifica, eliminar_registros_morb_extenso, eliminar_registros_morb_simplifica
 from pathlib import Path
 import datetime
-from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_al_final
+from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
 from dateutil.relativedelta import relativedelta
@@ -361,6 +361,6 @@ def mostrar_morb():
     func_morb = formularios_morb.get(tipo_morb)
     if func_morb:
         func_morb()
-    copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
 
 mostrar_morb()

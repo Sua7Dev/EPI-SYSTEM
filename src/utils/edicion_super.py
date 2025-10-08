@@ -105,6 +105,19 @@ def extras():
             manual_de_uso()        
         with col_nosotros:
             nosotros()
+
+def extras_exp():
+    with st.container(border=True):
+        hospital()
+        col_mision, col_vision, col_manual, col_nosotros = st.columns(4)
+        with col_mision:
+            mision()
+        with col_vision:
+            vision()
+        with col_manual:
+            manual_de_uso()        
+        with col_nosotros:
+            nosotros()
             
 
 def mostrar_modo_normal():
@@ -160,7 +173,8 @@ def mostrar_modo_normal():
                             st.rerun()
                 acceso_editar()
 
-    extras()
+    #extras()
+    extras_exp()
 
 
 def mostrar_modo_edicion():

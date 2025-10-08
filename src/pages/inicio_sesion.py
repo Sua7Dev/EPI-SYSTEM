@@ -106,9 +106,9 @@ def iniciar_sesion():
         st.header(":material/badge: Inicio de sesión", anchor=False, divider="gray")
         with st.form(key="inicio_sesion"):
             nombre_usuario = st.text_input("Nombre de usuario:", placeholder='Ejemplo: Juan33', 
-                                           icon=":material/person_check:", max_chars=18, key="usuario",
+                                           icon=":material/person_check:", max_chars=16, key="usuario",
                                            help="El nombre de usuario debe estar ya registrado en el sistema.")
-            contrasena = st.text_input("Contraseña", type="password", max_chars=18, 
+            contrasena = st.text_input("Contraseña", type="password", max_chars=16, 
                                        icon=":material/security:", key="contra",
                                        help="La contraseña debe estar la asociada al usuario.")
             iniciar_btn = st.form_submit_button(label="Iniciar sesión", type="primary", 

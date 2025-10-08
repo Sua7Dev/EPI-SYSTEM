@@ -1,6 +1,6 @@
 import streamlit as st
 from pages.menu import menu
-from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_al_final
+from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 from utils.base_64 import img_a_base64
 from stats.global_stats import global_stats
 from stats.mortalidad_stats import mortalidad_stats
@@ -73,6 +73,6 @@ def estadisticas():
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     mostrar_stats()
-    copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
 
 estadisticas()

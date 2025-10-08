@@ -1,7 +1,9 @@
 import streamlit as st
-from utils.verificaciones import obtener_info_usuario
+from utils.informaciones import usuario_activo_fixed
+
 
 def menu():
+    usuario_activo_fixed()
     try:
         st.markdown("""
             <style>
@@ -122,7 +124,7 @@ def menu():
                     st.success("Cerrando sesión", icon=":material/favorite:")
                     st.switch_page("pages/inicio_sesion.py")
                     st.rerun()
-                    st.rerun()
-            cerrar_sesion()
+                    st.rerun() 
+            cerrar_sesion() 
     except Exception as e:
         st.error(e)

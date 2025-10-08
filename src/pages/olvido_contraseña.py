@@ -10,7 +10,7 @@ from utils.verificaciones import (
 )
 from utils.base_64 import img_a_base64
 from utils.validaciones import val_solo_numeros, validar_contraseña, validar_texto, validar_nombre_usuario
-from utils.visuales import cargando, configurar_pagina_espanol, logo, recargar_una_vez, copyright_al_final
+from utils.visuales import cargando, configurar_pagina_espanol, logo, recargar_una_vez, copyright_footer_dos
 from utils.contra import borro_cassette, verifi_contra_hasheada
 import sys
 
@@ -296,7 +296,7 @@ def mostrar_olvido():
 
     with coltext:
         informacion()
-    copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA", margin_right="0px")
 
 # ------------------- Ejecución -------------------
 mostrar_olvido()

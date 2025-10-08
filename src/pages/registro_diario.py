@@ -5,7 +5,7 @@ import sqlite3
 from pathlib import Path
 import pandas as pd
 from dateutil.relativedelta import relativedelta
-from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_al_final
+from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 from utils.filtro import descargar_pdf, descargar_registros_seleccionados, filtrar_por_fechas
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
@@ -351,7 +351,7 @@ def mostrar_registro_diario():
     with tabs[1]:
         st.subheader(":material/arrow_circle_down: Descarga de reportes registro diario", anchor=False, divider="gray")
         formulario_reporte_registro_diario()
-    copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
 
 if __name__ == "__main__":
     mostrar_registro_diario()

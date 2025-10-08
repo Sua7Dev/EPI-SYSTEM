@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_al_final
+from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 from utils.base_64 import img_a_base64
 from streamlit_extras.pdf_viewer import pdf_viewer
 from utils.verificaciones import obtener_info_usuario
@@ -61,6 +61,6 @@ def manual_usuario():
     logo(tamano="70%")
     mostrar_pdf()
     botones_manual()
-    copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA", margin_right="0px")
 
 manual_usuario()

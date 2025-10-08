@@ -1628,7 +1628,12 @@ def mostrar_descripcion_departamento():
             cursor.execute("SELECT descripcion FROM departamento WHERE nombre = ?", ('Epidemiología',))
             resultado = cursor.fetchone()
             if resultado:
-                st.markdown(resultado[0])
+                st.markdown(
+                    f"""
+                    <div style="text-align: justify; margin: 10px 0;">
+                        {resultado[0]}
+                    </div>
+                    """, unsafe_allow_html=True)
             else:
                 st.warning("No se encontró la descripción del departamento.", icon=":material/warning:")
     except sqlite3.Error as e:
@@ -1646,7 +1651,12 @@ def mostrar_descripcion_hospital():
             cursor.execute("SELECT descripcion FROM hospital WHERE nombre = ?", ("Hospital General Dr. Felipe Guevara Rojas",))
             resultado = cursor.fetchone()
             if resultado:
-                st.markdown(resultado[0])
+                st.markdown(
+                    f"""
+                    <div style="text-align: justify; margin: 10px 0;">
+                        {resultado[0]}
+                    </div>
+                    """, unsafe_allow_html=True)
             else:
                 st.warning("No se encontró la descripción del hospital.", icon=":material/warning:")
     except sqlite3.Error as e:

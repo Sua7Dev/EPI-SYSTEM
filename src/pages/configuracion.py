@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.edicion_super import mostrar_modo_edicion, mostrar_modo_normal
-from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_al_final
+from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 from pages.menu import menu
 from utils.base_64 import img_a_base64
 from pathlib import Path
@@ -36,7 +36,7 @@ def configuracion():
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     elementos()
-    copyright_al_final("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")#, bottom="-200px"
     
 
 configuracion()
