@@ -64,7 +64,7 @@ def mostrar_stats():
     with tabs[4]:
         reg_diario_stats()
         pass
-
+    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA", bottom="-200px")
 
 # ejecucion principal
 def estadisticas():
@@ -73,6 +73,6 @@ def estadisticas():
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     mostrar_stats()
-    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
+    
 
 estadisticas()

@@ -41,3 +41,4 @@ def epi14_stats():
     with col_derecha:
         st.header(":material/medical_mask: Total", anchor=False, divider="gray")
         total_registros_definitivo()
+    st.markdown("# ")

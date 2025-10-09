@@ -170,4 +170,5 @@ def morbilidad_stats():
         chart_mes = crear_grafica_por_mes(anios_seleccionado)
         if chart_mes:
             st.altair_chart(chart_mes, use_container_width=True)
+    st.markdown("## ")
     

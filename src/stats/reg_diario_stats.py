@@ -78,3 +78,4 @@ def reg_diario_stats():
     with col_derecha:
         st.header(":material/calendar_view_month: Registros por Año", anchor=False, divider="gray")
         total_registros_por_ano()
+    st.markdown("##### ")

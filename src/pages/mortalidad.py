@@ -1143,6 +1143,7 @@ def mostrar_morta():
         #st.markdown("---")
         with col_der:
             formulario_reporte_mensual_general()
-    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
+        st.markdown("")
+    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA", bottom="-200px")
         
 mostrar_morta()

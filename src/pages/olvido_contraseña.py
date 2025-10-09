@@ -267,8 +267,8 @@ def formulario_verificacion():
                 st.session_state["olvido_usuario_id"] = nombre_usuario
                 st.session_state["pagina_actual"] = "seguridad"
                 st.rerun()
-            else:
-                st.warning("Verificación fallida. Revisa usuario y CI.", icon=":material/warning:")
+            #else:
+            #    st.warning("Verificación fallida. Revisa usuario y CI.", icon=":material/warning:")
         except Exception as e:
             st.error(f"Error al verificar: {str(e)}. Contacta al admin.", icon=":material/error:")
 

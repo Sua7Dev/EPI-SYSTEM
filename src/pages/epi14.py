@@ -305,6 +305,7 @@ def formulario_epi14_semanal(db=DB_PATH):
         st.subheader(":material/arrow_circle_down: Descarga de reportes EPI-14 Semanal",
                      anchor=False, divider="gray")
         formulario_reporte_epi14_semanal()
+        st.markdown("")
 
 def mostrar_epi14_semanal():
     logo_bandera = ASSETS_DIR / "imagebanderanueva2.png"

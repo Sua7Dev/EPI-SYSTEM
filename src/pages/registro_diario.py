@@ -351,6 +351,7 @@ def mostrar_registro_diario():
     with tabs[1]:
         st.subheader(":material/arrow_circle_down: Descarga de reportes registro diario", anchor=False, divider="gray")
         formulario_reporte_registro_diario()
+        st.markdown("")
     copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
 
 if __name__ == "__main__":
