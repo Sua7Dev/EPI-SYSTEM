@@ -93,18 +93,18 @@ def confirmar_eliminar_multiples(usuarios_seleccionados): #nombre_usuario
         
 ################################Aqui abajo lo que se ve#################################################
 
-def extras():
-    with st.expander("Extras", expanded=False, icon=":material/more:"):
-        hospital()
-        col_mision, col_vision, col_manual, col_nosotros = st.columns(4)
-        with col_mision:
-            mision()
-        with col_vision:
-            vision()
-        with col_manual:
-            manual_de_uso()        
-        with col_nosotros:
-            nosotros()
+#def extras():
+#    with st.expander("Extras", expanded=False, icon=":material/more:"):
+#        hospital()
+#        col_mision, col_vision, col_manual, col_nosotros = st.columns(4)
+#        with col_mision:
+#            mision()
+#        with col_vision:
+#            vision()
+#        with col_manual:
+#            manual_de_uso()        
+#        with col_nosotros:
+#            nosotros()
 
 def extras_exp():
     with st.container(border=True):
@@ -160,17 +160,17 @@ def mostrar_modo_normal():
                                                 key="contra_edicion", max_chars=16, icon=":material/lock_person:")
 
                         col_verificar, col_cancelar = st.columns(2)
+                        with col_verificar:    
+                            verificar = st.form_submit_button("Verificar", icon=":material/logout:", width="stretch", type="primary")                        
                         with col_cancelar:    
                             cancelar = st.form_submit_button("Cancelar", icon=":material/cancel:", width="stretch")
-                        with col_verificar:    
-                            verificar = st.form_submit_button("Verificar", icon=":material/logout:", width="stretch", type="primary")
-                    if cancelar:
-                        st.rerun()               
-                    if verificar:
-                        if verificar_superusuario(nombre, contra):
-                        # agregar aqui otro if para verificar que el usuario y contraseña son correctos
-                            st.session_state.edit_mode = True
-                            st.rerun()
+                        if verificar:
+                            if verificar_superusuario(nombre, contra):
+                            # agregar aqui otro if para verificar que el usuario y contraseña son correctos
+                                st.session_state.edit_mode = True
+                                st.rerun()
+                        if cancelar:
+                            st.rerun()               
                 acceso_editar()
 
     #extras()
