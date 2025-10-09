@@ -36,7 +36,7 @@ def configuracion():
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     elementos()
-    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")#, bottom="-200px"
+    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA", bottom="-200px")#
     
 
 configuracion()

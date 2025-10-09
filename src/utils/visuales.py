@@ -208,3 +208,20 @@ def copyright_footer_dos(autor_o_empresa, left="-83px", bottom="-160px", margin_
     # 2. Inyectar en Streamlit, permitiendo HTML inseguro
     st.markdown(footer_html, unsafe_allow_html=True)
 
+def markdown_sin_link():
+    hide_anchor_link_css = """
+    <style>
+    /* CLAVE: Selecciona todos los enlaces de anclaje generados automáticamente 
+              por los encabezados (h1, h2, h3, etc.) y los oculta. */
+    h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+        display: none !important; 
+    }
+    </style>
+    """
+    
+    # Inyecta el CSS en la aplicación
+    st.markdown(hide_anchor_link_css, unsafe_allow_html=True)
+
+    # Ahora, tus encabezados ya no mostrarán el ícono de enlace
+    # este de abajo es para probar
+   # st.markdown("## Título de la Sección Sin Link") 

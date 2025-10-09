@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
+from utils.visuales import markdown_sin_link
 from utils.informaciones import nosotros, hospital, mision, vision, manual_de_uso
 from utils.verificaciones import verificar_superusuario, eliminar_usuario_completo, obtener_info_usuario
 from utils.contra import borro_cassette
@@ -217,67 +218,71 @@ def mostrar_modo_edicion():
         confirmar_eliminar_multiples(usuarios_seleccionados)
             #time.sleep(1)
             #st.rerun
+    st.markdown("")
+    st.markdown("")
     # otra logica de edicion
     if not usuarios_seleccionados.empty:
         
         st.subheader(":material/person_edit: Editar información de usuarios seleccionados", anchor=False)
         for index, row in usuarios_seleccionados.iterrows():
-            with st.expander(f"Editar {row['Nombre y Apellido']} ({row['Cédula']})", icon=":material/user_attributes:"):
-                with st.form(key=f"form_{row['id_usuario']}"):
-                    nuevo_rol = st.selectbox(
-                        ":material/assignment_ind: Rol",
-                        options=['Doctor (a)', 'Secretario (a)'],
-                        index=0 if row['Rol'] == 'Doctor (a)' else 1,
-                        key=f"rol_{row['id_usuario']}"
-                    )
-                    nuevo_correo = st.text_input(
-                        "Correo",
-                        value=row['Correo'] if pd.notna(row['Correo']) else "",
-                        key=f"correo_{row['id_usuario']}",
-                        icon=":material/mail:"
-                    )
-                    # botones
-                    col_guardar, col_reestablecer, col_eliminar = st.columns(3)
-                    with col_guardar:
-                        guardar = st.form_submit_button("Guardar cambios para usuario", 
-                                                        icon=":material/save:", width="stretch", type="primary")
-                    with col_reestablecer:
-                        reestablecer_contra = st.form_submit_button("Reestablecer contraseña", 
-                                                                    icon=":material/reset_settings:", width="stretch")
-                    with col_eliminar:
-                        eliminar_usuario = st.form_submit_button("Eliminar este usuario", 
-                                                                 icon=":material/delete:", width="stretch")
-                    # logica de los botones
-                    if guardar:
-                        if not val_mail(nuevo_correo):
-                            return
-                        if actualizar_usuario(row['id_usuario'], nuevo_rol, nuevo_correo):
-                            st.success(f"Cambios guardados para {row['Nombre y Apellido']}", icon=":material/save:")
-                            time.sleep(2)
-                            st.rerun()
-                    if reestablecer_contra:
-                        try:
-                            conn_tmp = sqlite3.connect(DB_PATH)
-                            cur_tmp = conn_tmp.cursor()
-                            cur_tmp.execute("SELECT nombre_usuario FROM usuario WHERE id_usuario = ?", (row['id_usuario'],))
-                            fila_usuario = cur_tmp.fetchone()
-                        finally:
-                            conn_tmp.close()
-                        if not fila_usuario:
-                            st.error("No se encontró el nombre de usuario asociado.", icon=":material/error:")
-                        else:
-                            nombre_usuario = fila_usuario[0]
-                            contras_nuevas(nombre_usuario)  
-                    if eliminar_usuario:
-                        try:
-                            conn_tmp = sqlite3.connect(DB_PATH)
-                            cur_tmp = conn_tmp.cursor()
-                            cur_tmp.execute("SELECT nombre_usuario FROM usuario WHERE id_usuario = ?", (row['id_usuario'],))
-                            fila_usuario = cur_tmp.fetchone()
-                        finally:
-                            conn_tmp.close()
-                        if not fila_usuario:
-                            st.error("No se encontró el nombre de usuario asociado.", icon=":material/error:")
-                        else:
-                            nombre_usuario = fila_usuario[0]
-                            confirmar_eliminar_solitario(nombre_usuario)
+            markdown_sin_link()
+            #with st.expander(f"Editar {row['Nombre y Apellido']} ({row['Cédula']})", icon=":material/user_attributes:"):
+            st.markdown(f"##### :material/user_attributes: Editar {row['Nombre y Apellido']} ({row['Cédula']})")
+            with st.form(key=f"form_{row['id_usuario']}"):
+                nuevo_rol = st.selectbox(
+                    ":material/assignment_ind: Rol",
+                    options=['Doctor (a)', 'Secretario (a)'],
+                    index=0 if row['Rol'] == 'Doctor (a)' else 1,
+                    key=f"rol_{row['id_usuario']}"
+                )
+                nuevo_correo = st.text_input(
+                    "Correo",
+                    value=row['Correo'] if pd.notna(row['Correo']) else "",
+                    key=f"correo_{row['id_usuario']}",
+                    icon=":material/mail:"
+                )
+                # botones
+                col_guardar, col_reestablecer, col_eliminar = st.columns(3)
+                with col_guardar:
+                    guardar = st.form_submit_button("Guardar cambios para usuario", 
+                                                    icon=":material/save:", width="stretch", type="primary")
+                with col_reestablecer:
+                    reestablecer_contra = st.form_submit_button("Reestablecer contraseña", 
+                                                                icon=":material/reset_settings:", width="stretch")
+                with col_eliminar:
+                    eliminar_usuario = st.form_submit_button("Eliminar este usuario", 
+                                                             icon=":material/delete:", width="stretch")
+                # logica de los botones
+                if guardar:
+                    if not val_mail(nuevo_correo):
+                        return
+                    if actualizar_usuario(row['id_usuario'], nuevo_rol, nuevo_correo):
+                        st.success(f"Cambios guardados para {row['Nombre y Apellido']}", icon=":material/save:")
+                        time.sleep(2)
+                        st.rerun()
+                if reestablecer_contra:
+                    try:
+                        conn_tmp = sqlite3.connect(DB_PATH)
+                        cur_tmp = conn_tmp.cursor()
+                        cur_tmp.execute("SELECT nombre_usuario FROM usuario WHERE id_usuario = ?", (row['id_usuario'],))
+                        fila_usuario = cur_tmp.fetchone()
+                    finally:
+                        conn_tmp.close()
+                    if not fila_usuario:
+                        st.error("No se encontró el nombre de usuario asociado.", icon=":material/error:")
+                    else:
+                        nombre_usuario = fila_usuario[0]
+                        contras_nuevas(nombre_usuario)  
+                if eliminar_usuario:
+                    try:
+                        conn_tmp = sqlite3.connect(DB_PATH)
+                        cur_tmp = conn_tmp.cursor()
+                        cur_tmp.execute("SELECT nombre_usuario FROM usuario WHERE id_usuario = ?", (row['id_usuario'],))
+                        fila_usuario = cur_tmp.fetchone()
+                    finally:
+                        conn_tmp.close()
+                    if not fila_usuario:
+                        st.error("No se encontró el nombre de usuario asociado.", icon=":material/error:")
+                    else:
+                        nombre_usuario = fila_usuario[0]
+                        confirmar_eliminar_solitario(nombre_usuario)
