@@ -110,6 +110,7 @@ def formulario_neonatal(db=DB_PATH):
         return
     if df.empty:
         st.info("No hay datos para mostrar.", icon=":material/info:")
+        st.markdown("# ")
     else:
         mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_neonatal")
 
@@ -349,6 +350,7 @@ def formulario_infantil(db=DB_PATH):
 
     if df.empty:
         st.info("No hay datos para mostrar.", icon=":material/info:")
+        st.markdown("# ")
     else:
         mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_infantil")
 
@@ -556,6 +558,7 @@ def formulario_materna(db=DB_PATH):
 
     if df.empty:
         st.info("No hay datos para mostrar.", icon=":material/info:")
+        st.markdown("# ")
     else:
         mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_materna")
 
@@ -742,6 +745,7 @@ def formulario_mensual_infantil(db=DB_PATH):
 
     if df.empty:
         st.info("No hay datos para mostrar.", icon=":material/info:")
+        st.markdown("# ")
     else:
         mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_im")
 
@@ -877,6 +881,7 @@ def formulario_mensual_neonatal(db=DB_PATH):
 
     if df.empty:
         st.info("No hay datos para mostrar.", icon=":material/info:")
+        st.markdown("# ")
     else:
         mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_mn")
 
@@ -1010,6 +1015,8 @@ def formulario_mensual_general(db=DB_PATH):
 
     if df.empty:
         st.info("No hay datos para mostrar.", icon=":material/info:")
+        st.markdown("# ")
+        #copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
     else:
         mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_mg")
 

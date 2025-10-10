@@ -212,6 +212,9 @@ def formulario_registro_diario(db=DB_PATH):
 
     if df.empty:
         st.info("No hay datos para mostrar.", icon=":material/info:")
+        st.markdown("# ")
+        st.markdown("# ")
+        #st.markdown("### ")
     else:
         mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_natalidad")
 

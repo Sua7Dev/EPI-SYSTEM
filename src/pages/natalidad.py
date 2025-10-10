@@ -91,6 +91,9 @@ def formulario_natalidad():
 
     if df.empty:
         st.info("No hay registros disponibles.", icon=":material/info:")
+        st.markdown("# ")
+        st.markdown("# ")
+        st.markdown("### ")
     else:
         mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_natalidad")
 
