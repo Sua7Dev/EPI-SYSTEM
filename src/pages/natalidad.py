@@ -89,46 +89,50 @@ def formulario_natalidad():
     if df is None:
         return
 
-    if df.empty:
-        st.info("No hay registros disponibles.", icon=":material/info:")
-        st.markdown("# ")
-        st.markdown("# ")
-        st.markdown("### ")
-    else:
-        mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_natalidad")
+    if rol_usuario == "Secretario (a)":
+        if df.empty:
+            st.info("No hay registros disponibles.", icon=":material/info:")
+            st.markdown("# ")
+            st.markdown("# ")
+            st.markdown("### ")
+    elif rol_usuario != "Secretario (a)":
+        if df.empty:
+            st.info("No hay registros disponibles.", icon=":material/info:")
+        else:
+            mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_natalidad")
 
-        if mostrar_editor:
-            df[' '] = False
-            df_filtrado = filtrar_por_fechas(df, 'fecha')
-            edited_df = data_editor_natalidad(df_filtrado, rol_usuario)
+            if mostrar_editor:
+                df[' '] = False
+                df_filtrado = filtrar_por_fechas(df, 'fecha')
+                edited_df = data_editor_natalidad(df_filtrado, rol_usuario)
 
-            if not df_filtrado.empty:
-                col1, col3 = st.columns(2)
-                has_selection = edited_df[' '].any()
-                col_guadar, col_descargar_todo, col_des_seleccionado, col_eliminar = st.columns(4)
+                if not df_filtrado.empty:
+                    col1, col3 = st.columns(2)
+                    has_selection = edited_df[' '].any()
+                    col_guadar, col_descargar_todo, col_des_seleccionado, col_eliminar = st.columns(4)
 
-                if rol_usuario == "Secretario (a)":
-                    with col1:
-                        descargar_pdf(edited_df, "natalidad", label="Descargar PDF")
-                    with col3:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "natalidad")
-                        descargar_pdf(df_sel, "natalidad_seleccionado", label="Descarga selección", disabled=not has_selection)
-                else:
-                    with col_guadar:
-                        guadar_btn(procesar_guardado_cambios_natalidad, edited_df)                
-                    with col_descargar_todo:
-                            descargar_pdf(edited_df, "natalidad")                
-                    with col_des_seleccionado:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "natalidad")
-                        descargar_pdf(df_sel, "natalidad_seleccionado", label="Descarga selección", disabled=not has_selection)
-                    with col_eliminar:
-                        btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="delete_natalidad", 
-                                                disabled=not has_selection, width="stretch",
-                                                help="Eliminar registros seleccionados.")
-                        if btn_eliminar:
-                            confirmar_eliminar(eliminar_registros_natalidad, edited_df)
+                    if rol_usuario == "Secretario (a)":
+                        with col1:
+                            descargar_pdf(edited_df, "natalidad", label="Descargar PDF")
+                        with col3:
+                            df_sel = edited_df[edited_df[' '] == True]
+                            descargar_registros_seleccionados(edited_df, "natalidad")
+                            descargar_pdf(df_sel, "natalidad_seleccionado", label="Descarga selección", disabled=not has_selection)
+                    else:
+                        with col_guadar:
+                            guadar_btn(procesar_guardado_cambios_natalidad, edited_df)                
+                        with col_descargar_todo:
+                                descargar_pdf(edited_df, "natalidad")                
+                        with col_des_seleccionado:
+                            df_sel = edited_df[edited_df[' '] == True]
+                            descargar_registros_seleccionados(edited_df, "natalidad")
+                            descargar_pdf(df_sel, "natalidad_seleccionado", label="Descarga selección", disabled=not has_selection)
+                        with col_eliminar:
+                            btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="delete_natalidad", 
+                                                    disabled=not has_selection, width="stretch",
+                                                    help="Eliminar registros seleccionados.")
+                            if btn_eliminar:
+                                confirmar_eliminar(eliminar_registros_natalidad, edited_df)
                         #  eliminar_registros_natalidad(edited_df)
                     
     if rol_usuario != "Secretario (a)":

@@ -218,8 +218,7 @@ def mostrar_modo_edicion():
         confirmar_eliminar_multiples(usuarios_seleccionados)
             #time.sleep(1)
             #st.rerun
-    st.markdown("")
-    st.markdown("")
+    st.markdown("### ")
     # otra logica de edicion
     if not usuarios_seleccionados.empty:
         
