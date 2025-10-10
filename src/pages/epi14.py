@@ -210,11 +210,14 @@ def formulario_epi14_semanal(db=DB_PATH):
                                     disabled=not has_selection, use_container_width=True,
                                     help="Eliminar registros seleccionados."):
                             confirmar_eliminar(eliminar_registros_epi14, edited_df)
-        else:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-            st.markdown("# ")
-            st.markdown("# ")
-            #st.markdown("### ")
+        elif rol_usuario == "Secretario (a)":
+            if df.empty:
+                st.info("No hay datos para mostrar.", icon=":material/info:")
+                st.markdown("# ")
+                st.markdown("# ")
+        elif rol_usuario != "Secretario (a)":
+            if df.empty:
+                st.info("No hay datos para mostrar.", icon=":material/info:")
 
         if rol_usuario != "Secretario (a)":
             _, col_titulo = st.columns([1.4, 2.7])

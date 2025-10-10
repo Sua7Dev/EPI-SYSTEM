@@ -210,43 +210,46 @@ def formulario_registro_diario(db=DB_PATH):
     if df is None:
         return
 
-    if df.empty:
-        st.info("No hay datos para mostrar.", icon=":material/info:")
-        st.markdown("# ")
-        st.markdown("# ")
-        #st.markdown("### ")
-    else:
-        mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_natalidad")
+    if rol_usuario == "Secretario (a)":
+        if df.empty:
+            st.info("No hay datos para mostrar.", icon=":material/info:")
+            st.markdown("# ")
+            st.markdown("# ")
+    elif rol_usuario != "Secretario (a)":
+        if df.empty:
+            st.info("No hay datos para mostrar.", icon=":material/info:")
+        else:
+            mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_natalidad")
 
-        if mostrar_editor:
-            df_filtrado = filtrar_por_fechas(df, 'fd')
-            edited_df = data_editor_registro_diario(df_filtrado, rol_usuario)
-            col1, col3 = st.columns(2)
-            has_selection = edited_df[' '].any()
-            col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(4)
+            if mostrar_editor:
+                df_filtrado = filtrar_por_fechas(df, 'fd')
+                edited_df = data_editor_registro_diario(df_filtrado, rol_usuario)
+                col1, col3 = st.columns(2)
+                has_selection = edited_df[' '].any()
+                col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(4)
 
-            if rol_usuario == "Secretario (a)":
-                with col1:
-                    descargar_pdf(edited_df, "registro_diario", label="Descargar PDF")
-                with col3:
-                    df_sel = edited_df[edited_df[' '] == True]
-                    descargar_registros_seleccionados(edited_df, "registro_diario")
-                    descargar_pdf(df_sel, "registro_diario_seleccionado", label="Descarga selección", disabled=not has_selection)
-            else:
-                with col_guardar:
-                    guadar_btn(procesar_guardado_cambios_reg_diario, edited_df)
-                with col_descargar:
-                    descargar_pdf(edited_df, "registro_diario")            
-                with col_descargar_seleccionado:
-                    df_sel = edited_df[edited_df[' '] == True]
-                    descargar_registros_seleccionados(edited_df, "registro_diario")
-                    descargar_pdf(df_sel, "registro_diario_seleccionado", label="Descarga selección", disabled=not has_selection)
-                with col_eliminar:
-                    btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="delete_registro_diario", 
-                                            disabled=not has_selection, width="stretch",
-                                            help="Eliminar registros seleccionados.")
-                    if btn_eliminar:
-                        confirmar_eliminar(eliminar_registros_diario, edited_df)
+                if rol_usuario == "Secretario (a)":
+                    with col1:
+                        descargar_pdf(edited_df, "registro_diario", label="Descargar PDF")
+                    with col3:
+                        df_sel = edited_df[edited_df[' '] == True]
+                        descargar_registros_seleccionados(edited_df, "registro_diario")
+                        descargar_pdf(df_sel, "registro_diario_seleccionado", label="Descarga selección", disabled=not has_selection)
+                else:
+                    with col_guardar:
+                        guadar_btn(procesar_guardado_cambios_reg_diario, edited_df)
+                    with col_descargar:
+                        descargar_pdf(edited_df, "registro_diario")            
+                    with col_descargar_seleccionado:
+                        df_sel = edited_df[edited_df[' '] == True]
+                        descargar_registros_seleccionados(edited_df, "registro_diario")
+                        descargar_pdf(df_sel, "registro_diario_seleccionado", label="Descarga selección", disabled=not has_selection)
+                    with col_eliminar:
+                        btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="delete_registro_diario", 
+                                                disabled=not has_selection, width="stretch",
+                                                help="Eliminar registros seleccionados.")
+                        if btn_eliminar:
+                            confirmar_eliminar(eliminar_registros_diario, edited_df)
 
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Registro Diario", anchor=False)
