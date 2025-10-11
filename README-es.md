@@ -29,30 +29,27 @@ cd myproject
 git clone https://github.com/Sua7Dev/EPI-SYSTEM.git
 ```
 
-### - Paso 3. Cambie el nombre de la carpeta "streamlit" a ".streamlit" en el directorio principal y src:
-
-
-### - Paso 4. crea un entorno virtual:
+### - Paso 3. crea un entorno virtual:
 ```bash
 python -m venv .venv
 ```
 
-### - Paso 5. Activar el entorno virtual (esto es para Windows PowerShell):
+### - Paso 4. Activar el entorno virtual (esto es para Windows PowerShell):
 ```bash
 .venv\Scripts\Activate.ps1
 ```
 
-### - Paso 6. instala las librerías necesarias:
+### - Paso 5. instala las librerías necesarias:
 ```bash
 pip install -r requirements.txt
 ```
 
-### - Paso 7. Acceda a la carpeta src:
+### - Paso 6. Acceda a la carpeta src:
 ```bash
 cd src
 ```
 
-### - Paso 8. compilamos a .exe:
+### - Paso 7. compilamos a .exe:
 ```bash
 pyinstaller --clean --icon=../iconito.ico --onedir launcher.py --name EPI-SYSTEM --collect-all streamlit --collect-all streamlit_extras --add-data "../static;static" --add-data "../.streamlit;.streamlit" --add-data "hospital.db;." --add-data "main.py;." --add-data "launcher.py;." --add-data "utils;utils" --add-data "db.py;." --add-data "pages;pages" --add-data "reportes;reportes" --add-data "descargas;descargas" --add-data "stats;stats" --hidden-import=streamlit.web.cli --hidden-import=importlib.metadata --hidden-import=fpdf --hidden-import=db --hidden-import=utils.sql_control --hidden-import=pandas --hidden-import=numpy --hidden-import=pyarrow --hidden-import=snowflake.connector --hidden-import=streamlit_extras --noupx --noconsole
 ```
