@@ -1,7 +1,7 @@
 import streamlit as st
 import sqlite3
 import os
-from base_64 import img_a_base64
+from utils.base_64 import img_a_base64
 from pathlib import Path
 from utils.sql_control import mostrar_descripcion_departamento, mostrar_descripcion_hospital
 from pathlib import Path
@@ -179,15 +179,15 @@ def usuario_activo_fixed():
     rol_usuario = info_usuario["rol"]
     nombre_apellido = info_usuario.get("nombre_apellido", nombre_usuario)
 
-    iconos = {
-        "Administrador (a)": "clinical_notes",
-        "Doctor (a)": "cardiology",
-        "Secretario (a)": "prescriptions",
+    # Selecciona el icono según el rol
+    iconos_base64 = {
+        "Administrador (a)": svg_base64_admin,
+        "Doctor (a)": svg_base64_doctor,
+        "Secretario (a)": svg_base64_secretaria,
     }
-    icon_name = iconos.get(rol_usuario, "person")
+    icon_base64 = iconos_base64.get(rol_usuario)
 
     html_content = f"""
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <style>
     .usuario-fixed {{
         position: fixed;
@@ -205,6 +205,7 @@ def usuario_activo_fixed():
         min-width: 120px;
     }}
     .icon-circle {{
+        padding: 6px;
         width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -215,9 +216,6 @@ def usuario_activo_fixed():
         font-size: 28px;
         box-shadow: 0 1px 4px rgba(0,0,0,0.10);
         overflow: hidden;
-    }}
-    .material-symbols-outlined {{
-        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 32;
     }}
     .nombre {{
         font-size: 19px;
@@ -233,7 +231,7 @@ def usuario_activo_fixed():
     </style>
     <div class="usuario-fixed">
         <div class="icon-circle">
-            <span class="material-symbols-outlined">{icon_name}</span>
+            {"<img src='data:image/svg+xml;base64," + icon_base64 + "' width='32' height='32'/>" if icon_base64 else ""}
         </div>
         <div>
             <div class="nombre">{nombre_apellido}</div>
