@@ -1,7 +1,7 @@
 import streamlit as st
 import sqlite3
 import os
-import base64
+from base_64 import img_a_base64
 from pathlib import Path
 from utils.sql_control import mostrar_descripcion_departamento, mostrar_descripcion_hospital
 from pathlib import Path
@@ -27,6 +27,11 @@ PDF_DIR = PROJECT_ROOT / "static" / "assets" / "pdf"
 RUTA_PDF_ADMIN = PDF_DIR / "cuadropio.pdf"
 RUTA_PDF_DOCTOR = PDF_DIR / "MANUAL PROYECTO  UPTJAA 2022.pdf"
 RUTA_PDF_SECRETARIA = PDF_DIR / "METODOLOGIAS_ RUP, XP, SCRUM.pdf"
+
+# rutas iconos para el identificadoe
+RUTA_ADMIN_SVG = ASSETS_DIR / "admin.svg"
+RUTA_DOCTOR_SVG = ASSETS_DIR / "doctor.svg"
+RUTA_SECRETARIA_SVG = ASSETS_DIR / "secretaria.svg"
 
 def nosotros():
     nosotros_sg = st.popover("Sobre Nosotros", icon=":material/contact_support:", width="stretch")
@@ -158,6 +163,10 @@ def mostrar_usuario_activo():
     )
 
 def usuario_activo_fixed():
+    # iconos a base64
+    svg_base64_admin = img_a_base64(RUTA_ADMIN_SVG)
+    svg_base64_doctor = img_a_base64(RUTA_DOCTOR_SVG)
+    svg_base64_secretaria = img_a_base64(RUTA_SECRETARIA_SVG)
     if "autenticado_usuario" not in st.session_state:
         return
 
