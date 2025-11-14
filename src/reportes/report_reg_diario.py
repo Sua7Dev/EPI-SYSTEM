@@ -35,11 +35,11 @@ def exportar_pdf_registro_diario(year=None, week=None, specific_date=None, start
             # Filtro por Fecha específica (comparando fd como ISO)
             elif specific_date:
                 if isinstance(specific_date, datetime.date):
-                    specific_iso = specific_date.strftime('%Y-%m-%d')
+                    specific_iso = specific_date.strftime('%d/%m/%Y')
                 else:
                     # En caso de que te llegue string 'YYYY-MM-DD' o datepicker
                     try:
-                        specific_iso = pd.to_datetime(specific_date, dayfirst=False).strftime('%Y-%m-%d')
+                        specific_iso = pd.to_datetime(specific_date, dayfirst=False).strftime('%d/%m/%Y')
                     except Exception:
                         specific_iso = str(specific_date)
                 where_clause = f"WHERE {iso_fd} = ?"
@@ -48,13 +48,13 @@ def exportar_pdf_registro_diario(year=None, week=None, specific_date=None, start
             # Filtro por Rango de fechas (comparando fd como ISO)
             elif start_date and end_date:
                 if isinstance(start_date, datetime.date):
-                    start_iso = start_date.strftime('%Y-%m-%d')
+                    start_iso = start_date.strftime('%d/%m/%Y')
                 else:
-                    start_iso = pd.to_datetime(start_date, dayfirst=False).strftime('%Y-%m-%d')
+                    start_iso = pd.to_datetime(start_date, dayfirst=False).strftime('%d/%m/%Y')
                 if isinstance(end_date, datetime.date):
-                    end_iso = end_date.strftime('%Y-%m-%d')
+                    end_iso = end_date.strftime('%d/%m/%Y')
                 else:
-                    end_iso = pd.to_datetime(end_date, dayfirst=False).strftime('%Y-%m-%d')
+                    end_iso = pd.to_datetime(end_date, dayfirst=False).strftime('%d/%m/%Y')
                 where_clause = f"WHERE {iso_fd} BETWEEN ? AND ?"
                 params = [start_iso, end_iso]
 

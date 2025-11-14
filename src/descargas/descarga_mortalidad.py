@@ -53,7 +53,7 @@ def _exportar_pdf_mortalidad(df, nombre_archivo):
     if "fecha_defuncion" in df_filtered.columns:
         df_filtered["fecha_defuncion"] = pd.to_datetime(
             df_filtered["fecha_defuncion"], errors="coerce"
-        ).dt.strftime("%Y-%m-%d")
+        ).dt.strftime("%d/%m/%Y")
 
     for col in df_filtered.columns:
         if df_filtered[col].dtype == np.float64:

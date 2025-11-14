@@ -158,7 +158,7 @@ def exportar_pdf_morbilidad_simp(df, nombre_archivo):
             "Nombres y Apellidos": limpiar_dato(row.get('nombres_apellidos')),
             "Sexo": limpiar_dato(row.get('sexo')),
             "Edad": f"{int(row.get('edad'))} años" if pd.notnull(row.get('edad')) else None,
-            "Fecha de Registro": pd.to_datetime(row.get('fecha_registro_formulario'), errors='coerce').strftime('%Y-%m-%d') if pd.notnull(row.get('fecha_registro_formulario')) else None,
+            "Fecha de Registro": pd.to_datetime(row.get('fecha_registro_formulario'), errors='coerce').strftime('%d/%m/%Y') if pd.notnull(row.get('fecha_registro_formulario')) else None,
             "Fecha de Nacimiento": pd.to_datetime(row.get('fecha_nacimiento'), errors='coerce').strftime('%d/%m/%Y') if pd.notnull(row.get('fecha_nacimiento')) else None
         }
 

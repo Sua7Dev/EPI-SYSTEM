@@ -29,7 +29,7 @@ def _exportar_pdf_natalidad(df, nombre_archivo):
     df_filtered = df_filtered[[col for col in df_filtered.columns if col not in columns_to_exclude]]
 
     # Convertir fecha al formato YYYY-MM-DD
-    df_filtered['fecha'] = pd.to_datetime(df_filtered['fecha'], errors='coerce').dt.strftime('%Y-%m-%d')
+    df_filtered['fecha'] = pd.to_datetime(df_filtered['fecha'], errors='coerce').dt.strftime('%d/%m/%Y')
 
     # Asegurar que los valores numéricos estén bien definidos
     for col in ['partos', 'cesareas', 'varones', 'hembras', 'gemelar', 'mto', 'partos_extrahospitalarios']:
@@ -49,8 +49,8 @@ def _exportar_pdf_natalidad(df, nombre_archivo):
             dates = pd.to_datetime(df_filtered['fecha'].dropna())
             min_date = dates.min()
             max_date = dates.max()
-            min_date_str = min_date.strftime('%Y-%m-%d')
-            max_date_str = max_date.strftime('%Y-%m-%d')
+            min_date_str = min_date.strftime('%d/%m/%Y')
+            max_date_str = max_date.strftime('%d/%m/%Y')
             range_text = f"Semana desde {min_date_str} a {max_date_str}"
         except:
             pass

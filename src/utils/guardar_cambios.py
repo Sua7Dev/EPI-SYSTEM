@@ -59,7 +59,7 @@ def procesar_guardado_cambios_mortalidad_neonatal(edited_df, DB_PATH=DB_PATH):
                 if col in COLUMN_TO_TABLE_MAP:
                     # Convertir Timestamps a string para compatibilidad con SQLite
                     if isinstance(value, pd.Timestamp):
-                        value = value.strftime('%Y-%m-%d')
+                        value = value.strftime('%d/%m/%Y')
 
                     table = COLUMN_TO_TABLE_MAP[col]
                     updates[table]['fields'].append(f"{col} = ?")
@@ -127,7 +127,7 @@ def procesar_guardado_cambios_mortalidad_infantil(edited_df, DB_PATH=DB_PATH):
                 if col in COLUMN_TO_TABLE_MAP:
                     # Convertir Timestamps a string para compatibilidad con SQLite
                     if isinstance(value, pd.Timestamp):
-                        value = value.strftime('%Y-%m-%d')
+                        value = value.strftime('%d/%m/%Y')
                     table = COLUMN_TO_TABLE_MAP[col]
                     updates[table]['fields'].append(f"{col} = ?")
                     updates[table]['values'].append(value)
@@ -194,7 +194,7 @@ def procesar_guardado_cambios_mortalidad_materna(edited_df, DB_PATH=DB_PATH):
                 if col in COLUMN_TO_TABLE_MAP:
                     # Convertir Timestamps a string para compatibilidad con SQLite
                     if isinstance(value, pd.Timestamp):
-                        value = value.strftime('%Y-%m-%d')
+                        value = value.strftime('%d/%m/%Y')
                     table = COLUMN_TO_TABLE_MAP[col]
                     updates[table]['fields'].append(f"{col} = ?")
                     updates[table]['values'].append(value)
@@ -247,7 +247,7 @@ def procesar_guardado_cambios_mensual_neonatal(edited_df, DB_PATH=DB_PATH):
                 if col in COLUMN_TO_TABLE_MAP:
                     # Convertir fechas a string si son Timestamp
                     if isinstance(value, pd.Timestamp):
-                        value = value.strftime('%Y-%m-%d')
+                        value = value.strftime('%d/%m/%Y')
                     table = COLUMN_TO_TABLE_MAP[col]
                     updates[table]['fields'].append(f"{col} = ?")
                     updates[table]['values'].append(value)
@@ -292,7 +292,7 @@ def procesar_guardado_cambios_mensual_infantil(edited_df, DB_PATH=DB_PATH):
                 if col in COLUMN_TO_TABLE_MAP:
                     # Convertir fechas a string si son Timestamp
                     if isinstance(value, pd.Timestamp):
-                        value = value.strftime('%Y-%m-%d')
+                        value = value.strftime('%d/%m/%Y')
                     table = COLUMN_TO_TABLE_MAP[col]
                     updates[table]['fields'].append(f"{col} = ?")
                     updates[table]['values'].append(value)
@@ -337,7 +337,7 @@ def procesar_guardado_cambios_mensual_general(edited_df, DB_PATH=DB_PATH):
                 if col in COLUMN_TO_TABLE_MAP:
                     # Convertir fechas a string si son Timestamp
                     if isinstance(value, pd.Timestamp):
-                        value = value.strftime('%Y-%m-%d')
+                        value = value.strftime('%d/%m/%Y')
                     table = COLUMN_TO_TABLE_MAP[col]
                     updates[table]['fields'].append(f"{col} = ?")
                     updates[table]['values'].append(value)
@@ -378,7 +378,7 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
             if pd.isna(fecha_db):
                 fecha_db = pd.Timestamp('2025-01-01')
             # Convertir fecha_db a string para la base de datos
-            fecha_db_str = fecha_db.strftime('%Y-%m-%d')
+            fecha_db_str = fecha_db.strftime('%d/%m/%Y')
 
             # Preparar otros campos con valores por defecto
             partos = int(row.get("partos", 0)) if pd.notna(row.get("partos", 0)) else 0
