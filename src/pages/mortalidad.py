@@ -227,6 +227,7 @@ def formulario_neonatal(db=DB_PATH):
             if registrar:
                 fecha_formateada_nacimiento = fecha_nacimiento.strftime("%d/%m/%Y")
                 fecha_formateada_ingreso = fecha_ingreso.strftime("%d/%m/%Y")
+                fecha_formateada_defuncion = fecha_defuncion.strftime("%d/%m/%Y")
                 hora_12_nacimiento = hora_ingreso.strftime("%I:%M %p")
                 hora_12_ingreso = hora_ingreso.strftime("%I:%M %p")
                 hora_12_defuncion = hora_defuncion.strftime("%I:%M %p")
@@ -237,7 +238,7 @@ def formulario_neonatal(db=DB_PATH):
                 
                 datos_registro = (
                     historia_clinica, nombres_apellidos, nombre_madre, fecha_formateada_nacimiento, hora_nacimiento_str,
-                    fecha_formateada_ingreso, hora_ingreso_str, fecha_defuncion, hora_defuncion_str, edad_junto,
+                    fecha_formateada_ingreso, hora_ingreso_str, fecha_formateada_defuncion, hora_defuncion_str, edad_junto,
                     idx_ingreso, idx_defuncion, semanas_gestacion, peso, talla, pais_hogar,
                     estado_hogar, municipio_hogar, parroquia_hogar, ciudad_hogar, direccion_exacta,
                     id_doctor, id_administrador

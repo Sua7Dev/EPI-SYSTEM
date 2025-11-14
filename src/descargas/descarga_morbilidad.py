@@ -56,7 +56,7 @@ def exportar_pdf_morbilidad_extensa(df, nombre_archivo):
             "Cédula": limpiar_dato(row.get('cedula')),
             "Historia Clínica": limpiar_dato(row.get('HC')),
             "Edad": f"{int(row.get('edad'))} años" if pd.notnull(row.get('edad')) else None,
-            "Fecha de Registro": pd.to_datetime(row.get('fecha_registro_formulario'), errors='coerce').strftime('%Y-%m-%d') if pd.notnull(row.get('fecha_registro_formulario')) else None,
+            "Fecha de Registro": pd.to_datetime(row.get('fecha_registro_formulario'), errors='coerce').strftime('%d/%m/%Y') if pd.notnull(row.get('fecha_registro_formulario')) else None,
             "Fecha de Nacimiento": pd.to_datetime(row.get('fecha_nacimiento'), errors='coerce').strftime('%d/%m/%Y') if pd.notnull(row.get('fecha_nacimiento')) else None,
             "Dirección del Hogar": limpiar_dato(row.get('direccion_hogar')),
             "Lugar de Nacimiento": limpiar_dato(row.get('direccion_nacimiento'))
