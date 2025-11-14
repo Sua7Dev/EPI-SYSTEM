@@ -296,7 +296,7 @@ def mostrar_olvido():
 
     with coltext:
         informacion()
-    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA", margin_right="0px")
+    copyright_footer_dos("Equipo Investigador", margin_right="0px")
 
 # ------------------- Ejecución -------------------
 mostrar_olvido()

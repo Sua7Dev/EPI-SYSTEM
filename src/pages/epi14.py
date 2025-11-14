@@ -319,6 +319,6 @@ def mostrar_epi14_semanal():
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     logo(tamano="100%")
     formulario_epi14_semanal()
-    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("Equipo Investigador")
 
 mostrar_epi14_semanal()

@@ -361,6 +361,6 @@ def mostrar_morb():
     func_morb = formularios_morb.get(tipo_morb)
     if func_morb:
         func_morb()
-    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("Equipo Investigador")
 
 mostrar_morb()

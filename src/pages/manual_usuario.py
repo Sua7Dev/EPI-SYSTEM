@@ -61,6 +61,6 @@ def manual_usuario():
     logo(tamano="70%")
     mostrar_pdf()
     botones_manual()
-    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA", margin_right="0px")
+    copyright_footer_dos("Equipo Investigador", margin_right="0px")
 
 manual_usuario()

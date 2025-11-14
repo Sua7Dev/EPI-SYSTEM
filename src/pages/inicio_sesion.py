@@ -153,7 +153,7 @@ def login():
     with coltext:
         with st.container():
             iniciar_sesion()
-            copyright_footer("SAMUEL URBANO & GUSTAVO HEREDIA")
+            copyright_footer("Equipo Investigador")
     
 
 login()

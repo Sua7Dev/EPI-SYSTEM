@@ -64,7 +64,7 @@ def mostrar_stats():
     with tabs[4]:
         reg_diario_stats()
         pass
-    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA", bottom="-200px")
+    copyright_footer_dos("Equipo Investigador", bottom="-200px")
 
 # ejecucion principal
 def estadisticas():

@@ -147,7 +147,7 @@ def dashboard():
     contenedores_totales()
     # graficas
     graficas_dashboard()
-    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("Equipo Investigador")
 
  
 def inicio():

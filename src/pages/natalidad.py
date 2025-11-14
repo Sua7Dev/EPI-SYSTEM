@@ -201,6 +201,6 @@ def mostrar_nata():
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     logo(tamano="100%")
     formulario_natalidad()
-    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA")
+    copyright_footer_dos("Equipo Investigador")
 
 mostrar_nata()

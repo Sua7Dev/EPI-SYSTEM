@@ -156,7 +156,7 @@ def copyright_footer(autor_o_empresa):
     </style>
     
     <div class="footer">
-        &copy; 2025 {autor_o_empresa}. Todos los derechos reservados.
+        &copy; 2025 {autor_o_empresa}. Copyright.
         <a href="" target="_blank"></a>
     </div>
     """
@@ -200,7 +200,7 @@ def copyright_footer_dos(autor_o_empresa, left="-83px", bottom="-160px", margin_
     </style>
     
     <div class="footer">
-        &copy; 2025 {autor_o_empresa}. Todos los derechos reservados.
+        &copy; 2025 {autor_o_empresa}. Copyright.
         <a href="" target="_blank"></a>
     </div>
     """

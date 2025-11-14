@@ -168,6 +168,6 @@ def registro():
     _, col_centro, _ = st.columns([3, 6, 3])
     with col_centro:    
         registro_formulario()
-    copyright_footer_dos("SAMUEL URBANO & GUSTAVO HEREDIA", margin_right="0px")
+    copyright_footer_dos("Equipo Investigador", margin_right="0px")
 
 registro()
