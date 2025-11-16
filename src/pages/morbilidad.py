@@ -344,7 +344,7 @@ def mostrar_morb():
     
     logo_base64 = img_a_base64(logo_bandera)
     st.set_page_config(layout="wide", page_icon=logo_bandera)
-    recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
+    recargar_una_vez(__file__) 
     logo(tamano="100%")
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
