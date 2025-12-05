@@ -38,16 +38,25 @@ def registro_formulario():
         st.header(':material/group_add: Registro De Usuarios', divider='gray', anchor=False)
         with st.form(key='registro_form'):
             # Primera fila
-            col_nombre, col_sexo = st.columns(2)
+            col_ci, col_nombre,  = st.columns(2)
+            with col_ci:
+                ci = st.text_input("Cédula de identidad", max_chars=8, 
+                                   placeholder="Ejemplo: 12345678", 
+                                   key="ci", icon=":material/contact_mail:")            
             with col_nombre:
                 nombre = st.text_input('Nombres y Apellidos:', 
                                        max_chars=40, 
                                        placeholder='Ejemplo: Juan Pérez', 
                                        key="nombre", icon=":material/person:")
-            with col_sexo:
-                sexo = st.selectbox("⚥ Sexo", ["Masculino", "Femenino"], key="sexo")
             
             # Segunda fila
+            col_sexo, col_nacional = st.columns(2)
+            with col_sexo:
+                sexo = st.selectbox("⚥ Sexo", ["Masculino", "Femenino"], key="sexo")            
+            with col_nacional:
+                nacionalidad = st.selectbox(":material/south_america: Nacionalidad", ["Venezolano (a)", "Extranjero (a)"], key="nacionalidad")
+            
+            # Tercera fila
             col_nacimiento1, col_rol = st.columns(2)
             with col_nacimiento1:
                 nacimiento = st.date_input(
@@ -59,7 +68,7 @@ def registro_formulario():
             with col_rol:
                 rol = st.selectbox(":material/assignment_ind: Rol", ["Doctor (a)", "Secretario (a)"], key="rol")            
             
-            # Tercera fila
+            # Cuarta fila
             col_correo, col_usuario = st.columns(2)
             with col_correo:
                 correo = st.text_input('Correo electrónico:', max_chars=35, 
@@ -69,15 +78,6 @@ def registro_formulario():
                 nombre_usuario = st.text_input('Nombre de usuario:', max_chars=16, 
                                                placeholder='Ejemplo: Juan33', 
                                                key="nombre_usuario", icon=":material/person_check:")
-            
-            # Cuarta fila
-            col_ci, col_nacional = st.columns(2)
-            with col_ci:
-                ci = st.text_input("Cédula de identidad", max_chars=8, 
-                                   placeholder="Ejemplo: 12345678", 
-                                   key="ci", icon=":material/contact_mail:")
-            with col_nacional:
-                nacionalidad = st.selectbox(":material/south_america: Nacionalidad", ["Venezolano (a)", "Extranjero (a)"], key="nacionalidad")
             
             # Quinta fila
             col_contra, col_confirmar = st.columns(2)
@@ -107,17 +107,17 @@ def registro_formulario():
             if registrar_btn:
                 if not all([nombre, sexo, nacimiento, nombre_usuario, correo, ci, nacionalidad, contrasena, confirmar_contra, rol]):
                     st.error("Todos los campos son obligatorios. Por favor, completa todos los campos.", icon=":material/error:")
+                elif not val_solo_numeros(ci, "La", "cédula de identidad"):
+                    return
                 elif not validar_texto(nombre, "El", "nombre"):
                     return
                 elif not validar_cinco_espacios(nombre, "El", "nombre"):
                     return
                 elif not mayor_de_edad(nacimiento):
                     return
-                elif not validar_nombre_usuario(nombre_usuario):
-                    return
                 elif not val_mail(correo):
                     return
-                elif not val_solo_numeros(ci, "La", "cédula de identidad"):
+                elif not validar_nombre_usuario(nombre_usuario):
                     return
                 elif contrasena != confirmar_contra:
                     st.error("Las contraseñas no coinciden.", icon=":material/error:")
