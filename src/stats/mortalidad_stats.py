@@ -41,7 +41,7 @@ def morta_growth_chart():
                      alt.Tooltip('record_count:Q', title='Registros')]
         ).properties(
             width=300,
-            height=270
+            height=280
         )
 
         st.altair_chart(chart, use_container_width=True)
@@ -83,7 +83,7 @@ def morta_categ_pie_chart():
 
         chart = (pie + text).properties(
             width=300,
-            height=270
+            height=280
         ).configure_view(
             strokeWidth=0
         )

@@ -182,6 +182,9 @@ def registro():
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__)
     logo(tamano="70%")
+    if "autenticado_usuario" not in st.session_state:
+            st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+            return
     _, col_centro, _ = st.columns([3, 6, 3])
     with col_centro:    
         registro_formulario()

@@ -34,7 +34,7 @@ def _exportar_pdf(df, nombre_archivo, semana=None):
     custom_headers = {
         'fd': 'FO',
         'gett': 'Get',
-        'edad_sexo': 'Edad/Sexo'
+        'edad_sexo': 'Edad/Se-xo'
     }
 
     # Generar encabezados aplicando reemplazos

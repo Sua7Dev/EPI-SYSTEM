@@ -124,7 +124,11 @@ def _exportar_pdf_epi14(df, nombre_archivo):
         scale_factor = page_width / total_width
         col_widths = [w * scale_factor for w in col_widths]
 
-    col_headers = [str(col).title() for col in df_filtered.columns]
+    col_headers = [
+        "Sexo/Edad" if col.lower() == "sexo_edad" else str(col).title()
+        for col in df_filtered.columns
+    ]
+
     max_header_lines = max(len(pdf.multi_cell(w, line_height, txt, border=0, align='L', split_only=True)) for txt, w in zip(col_headers, col_widths))
     max_header_height = max_header_lines * line_height
 
