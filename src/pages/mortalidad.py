@@ -192,7 +192,7 @@ def formulario_neonatal(db=DB_PATH):
             with col_edad:
                 edad = st.number_input("Edad", min_value=0, step=1, key="edad_neonatal")
             with col_tiempo:
-                tiempo = st.selectbox("Tiempo de edad", ["Horas", "Meses", "Años"], key="tiempo_neonatal")
+                tiempo = st.selectbox("Tiempo de edad", ["Días", "Horas"], key="tiempo_neonatal")
             edad_junto = f"{edad} {tiempo}"
             
             col_idx_ingreso, col_idx_defuncion = st.columns(2)
@@ -437,7 +437,7 @@ def formulario_infantil(db=DB_PATH):
             with col_edad:
                 edad = st.number_input("Edad", min_value=0, step=1, key="edad_infantil")
             with col_tiempo:
-                tiempo = st.selectbox("Tiempo de edad", ["Meses", "Años"], key="tiempo_infantil")
+                tiempo = st.selectbox("Tiempo de edad", ["Meses", "Año"], key="tiempo_infantil")
             edad_junto = f"{edad} {tiempo}"
             col1, col2 = st.columns(2)
             with col1:
@@ -465,6 +465,17 @@ def formulario_infantil(db=DB_PATH):
                 limpiar = st.form_submit_button("", icon=":material/cleaning_services:", on_click=limpiar_campos_infantil, 
                                                 type="tertiary", help="Limpia todos los campos del formulario.")  
             if registrar:
+                # guardar fechas formateadas y validar
+                if fecha_defuncion < fecha_nacimiento or fecha_defuncion > fecha_nacimiento + relativedelta(days=365):
+                    st.error("La defuncion tiene que estar entre el primer año del nacimiento.", icon=":material/error:")
+                    return
+                if tiempo == "Año" and edad > 1:
+                    st.error("EL tiempo de edad no debe ser mayor a un año.", icon=":material/error:")
+                    return
+                if tiempo == "Meses" and edad > 12:
+                    st.error("EL tiempo de edad no debe ser mayor a doce meses.", icon=":material/error:")
+                    return
+                
                 fecha_formateada_nacimiento = fecha_nacimiento.strftime("%d/%m/%Y")
                 fecha_formateada_ingreso = fecha_ingreso.strftime("%d/%m/%Y")
                 fecha_formateada_defuncion = fecha_defuncion.strftime("%d/%m/%Y")
