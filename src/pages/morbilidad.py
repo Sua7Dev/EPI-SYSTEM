@@ -155,22 +155,26 @@ def formulario_morb_extenso(db=DB_PATH):
         fecha_maxima = datetime.date.today() + relativedelta(months=1)
         fecha_maxima_hoy = datetime.date.today()
         fecha_minimi_1935 = datetime.date(1935, 1, 1)
-        col_hc, col_nombre = st.columns(2)
+        # primera fila
+        col_hc, col_cedula = st.columns(2)
         with col_hc:
             hc = st.text_input("Historia clínica", max_chars=8, key="hc_morb_extenso", placeholder="Ej. 12345678")
-        with col_nombre:
-            nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_morb_extenso", placeholder="Ej. Juan Pérez")
-        col_cedula, col_tlf = st.columns(2)
         with col_cedula:
             cedula = st.text_input("Cédula", max_chars=10, key="cedula_morb_extenso", placeholder="Ej. V12345678")
+        # segunda fila
+        col_nombre, col_tlf = st.columns(2)
+        with col_nombre:
+            nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_morb_extenso", placeholder="Ej. Juan Pérez")
         with col_tlf:
             telefono = st.text_input("Teléfono", max_chars=15, key="telefono_morb_extenso", placeholder="Ej. +58412-1234567")
         diagnostico = st.text_area("Diagnóstico", max_chars=150, key="diagnostico_morb_extenso", placeholder="Descripción del diagnóstico")
+        # tercera fila
         col_edad, col_sexo = st.columns(2)
         with col_edad:
             edad = st.number_input("Edad", min_value=0, step=1, key="edad_morb_extenso")
         with col_sexo:
             sexo = st.selectbox("Sexo", ["Masculino", "Femenino"], key="sexo_morb_extenso")
+        # cuarta fila
         col_fecha_nac, col_estado_civil = st.columns(2)
         with col_fecha_nac:
             fecha_nacimiento = st.date_input("Fecha de Nacimiento", min_value=fecha_minimi_1935, 
@@ -179,6 +183,7 @@ def formulario_morb_extenso(db=DB_PATH):
         with col_estado_civil:
             estado_civil = st.selectbox("Estado Civil", ["Soltero/a", "Casado/a", "Divorciado/a", "Viudo/a"], key="estado_civil_morb_extenso")
         st.markdown("**Dirección de Hogar**")
+        # quinta fila
         col_pais, col_estado, col_muni = st.columns(3)
         with col_pais:
             pais_hogar = st.text_input("País (Opcional)", max_chars=56, key="pais_hogar_morb_extenso", placeholder="Venezuela")
@@ -186,6 +191,7 @@ def formulario_morb_extenso(db=DB_PATH):
             estado_hogar = st.text_input("Estado (Opcional)", max_chars=56, key="estado_hogar_morb_extenso", placeholder="Anzoátegui")
         with col_muni:
             municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_morb_extenso", placeholder="Simón Rodríguez")
+        # sexta fila
         col_parroquia, col_city = st.columns(2)
         with col_parroquia:
             parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_morb_extenso", placeholder="Edmundo Barrios (zona norte)")
@@ -193,6 +199,7 @@ def formulario_morb_extenso(db=DB_PATH):
             ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="cuidad_hogar_morb_extenso", placeholder="El Tigre")
         direccion_exacta_hogar = st.text_area("Dirección Exacta", max_chars=150, key="direccion_exacta_hogar_morb_extenso", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
         st.markdown("**Dirección de Nacimiento**")
+        # septima fila
         col_pais_2, col_estado_2, col_muni_2 = st.columns(3)
         with col_pais_2:
             pais_nacimiento = st.text_input("País (Opcional)", max_chars=56, key="pais_nacimiento_morb_extenso", placeholder="Venezuela")
@@ -200,12 +207,14 @@ def formulario_morb_extenso(db=DB_PATH):
             estado_nacimiento = st.text_input("Estado (Opcional)", max_chars=56, key="estado_nacimiento_morb_extenso", placeholder="Anzoátegui")
         with col_muni_2:
             municipio_nacimiento = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_nacimiento_morb_extenso", placeholder="Simón Rodríguez")
+        # octava fila
         col_city_2, col_parroquia_2 = st.columns(2)
         with col_parroquia_2:
             parroquia_nacimiento = st.text_input("Parroquia (Opcional)", max_chars=56, key="parroquia_nacimiento_morb_extenso", placeholder="Edmundo Barrios")
         with col_city_2:
             ciudad_nacimiento = st.text_input("Ciudad", max_chars=56, key="cuidad_nacimiento_morb_extenso", placeholder="El Tigre")
         direccion_exacta_nacimiento = st.text_area("Dirección Exacta (Opcional)", max_chars=150, key="direccion_exacta_nacimiento_morb_extenso", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
+        # botones
         col_reg, col_limp = st.columns([30, 1])
         with col_reg:
             registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
