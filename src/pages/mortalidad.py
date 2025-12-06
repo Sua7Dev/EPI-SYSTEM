@@ -234,7 +234,13 @@ def formulario_neonatal(db=DB_PATH):
             if registrar:
                 # guardar fechas formateadas y validar
                 if fecha_defuncion < fecha_nacimiento or fecha_defuncion > fecha_nacimiento + relativedelta(days=28):
-                    st.error("La defuncion tiene que estar entre los primeros 28 dias del nacimiento.", icon=":material/error:")
+                    st.error("La defuncion tiene que estar entre los primeros 28 días del nacimiento.", icon=":material/error:")
+                    return
+                elif tiempo == "Días" and edad > 28:
+                    st.error("EL tiempo de edad no debe ser mayor a 28 días.", icon=":material/error:")
+                    return
+                elif tiempo == "Horas" and edad > 672:
+                    st.error("EL tiempo de edad no debe ser mayor a 672 Horas (28 días).", icon=":material/error:")
                     return
 
                 fecha_formateada_nacimiento = fecha_nacimiento.strftime("%d/%m/%Y")
