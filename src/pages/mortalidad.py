@@ -151,10 +151,13 @@ def formulario_neonatal(db=DB_PATH):
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Neonatal", anchor=False)
         with st.form("form_neonatal"):
+            # variables de rangos de fechas posibles
             fecha_minima = datetime.date.today() - relativedelta(months=1)
             fecha_maxima = datetime.date.today() + relativedelta(months=1)
             fecha_maxima_hoy = datetime.date.today()
             fecha_minimi_1935 = datetime.date(1935, 1, 1)
+
+            # primera fila
             col_hc, col_nombres, col_madre = st.columns(3)
             with col_hc:
                 historia_clinica = st.text_input("Historia clínica", max_chars=8, key="historia_clinica_neonatal", placeholder="Ej. 12345678")
@@ -177,9 +180,13 @@ def formulario_neonatal(db=DB_PATH):
                 hora_ingreso = st.time_input("Hora de ingreso", key="hora_ingreso_neonatal", value="now")
             
             col_fecha_defuncion, col_hora_defuncion, col_edad, col_tiempo = st.columns(4)
+
+            veintiocho_dias = fecha_nacimiento + relativedelta(days=28)
+            # Limitar el selector a la ventana entre la fecha de nacimiento y 28 días después.
+            max_defuncion = min(veintiocho_dias, fecha_maxima) if 'fecha_maxima' in locals() else veintiocho_dias
             with col_fecha_defuncion:
                 fecha_defuncion = st.date_input("Fecha de defunción", format='DD/MM/YYYY', min_value=fecha_minimi_1935, 
-                                                max_value=fecha_maxima_hoy, key="fecha_defuncion_neonatal")
+                                                max_value=max_defuncion, key="fecha_defuncion_neonatal")
             with col_hora_defuncion:
                 hora_defuncion = st.time_input("Hora de defunción", key="hora_defuncion_neonatal", value="now")
             with col_edad:
@@ -225,6 +232,11 @@ def formulario_neonatal(db=DB_PATH):
                 limpiar = st.form_submit_button("", icon=":material/cleaning_services:", on_click=limpiar_campos_neonatal, 
                                                 type="tertiary", help="Limpia todos los campos del formulario.")
             if registrar:
+                # guardar fechas formateadas y validar
+                if fecha_defuncion < fecha_nacimiento or fecha_defuncion > fecha_nacimiento + relativedelta(days=28):
+                    st.error("La defuncion tiene que estar entre los primeros 28 dias del nacimiento.", icon=":material/error:")
+                    return
+
                 fecha_formateada_nacimiento = fecha_nacimiento.strftime("%d/%m/%Y")
                 fecha_formateada_ingreso = fecha_ingreso.strftime("%d/%m/%Y")
                 fecha_formateada_defuncion = fecha_defuncion.strftime("%d/%m/%Y")

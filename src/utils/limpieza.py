@@ -132,20 +132,25 @@ def limpiar_campos_infantil():
     hora_ingreso_infantil()
     segunda_parte()
 
+    #fecha_minima = datetime.date.today() - relativedelta(months=1)
+    #fecha_maxima = datetime.date.today() + relativedelta(months=1)
+    #fecha_maxima_hoy = datetime.date.today()
+    #fecha_minimi_1935 = datetime.date(1935, 1, 1)
 def limpiar_campos_neonatal():
     fecha_minima = datetime.datetime.now().date() - relativedelta(months=1)
     min_value=0
     value_min2=0.00
     value=datetime.datetime.now().time()
+    fecha_maxima_hoy = datetime.date.today()
     def primera_parte():
         st.session_state.historia_clinica_neonatal  = ""
         st.session_state.nombres_apellidos_neonatal = ""
         st.session_state.nombre_madre_neonatal = ""
-        st.session_state.fecha_nacimiento_neonatal = fecha_minima
+        st.session_state.fecha_nacimiento_neonatal = fecha_maxima_hoy
         st.session_state.hora_nacimiento_neonatal = value
-        st.session_state.fecha_ingreso_neonatal = fecha_minima
+        st.session_state.fecha_ingreso_neonatal = fecha_maxima_hoy
         st.session_state.hora_ingreso_neonatal = value # revisar
-        st.session_state.fecha_defuncion_neonatal = fecha_minima
+        st.session_state.fecha_defuncion_neonatal = fecha_maxima_hoy
         st.session_state.hora_defuncion_neonatal = value
         st.session_state.edad_neonatal = min_value
         st.session_state.tiempo_neonatal = "Horas"

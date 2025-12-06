@@ -4,7 +4,7 @@ import time
 import os
 import sys
 from pathlib import Path
-
+from utils.verificaciones import obtener_info_usuario
 from utils.contra import borro_cassette
 from utils.verificaciones import guardar_usuario
 from utils.validaciones import validar_texto, validar_nombre_usuario, val_mail, val_solo_numeros, validar_contraseña, mayor_de_edad, validar_cinco_espacios
@@ -35,6 +35,23 @@ DB_PATH = os.getenv("hospital.db", "hospital.db")
 # ------------------- Formulario de registro -------------------
 def registro_formulario():
     try:
+        
+        if "autenticado_usuario" not in st.session_state:
+            st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+            return
+        nombre_usuario = st.session_state["autenticado_usuario"]
+        info_usuario = obtener_info_usuario(nombre_usuario)
+        if not info_usuario:
+            st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
+            return
+        rol_usuario = info_usuario["rol"]
+        id_administrador = info_usuario["id_administrador"]
+        
+        if rol_usuario != "Administrador" and not id_administrador:
+            st.error("Acceso denegado. Solo el administrador puede acceder a este formulario.", icon=":material/lock:")
+            return
+
+        
         st.header(':material/group_add: Registro De Usuarios', divider='gray', anchor=False)
         with st.form(key='registro_form'):
             # Primera fila
