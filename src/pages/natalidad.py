@@ -133,7 +133,6 @@ def formulario_natalidad():
                                                     help="Eliminar registros seleccionados.")
                             if btn_eliminar:
                                 confirmar_eliminar(eliminar_registros_natalidad, edited_df)
-                        #  eliminar_registros_natalidad(edited_df)
                     
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Natalidad", anchor=False)

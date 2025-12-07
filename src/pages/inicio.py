@@ -132,8 +132,8 @@ def graficas_dashboard():
                 color=alt.value("black")
             )
             st.altair_chart(donut + text, use_container_width=True)
-def dashboard():
 
+def dashboard():
     logo(tamano="100%")
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder al inicio.", icon=":material/error:")
