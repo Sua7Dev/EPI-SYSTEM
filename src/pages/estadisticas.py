@@ -44,8 +44,6 @@ def mostrar_stats():
         "| :material/skull: Mortalidad |",
         "| :material/pregnant_woman: Natalidad |",
         "| :material/personal_injury: Morbilidad |",
-        "| :material/coronavirus: Epi14 Semanal |",
-        "| :material/calendar_add_on: Registro Diario |"
     ])    #, width=500
     #with tabs[0]:
         #global_stats()
@@ -57,12 +55,6 @@ def mostrar_stats():
         pass
     with tabs[2]:
         morbilidad_stats()
-        pass
-    with tabs[3]:
-        epi14_stats()
-        pass
-    with tabs[4]:
-        reg_diario_stats()
         pass
     copyright_footer_dos("Equipo Investigador", bottom="-200px")
 

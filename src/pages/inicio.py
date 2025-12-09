@@ -78,8 +78,6 @@ def graficas_dashboard():
                     'total_mortalidad',
                     'total_natalidad',
                     'total_morbilidad',
-                    'total_epi14',
-                    'total_registro_diario'
                 ],
                 var_name='categoria',
                 value_name='total'
@@ -88,8 +86,6 @@ def graficas_dashboard():
                 'total_mortalidad': 'Mortalidad',
                 'total_natalidad': 'Natalidad',
                 'total_morbilidad': 'Morbilidad',
-                'total_epi14': 'EPI14-Semanal',
-                'total_registro_diario': 'Registro Diario'
             }
             data['categoria'] = data['categoria'].map(categoria_map)
 

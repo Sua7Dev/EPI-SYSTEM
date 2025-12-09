@@ -458,10 +458,13 @@ def create_table_morbilidad(conn):
         CREATE TABLE IF NOT EXISTS morbilidad (
             id_morb INTEGER PRIMARY KEY AUTOINCREMENT,
             id_paciente INTEGER,
-            sexo TEXT,
+            id_direccion_hogar INTEGER,
+            nombres_apellidos TEXT,
+            edad INTEGER,
             diagnostico TEXT,
             fecha_registro_formulario DATE,
-            FOREIGN KEY (id_paciente) REFERENCES persona_paciente(id_paciente) ON DELETE CASCADE
+            FOREIGN KEY (id_paciente) REFERENCES persona_paciente(id_paciente) ON DELETE CASCADE,
+            FOREIGN KEY (id_direccion_hogar) REFERENCES direccion(id_direccion) ON DELETE CASCADE
         );
         ''')
     except sqlite3.Error as e:
@@ -601,16 +604,16 @@ def create_all_tables(db='hospital.db'):#
         create_table_mortalidad_infantil(conn)
         create_table_mortalidad_neonatal(conn)
         create_table_mortalidad_materna(conn)
-        create_table_mortalidad_mensual(conn)
-        create_table_mortalidad_mensual_infantil(conn)
-        create_table_mortalidad_mensual_neonatal(conn)
-        create_table_mortalidad_mensual_general(conn)
+        #create_table_mortalidad_mensual(conn)
+        #create_table_mortalidad_mensual_infantil(conn)
+        #create_table_mortalidad_mensual_neonatal(conn)
+        #create_table_mortalidad_mensual_general(conn)
         create_table_morbilidad(conn)
-        create_table_morb_extenso(conn)
-        create_table_morb_simplifica(conn)
+        #create_table_morb_extenso(conn)
+        #create_table_morb_simplifica(conn)
         create_table_natalidad(conn)
-        create_table_epi14_semanal(conn)
-        create_table_registro_diario(conn)
+        #create_table_epi14_semanal(conn)
+        #create_table_registro_diario(conn)
         conn.commit()
         conn.close()
     except sqlite3.Error as e:

@@ -22,8 +22,8 @@ def paginas():
             st.Page("pages/mortalidad.py", title="Mortalidad", icon=":material/skull:"),
             st.Page("pages/natalidad.py", title="Natalidad", icon=":material/pregnant_woman:"),
             st.Page("pages/morbilidad.py", title="Morbilidad", icon=":material/personal_injury:"),
-            st.Page("pages/epi14.py", title="Epi14", icon=":material/coronavirus:"),
-            st.Page("pages/registro_diario.py", title="Registro Diario", icon=":material/calendar_add_on:"),
+            #st.Page("pages/epi14.py", title="Epi14", icon=":material/coronavirus:"),
+            #st.Page("pages/registro_diario.py", title="Registro Diario", icon=":material/calendar_add_on:"),
             st.Page("pages/estadisticas.py", title="Estadisticas", icon=":material/bar_chart_4_bars:"),
         ],
     }

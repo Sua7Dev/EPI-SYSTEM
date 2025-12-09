@@ -10,7 +10,7 @@ DB_PATH = os.getenv("hospital.db", "hospital.db")
 
 def obtener_totales_por_anio():
     """
-    Retrieve yearly totals for mortality, natality, morbidity, epi14_semanal, and registro_diario.
+    Retrieve yearly totals for mortality, natality and morbidity.
     Accepts both 'dd/mm/yyyy' and 'YYYY-MM-DD' formats for old/new records.
     """
     try:
@@ -23,9 +23,7 @@ def obtener_totales_por_anio():
                     END AS anio,
                     COUNT(*) AS total_mortalidad,
                     0 AS total_natalidad,
-                    0 AS total_morbilidad,
-                    0 AS total_epi14,
-                    0 AS total_registro_diario
+                    0 AS total_morbilidad
                 FROM mortalidad
                 WHERE fecha_defuncion IS NOT NULL
                 GROUP BY anio
@@ -39,9 +37,7 @@ def obtener_totales_por_anio():
                     END AS anio,
                     0 AS total_mortalidad,
                     SUM(varones + hembras) AS total_natalidad,
-                    0 AS total_morbilidad,
-                    0 AS total_epi14,
-                    0 AS total_registro_diario
+                    0 AS total_morbilidad
                 FROM natalidad
                 WHERE fecha IS NOT NULL
                 GROUP BY anio
@@ -52,40 +48,9 @@ def obtener_totales_por_anio():
                     strftime('%Y', fecha_registro_formulario) AS anio,
                     0 AS total_mortalidad,
                     0 AS total_natalidad,
-                    COUNT(*) AS total_morbilidad,
-                    0 AS total_epi14,
-                    0 AS total_registro_diario
+                    COUNT(*) AS total_morbilidad
                 FROM morbilidad
                 WHERE fecha_registro_formulario IS NOT NULL
-                GROUP BY anio
-
-                UNION ALL
-
-                SELECT 
-                    strftime('%Y', fecha_registro_formulario) AS anio,
-                    0 AS total_mortalidad,
-                    0 AS total_natalidad,
-                    0 AS total_morbilidad,
-                    SUM(numero) AS total_epi14,
-                    0 AS total_registro_diario
-                FROM epi14_semanal
-                WHERE fecha_registro_formulario IS NOT NULL
-                GROUP BY anio
-
-                UNION ALL
-
-                SELECT 
-                    CASE 
-                        WHEN fd LIKE '__/__/____' THEN substr(fd, 7, 4)
-                        ELSE strftime('%Y', fd)
-                    END AS anio,
-                    0 AS total_mortalidad,
-                    0 AS total_natalidad,
-                    0 AS total_morbilidad,
-                    0 AS total_epi14,
-                    COUNT(*) AS total_registro_diario
-                FROM registro_diario
-                WHERE fd IS NOT NULL
                 GROUP BY anio
             """
             df = pd.read_sql_query(query, conn)
@@ -94,6 +59,7 @@ def obtener_totales_por_anio():
             df = df.groupby('anio').sum().reset_index()
             df = df.sort_values('anio')
             return df
+
     except sqlite3.Error as e:
         st.error(f"Error al obtener totales por año: {e}", icon=":material/error:")
         return pd.DataFrame()
@@ -101,43 +67,31 @@ def obtener_totales_por_anio():
 
 def obtener_top_areas_registro(top_n=3):
     """
-    Retrieve the top N areas with the most records across all categories.
-    Returns a list of dictionaries with area names and their totals.
+    Retrieve the top N areas with the most records
+    (Only mortalidad, natalidad, morbilidad).
     """
     try:
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
-            # Total mortality (count of records in mortalidad table)
+
             cursor.execute("SELECT COUNT(*) FROM mortalidad")
             total_mortalidad = cursor.fetchone()[0] or 0
 
-            # Total natality (sum of varones and hembras in natalidad table)
             cursor.execute("SELECT SUM(varones + hembras) FROM natalidad")
             total_natalidad = cursor.fetchone()[0] or 0
 
-            # Total morbidity (count of records in morbilidad table)
             cursor.execute("SELECT COUNT(*) FROM morbilidad")
             total_morbilidad = cursor.fetchone()[0] or 0
 
-            # Total epi14 (sum of numero in epi14_semanal table)
-            cursor.execute("SELECT SUM(numero) FROM epi14_semanal")
-            total_epi14 = cursor.fetchone()[0] or 0
-
-            # Total registro_diario (count of records in registro_diario table)
-            cursor.execute("SELECT COUNT(*) FROM registro_diario")
-            total_registro_diario = cursor.fetchone()[0] or 0
-
-            # Create list of areas and their totals
             areas = [
                 {'area': 'Mortalidad', 'total': total_mortalidad},
                 {'area': 'Natalidad', 'total': total_natalidad},
-                {'area': 'Morbilidad', 'total': total_morbilidad},
-                {'area': 'EPI14-Semanal', 'total': total_epi14},
-                {'area': 'Registro Diario', 'total': total_registro_diario}
+                {'area': 'Morbilidad', 'total': total_morbilidad}
             ]
-            # Sort by total in descending order and take top N
+
             areas = sorted(areas, key=lambda x: x['total'], reverse=True)[:top_n]
             return areas
+
     except sqlite3.Error as e:
         st.error(f"Error al obtener top áreas: {e}", icon=":material/error:")
         return []
@@ -148,19 +102,15 @@ def obtener_totales():
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
 
-            # Total mortality (count of records in mortalidad table)
             cursor.execute("SELECT COUNT(*) FROM mortalidad")
             total_mortalidad = cursor.fetchone()[0] or 0
 
-            # Total natality (sum of varones and hembras in natalidad table)
             cursor.execute("SELECT SUM(varones + hembras) FROM natalidad")
             total_natalidad = cursor.fetchone()[0] or 0
 
-            # Total morbidity (count of records in morbilidad table)
             cursor.execute("SELECT COUNT(*) FROM morbilidad")
             total_morbilidad = cursor.fetchone()[0] or 0
 
-            # Total general (sum of mortality, natality, and morbidity)
             total_general = total_mortalidad + total_natalidad + total_morbilidad
 
             return {
@@ -169,6 +119,7 @@ def obtener_totales():
                 'total_natalidad': total_natalidad,
                 'total_morbilidad': total_morbilidad
             }
+
     except sqlite3.Error as e:
         st.error(f"Error al calcular totales: {e}", icon=":material/error:")
         return {

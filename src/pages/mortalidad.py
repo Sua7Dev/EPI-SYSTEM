@@ -1161,8 +1161,7 @@ def mostrar_morta():
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
         return
-    tab1, tab2, tab3 = st.tabs(["| :material/skull: Mortalidad |", 
-                                "| :material/skull_list: Mortalidad Mensual |", 
+    tab1, tab2 = st.tabs(["| :material/skull: Mortalidad |", 
                                 "| :material/article_shortcut: Reporte General |"])
     with tab1:
         tipo_muerte = st.selectbox(
@@ -1178,21 +1177,21 @@ def mostrar_morta():
         func_normal = formularios_normales.get(tipo_muerte)
         if func_normal:
             func_normal()
+    #with tab2: # deprecado
+    #    tipo_muerte_mensual = st.selectbox(
+    #        ":material/gesture_select: Selecciona el tipo de registro:",
+    #        options=["Mortalidad Mensual Infantil", "Mortalidad Mensual Neonatal", "Mortalidad Mensual General"],
+    #        key="tipo_muerte_mensual"
+    #    )
+    #    formularios_mensuales = {
+    #        "Mortalidad Mensual Infantil": formulario_mensual_infantil,
+    #        "Mortalidad Mensual Neonatal": formulario_mensual_neonatal,
+    #        "Mortalidad Mensual General": formulario_mensual_general
+    #    }
+    #    func_mensual = formularios_mensuales.get(tipo_muerte_mensual)
+    #    if func_mensual:
+    #        func_mensual()
     with tab2:
-        tipo_muerte_mensual = st.selectbox(
-            ":material/gesture_select: Selecciona el tipo de registro:",
-            options=["Mortalidad Mensual Infantil", "Mortalidad Mensual Neonatal", "Mortalidad Mensual General"],
-            key="tipo_muerte_mensual"
-        )
-        formularios_mensuales = {
-            "Mortalidad Mensual Infantil": formulario_mensual_infantil,
-            "Mortalidad Mensual Neonatal": formulario_mensual_neonatal,
-            "Mortalidad Mensual General": formulario_mensual_general
-        }
-        func_mensual = formularios_mensuales.get(tipo_muerte_mensual)
-        if func_mensual:
-            func_mensual()
-    with tab3:
         st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
         col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
         with col_izq:
