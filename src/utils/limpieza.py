@@ -181,27 +181,27 @@ def limpiar_campos_morb_extenso():
     fecha_maxima_hoy = datetime.date.today()
     fecha_minima = datetime.datetime.now().date() - relativedelta(months=1)
     min_value = 0
-    st.session_state.hc_morb_extenso = ""
+    #st.session_state.hc_morb_extenso = ""
     st.session_state.nombres_apellidos_morb_extenso = ""
-    st.session_state.cedula_morb_extenso = "" 
-    st.session_state.telefono_morb_extenso = "" 
-    st.session_state.diagnostico_morb_extenso = ""
+    #st.session_state.cedula_morb_extenso = "" 
+    #st.session_state.telefono_morb_extenso = "" 
     st.session_state.edad_morb_extenso = min_value
-    st.session_state.sexo_morb_extenso = "Masculino"
-    st.session_state.fecha_nacimiento_morb_extenso = fecha_maxima_hoy
-    st.session_state.estado_civil_morb_extenso = "Soltero/a" 
+    st.session_state.diagnostico_morb_extenso = ""
+    #st.session_state.sexo_morb_extenso = "Masculino"
+    #st.session_state.fecha_nacimiento_morb_extenso = fecha_maxima_hoy
+    #st.session_state.estado_civil_morb_extenso = "Soltero/a" 
     st.session_state.pais_hogar_morb_extenso = ""
     st.session_state.estado_hogar_morb_extenso = ""
     st.session_state.municipio_hogar_morb_extenso = ""
     st.session_state.parroquia_hogar_morb_extenso = ""
     st.session_state.cuidad_hogar_morb_extenso = ""
     st.session_state.direccion_exacta_hogar_morb_extenso = ""
-    st.session_state.pais_nacimiento_morb_extenso = ""
-    st.session_state.estado_nacimiento_morb_extenso = ""
-    st.session_state.municipio_nacimiento_morb_extenso = ""
-    st.session_state.parroquia_nacimiento_morb_extenso = ""
-    st.session_state.cuidad_nacimiento_morb_extenso = ""
-    st.session_state.direccion_exacta_nacimiento_morb_extenso = ""
+    #st.session_state.pais_nacimiento_morb_extenso = ""
+    #st.session_state.estado_nacimiento_morb_extenso = ""
+    #st.session_state.municipio_nacimiento_morb_extenso = ""
+    #st.session_state.parroquia_nacimiento_morb_extenso = ""
+    #st.session_state.cuidad_nacimiento_morb_extenso = ""
+    #st.session_state.direccion_exacta_nacimiento_morb_extenso = ""
 
 def limpiar_campos_morb_simplificado():
     fecha_minima = datetime.datetime.now().date() - relativedelta(months=1)

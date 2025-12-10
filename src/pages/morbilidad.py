@@ -64,6 +64,8 @@ def data_editor_morb_extenso(df):
         edited_df = edited_df.reset_index(drop=True)
         edited_df = pd.concat([edited_df, original_ids], axis=1)
     return edited_df
+
+# deprecado
 def data_editor_morb_simplifica(df_filtrado):
     df_filtrado[' '] = False
 

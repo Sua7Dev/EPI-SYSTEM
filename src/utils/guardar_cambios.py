@@ -4,7 +4,8 @@ import sqlite3
 import datetime
 import os
 from utils.visuales import notificacion_cambios
-from utils.validaciones import validar_texto, val_texynum, val_notas, val_num_espacios, val_solo_numeros
+from utils.validaciones import (validar_texto, val_texynum, val_notas, val_num_espacios, 
+                                val_solo_numeros, validar_cinco_espacios)
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 
 
@@ -425,9 +426,12 @@ def procesar_guardado_morb_extenso(edited_df, DB_PATH=DB_PATH):
                     continue
                 nombres = (row.get("nombres_apellidos") or "").strip()
                 edad = row.get("edad", None)
+                diagnostico = (row.get("diagnostico") or "").strip()
 
                 if not validar_texto(nombres, "Los", "Nombres y apellidos"):
                     return
+                if not validar_cinco_espacios(nombres, "Los", "nombres y apellidos"): return
+                if not val_texynum(diagnostico, "El", "diagnóstico"): return
 
                 # actualizar nombres en morbilidad
                 cursor.execute(
