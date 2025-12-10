@@ -44,8 +44,12 @@ def obtener_totales_por_anio():
 
                 UNION ALL
 
-                SELECT 
-                    strftime('%Y', fecha_registro_formulario) AS anio,
+                SELECT
+                    CASE 
+                        WHEN fecha_registro_formulario LIKE '__/__/____'
+                            THEN substr(fecha_registro_formulario, 7, 4)
+                        ELSE substr(fecha_registro_formulario, 1, 4)
+                    END AS anio,
                     0 AS total_mortalidad,
                     0 AS total_natalidad,
                     COUNT(*) AS total_morbilidad

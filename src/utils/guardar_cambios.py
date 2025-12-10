@@ -150,12 +150,31 @@ def procesar_guardado_cambios_mortalidad_infantil(edited_df, DB_PATH=DB_PATH):
             nombres_apellidos = row.get("nombres_apellidos", "")
             nombre_madre = row.get("nombre_madre", "")
             # Validaciones (adaptadas de mortalidad.py)
-            if not val_num_espacios(historia_clinica, "La", "Historia clínica"):
+            #if not val_num_espacios(historia_clinica, "La", "Historia clínica"):
+            #    return
+            #if not validar_texto(nombres_apellidos, "Los", "Nombres y apellidos"):
+            #    return
+            #if not validar_texto(nombre_madre, "Los", "Nombre de la madre"):
+            #    return
+            idx_ingreso = row.get("idx_ingreso", "")
+            idx_defuncion = row.get("idx_ingreso", "")
+
+            # nuevas
+            if not val_num_espacios(historia_clinica, "La", "historia clinica"):
                 return
-            if not validar_texto(nombres_apellidos, "Los", "Nombres y apellidos"):
+            elif not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"):
                 return
-            if not validar_texto(nombre_madre, "Los", "Nombre de la madre"):
+            elif not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"):
                 return
+            elif not validar_texto(nombre_madre, "El", "nombre de la madre"):
+                return
+            elif not validar_cinco_espacios(nombre_madre, "El", "nombre de la madre"):
+                return
+            elif not val_texynum(idx_ingreso, "La", "IDX de ingreso"):
+                return
+            elif not val_texynum(idx_defuncion, "La", "IDX de defuncion"):
+                return   
+            
             # Actualización dinámica
             updates = {
                 'mortalidad': {'fields': [], 'values': []},
@@ -215,15 +234,25 @@ def procesar_guardado_cambios_mortalidad_materna(edited_df, DB_PATH=DB_PATH):
             id_m = row.get("id")
             historia_clinica = str(row.get("historia_clinica", ""))
             nombres_apellidos = row.get("nombres_apellidos", "")
+            idx_ingreso = row.get("idx_ingreso", "")
+            idx_defuncion = row.get("idx_ingreso", "")
+
             # Validaciones (adaptadas de mortalidad.py)
-            if not val_num_espacios(historia_clinica, "La", "Historia clínica"):
-                st.error(f"Fila ID {id_m}: Historia clínica inválida", icon=":material/error:")
-                errores += 1
-                continue
-            if not validar_texto(nombres_apellidos, "Los", "Nombres y apellidos"):
-                st.error(f"Fila ID {id_m}: Nombres y apellidos inválidos", icon=":material/error:")
-                errores += 1
-                continue
+            # nuevas
+            if not val_num_espacios(historia_clinica, "La", "historia clinica"):
+                return
+            elif not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"):
+                return
+            elif not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"):
+                return
+            #elif not validar_texto(nombre_madre, "El", "nombre de la madre"):
+            #    return
+            #elif not validar_cinco_espacios(nombre_madre, "El", "nombre de la madre"):
+                return
+            elif not val_texynum(idx_ingreso, "La", "IDX de ingreso"):
+                return
+            elif not val_texynum(idx_defuncion, "La", "IDX de defuncion"):
+                return  
             # Actualización dinámica
             updates = {
                 'mortalidad': {'fields': [], 'values': []},

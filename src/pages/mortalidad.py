@@ -44,7 +44,10 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
 
 
     columns_to_display = [col for col in df_filtrado.columns if col not in [" ", "id"]]
-    columns_to_show = [" "] + columns_to_display + (["id"] if "id" in df_filtrado.columns else [])
+
+
+    columns_to_show = [" "] + columns_to_display
+
     df_filtrado = df_filtrado[columns_to_show]
 
 
@@ -54,14 +57,14 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
         "historia_clinica": st.column_config.TextColumn("Historia clínica", disabled=True),
         "nombres_apellidos": st.column_config.TextColumn("Nombres y Apellidos", disabled=(rol_usuario == "Secretario (a)")),
         "nombre_madre": st.column_config.TextColumn("Nombre de la madre", disabled=(rol_usuario == "Secretario (a)")),
-        "fecha_nacimiento": st.column_config.TextColumn("Fecha de nacimiento", disabled=(rol_usuario == "Secretario (a)")),
-        "hora_nacimiento": st.column_config.TextColumn("Hora de nacimiento", disabled=(rol_usuario == "Secretario (a)")),
-        "fecha_ingreso": st.column_config.TextColumn("Fecha de ingreso", disabled=(rol_usuario == "Secretario (a)")),
-        "hora_ingreso": st.column_config.TextColumn("Hora de ingreso", disabled=(rol_usuario == "Secretario (a)")),
-        "fecha_defuncion": st.column_config.DateColumn("Fecha de defunción", format='DD/MM/YYYY',disabled=(rol_usuario == "Secretario (a)")),
-        "hora_defuncion": st.column_config.TextColumn("Hora de defunción", disabled=(rol_usuario == "Secretario (a)")),
-        "edad": st.column_config.TextColumn("Edad", disabled=(rol_usuario == "Secretario (a)")),
-        "tiempo": st.column_config.TextColumn("Tiempo de edad", disabled=(rol_usuario == "Secretario (a)")),
+        "fecha_nacimiento": st.column_config.TextColumn("Fecha de nacimiento", disabled=True),
+        "hora_nacimiento": st.column_config.TextColumn("Hora de nacimiento", disabled=True),
+        "fecha_ingreso": st.column_config.TextColumn("Fecha de ingreso", disabled=True),
+        "hora_ingreso": st.column_config.TextColumn("Hora de ingreso", disabled=True),
+        "fecha_defuncion": st.column_config.DateColumn("Fecha de defunción", format='DD/MM/YYYY',disabled=True),
+        "hora_defuncion": st.column_config.TextColumn("Hora de defunción", disabled=True),
+        "edad": st.column_config.TextColumn("Edad", disabled=True),
+        "tiempo": st.column_config.TextColumn("Tiempo de edad", disabled=True),
         "idx_ingreso": st.column_config.TextColumn("IDX de ingreso", disabled=(rol_usuario == "Secretario (a)")),
         "idx_defuncion": st.column_config.TextColumn("IDX de defunción", disabled=(rol_usuario == "Secretario (a)")),
         "semanas_gestacion": st.column_config.NumberColumn("Semanas de gestación", min_value=0, step=1, disabled=(rol_usuario == "Secretario (a)")),
@@ -310,7 +313,9 @@ def data_editor_infantil(df, rol_usuario):
 
 
     columns_to_display = [col for col in df.columns if col not in [" ", "id"]]
-    columns_to_show = [" "] + columns_to_display + (["id"] if "id" in df.columns else [])
+
+    columns_to_show = [" "] + columns_to_display
+
     df_filtrado = df[columns_to_show]
 
 
@@ -320,14 +325,14 @@ def data_editor_infantil(df, rol_usuario):
         "historia_clinica": st.column_config.TextColumn("Historia clínica", disabled=True),
         "nombres_apellidos": st.column_config.TextColumn("Nombres y Apellidos", disabled=(rol_usuario == "Secretario (a)")),
         "nombre_madre": st.column_config.TextColumn("Nombre de la madre", disabled=(rol_usuario == "Secretario (a)")),
-        "fecha_nacimiento": st.column_config.TextColumn("Fecha de nacimiento", disabled=(rol_usuario == "Secretario (a)")),
-        "hora_nacimiento": st.column_config.TextColumn("Hora de nacimiento", disabled=(rol_usuario == "Secretario (a)")),
-        "fecha_ingreso": st.column_config.TextColumn("Fecha de ingreso", disabled=(rol_usuario == "Secretario (a)")),
-        "hora_ingreso": st.column_config.TextColumn("Hora de ingreso", disabled=(rol_usuario == "Secretario (a)")),
-        "fecha_defuncion": st.column_config.DateColumn("Fecha de defunción", format='DD/MM/YYYY', disabled=(rol_usuario == "Secretario (a)")),
-        "hora_defuncion": st.column_config.TextColumn("Hora de defunción", disabled=(rol_usuario == "Secretario (a)")),
-        "edad": st.column_config.TextColumn("Edad", disabled=(rol_usuario == "Secretario (a)")),
-        "tiempo": st.column_config.TextColumn("Tiempo de edad", disabled=(rol_usuario == "Secretario (a)")),
+        "fecha_nacimiento": st.column_config.TextColumn("Fecha de nacimiento", disabled=True),
+        "hora_nacimiento": st.column_config.TextColumn("Hora de nacimiento", disabled=True),
+        "fecha_ingreso": st.column_config.TextColumn("Fecha de ingreso", disabled=True),
+        "hora_ingreso": st.column_config.TextColumn("Hora de ingreso", disabled=True),
+        "fecha_defuncion": st.column_config.DateColumn("Fecha de defunción", format='DD/MM/YYYY', disabled=True),
+        "hora_defuncion": st.column_config.TextColumn("Hora de defunción", disabled=True),
+        "edad": st.column_config.TextColumn("Edad", disabled=True),
+        "tiempo": st.column_config.TextColumn("Tiempo de edad", disabled=True),
         "idx_ingreso": st.column_config.TextColumn("IDX de ingreso", disabled=(rol_usuario == "Secretario (a)")),
         "idx_defuncion": st.column_config.TextColumn("IDX de defunción", disabled=(rol_usuario == "Secretario (a)")),
         "semanas_gestacion": st.column_config.NumberColumn("Semanas de gestación", min_value=0, step=1, disabled=(rol_usuario == "Secretario (a)")),
@@ -514,9 +519,9 @@ def formulario_infantil(db=DB_PATH):
                     return
                 elif not validar_cinco_espacios(nombre_madre, "El", "nombre de la madre"):
                     return
-                elif not val_notas(idx_ingreso, "La", "IDX de ingreso"):
+                elif not val_texynum(idx_ingreso, "La", "IDX de ingreso"):
                     return
-                elif not val_notas(idx_defuncion, "La", "IDX de defuncion"):
+                elif not val_texynum(idx_defuncion, "La", "IDX de defuncion"):
                     return                
                 elif not validar_pais(pais_hogar, "El", "pais del hogar"):
                     return
@@ -541,7 +546,10 @@ def data_editor_materna(df, rol_usuario):
         df.insert(0, " ", False)
 
     columns_to_display = [col for col in df.columns if col not in [" ", "id"]]
-    columns_to_show = [" "] + columns_to_display + (["id"] if "id" in df.columns else [])
+
+    # Mostrar solo la columna de check + las columnas permitidas
+    columns_to_show = [" "] + columns_to_display
+
     df = df[columns_to_show]
 
     column_config = {
@@ -549,13 +557,13 @@ def data_editor_materna(df, rol_usuario):
         "fecha_registro_formulario": st.column_config.DateColumn("Fecha registro", disabled=True),
         "historia_clinica": st.column_config.TextColumn("Historia clínica", disabled=True),
         "nombres_apellidos": st.column_config.TextColumn("Nombres y Apellidos", disabled=(rol_usuario == "Secretario (a)")),
-        "fecha_nacimiento": st.column_config.TextColumn("Fecha de nacimiento", disabled=(rol_usuario == "Secretario (a)")),
-        "fecha_ingreso": st.column_config.TextColumn("Fecha de ingreso", disabled=(rol_usuario == "Secretario (a)")),
-        "hora_ingreso": st.column_config.TextColumn("Hora de ingreso", disabled=(rol_usuario == "Secretario (a)")),
-        "fecha_defuncion": st.column_config.DateColumn("Fecha de defunción",format="DD/MM/YYYY", disabled=(rol_usuario == "Secretario (a)")),
-        "hora_defuncion": st.column_config.TextColumn("Hora de defunción", disabled=(rol_usuario == "Secretario (a)")),
-        "edad": st.column_config.TextColumn("Edad", disabled=(rol_usuario == "Secretario (a)")),
-        "tiempo": st.column_config.TextColumn("Tiempo de edad", disabled=(rol_usuario == "Secretario (a)")),
+        "fecha_nacimiento": st.column_config.TextColumn("Fecha de nacimiento", disabled=True),
+        "fecha_ingreso": st.column_config.TextColumn("Fecha de ingreso", disabled=True),
+        "hora_ingreso": st.column_config.TextColumn("Hora de ingreso", disabled=True),
+        "fecha_defuncion": st.column_config.DateColumn("Fecha de defunción",format="DD/MM/YYYY", disabled=True),
+        "hora_defuncion": st.column_config.TextColumn("Hora de defunción", disabled=True),
+        "edad": st.column_config.TextColumn("Edad", disabled=True),
+        "tiempo": st.column_config.TextColumn("Tiempo de edad", disabled=True),
         "idx_ingreso": st.column_config.TextColumn("IDX de ingreso", disabled=(rol_usuario == "Secretario (a)")),
         "idx_defuncion": st.column_config.TextColumn("IDX de defunción", disabled=(rol_usuario == "Secretario (a)")),
         "pais_hogar": st.column_config.TextColumn("País", disabled=(rol_usuario == "Secretario (a)")),
@@ -564,6 +572,7 @@ def data_editor_materna(df, rol_usuario):
         "parroquia_hogar": st.column_config.TextColumn("Parroquia", disabled=(rol_usuario == "Secretario (a)")),
         "ciudad_hogar": st.column_config.TextColumn("Ciudad", disabled=(rol_usuario == "Secretario (a)")),
         "direccion_exacta_hogar": st.column_config.TextColumn("Dirección Exacta", disabled=(rol_usuario == "Secretario (a)")),
+        "direccion": st.column_config.TextColumn("Dirección", disabled=True),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "registrado_por": st.column_config.TextColumn("Registrado por", disabled=True),
     }
@@ -722,9 +731,9 @@ def formulario_materna(db=DB_PATH):
                     return
                 elif not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"):
                     return
-                elif not val_notas(idx_ingreso, "La", "IDX de ingreso"):
+                elif not val_texynum(idx_ingreso, "La", "IDX de ingreso"):
                     return
-                elif not val_notas(idx_defuncion, "La", "IDX de defuncion"):
+                elif not val_texynum(idx_defuncion, "La", "IDX de defuncion"):
                     return                
                 elif not validar_pais(pais_hogar, "El", "pais del hogar"):
                     return

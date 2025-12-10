@@ -16,6 +16,8 @@ def total_casos_por_ano():
     
     df['fecha'] = pd.to_datetime(df['fecha'], errors='coerce')
     df['year'] = df['fecha'].dt.year
+    df['year'] = df['year'].astype('Int64')
+
 
     years = sorted(df['year'].dropna().unique().tolist())
     if not years:
@@ -111,6 +113,8 @@ def comparacion_varones_hembras():
 
     df['fecha'] = pd.to_datetime(df['fecha'], errors='coerce')
     df['year'] = df['fecha'].dt.year
+    df['year'] = df['year'].astype('Int64')
+
 
     bar_data = df.groupby('year')[['varones', 'hembras']].sum().reset_index()
     bar_data_male = bar_data[['year', 'varones']].rename(columns={'varones': 'count'})
@@ -171,16 +175,16 @@ def comparacion_varones_hembras():
 
 
 def natalidad_stats():
-    st.header(":material/baby_changing_station: Partos/Cesáreas/Peh", anchor=False, divider="gray")
+    st.subheader(":material/baby_changing_station: Partos/Cesáreas/Peh", anchor=False, divider="gray")
     comparacion_partos()    
   
     col_izq, _, col_der = st.columns([5, 0.1, 5])
     with col_izq:
-        st.header("⚥ Nacimientos hembras/varones", anchor=False, divider="gray")
+        st.subheader("⚥ Nacimientos hembras/varones", anchor=False, divider="gray")
         comparacion_varones_hembras()  
 
     with col_der:
-        st.header(":material/event_note: Total de nacimientos", anchor=False, divider="gray")
+        st.subheader(":material/event_note: Total de nacimientos", anchor=False, divider="gray")
         total_casos_por_ano()
 
      

@@ -202,14 +202,14 @@ def mortalidad_general():
     """Sección general con todas las gráficas"""
     col_casos, col_categoria = st.columns([6, 4])
     with col_casos:
-        st.header(":material/line_axis: Crecimiento", anchor=False)#, divider="gray"
+        st.subheader(":material/line_axis: Crecimiento", anchor=False)#, divider="gray"
         morta_growth_chart()
     with col_categoria:
-        st.header(":material/tv_options_edit_channels: Categorías", anchor=False)#, divider="gray"
+        st.subheader(":material/tv_options_edit_channels: Categorías", anchor=False)#, divider="gray"
         morta_categ_pie_chart()
     _, col_ultimo_ano, _ = st.columns([0.37, 2.8, 1.07])
     with col_ultimo_ano:
-        st.header(":material/event_note: Por año", anchor=False)#, divider="gray"
+        st.subheader(":material/event_note: Por año", anchor=False)#, divider="gray"
         morta_ultimo_ano_chart()
 
 

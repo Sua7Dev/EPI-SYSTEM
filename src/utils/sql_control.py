@@ -624,12 +624,19 @@ def operaciones_sql_neonatal(accion, datos_registro=None, db=DB_PATH):
                            m.fecha_ingreso, m.hora_ingreso, m.fecha_defuncion, m.hora_defuncion, pp.edad,
                            m.idx_ingreso, m.idx_defuncion, t.nombre_madre, t.hora_nacimiento,
                            t.semanas_gestacion, t.peso, t.talla,
-                           COALESCE(p.nombre || ', ', '') || 
-                           COALESCE(e.nombre || ', ', '') || 
-                           COALESCE(c.nombre || ', ', '') || 
-                           COALESCE(mu.nombre || ', ', '') || 
-                           COALESCE(par.nombre || ', ', '') || 
-                           d.descripcion AS direccion
+                            TRIM(
+                                REPLACE(
+                                    (
+                                        CASE WHEN p.nombre IS NOT NULL AND p.nombre <> 'No disponible' THEN p.nombre || ', ' ELSE '' END ||
+                                        CASE WHEN e.nombre IS NOT NULL AND e.nombre <> 'No disponible' THEN e.nombre || ', ' ELSE '' END ||
+                                        CASE WHEN c.nombre IS NOT NULL AND c.nombre <> 'No disponible' THEN c.nombre || ', ' ELSE '' END ||
+                                        CASE WHEN mu.nombre IS NOT NULL AND mu.nombre <> 'No disponible' THEN mu.nombre || ', ' ELSE '' END ||
+                                        CASE WHEN par.nombre IS NOT NULL AND par.nombre <> 'No disponible' THEN par.nombre || ', ' ELSE '' END ||
+                                        CASE WHEN d.descripcion IS NOT NULL AND d.descripcion <> 'No disponible' THEN d.descripcion ELSE '' END
+                                    ),
+                                    ', ,', ','
+                                )
+                            ) AS direccion
                     FROM mortalidad_neonatal t
                     JOIN mortalidad m ON t.id_m = m.id_m
                     JOIN persona_paciente pp ON m.id_paciente = pp.id_paciente
@@ -812,24 +819,31 @@ def operaciones_sql_infantil(accion, datos_registro=None, db=DB_PATH):
             cursor = conn.cursor()
             if accion == "cargar":
                 query = """
-                    SELECT m.id_m AS id, m.historia_clinica, m.nombres_apellidos, m.fecha_nacimiento,
-                           m.fecha_ingreso, m.hora_ingreso, m.fecha_defuncion, m.hora_defuncion, pp.edad,
-                           m.idx_ingreso, m.idx_defuncion, t.nombre_madre,
-                           COALESCE(p.nombre || ', ', '') || 
-                           COALESCE(e.nombre || ', ', '') || 
-                           COALESCE(c.nombre || ', ', '') || 
-                           COALESCE(mu.nombre || ', ', '') || 
-                           COALESCE(par.nombre || ', ', '') || 
-                           d.descripcion AS direccion
-                    FROM mortalidad_infantil t
-                    JOIN mortalidad m ON t.id_m = m.id_m
-                    JOIN persona_paciente pp ON m.id_paciente = pp.id_paciente
-                    LEFT JOIN direccion d ON m.id_direccion = d.id_direccion
-                    LEFT JOIN parroquia par ON d.id_parroquia = par.id_parroquia
-                    LEFT JOIN municipio mu ON par.id_municipio = mu.id_municipio
-                    LEFT JOIN ciudad c ON mu.id_ciudad = c.id_ciudad
-                    LEFT JOIN estado e ON c.id_estado = e.id_estado
-                    LEFT JOIN pais p ON e.id_pais = p.id_pais
+                        SELECT m.id_m AS id, m.historia_clinica, m.nombres_apellidos, m.fecha_nacimiento,
+                            m.fecha_ingreso, m.hora_ingreso, m.fecha_defuncion, m.hora_defuncion, pp.edad,
+                            m.idx_ingreso, m.idx_defuncion, t.nombre_madre,
+
+                            TRIM(
+                                    TRIM(
+                                        COALESCE(NULLIF(p.nombre, 'No disponible') || ', ', '') ||
+                                        COALESCE(NULLIF(e.nombre, 'No disponible') || ', ', '') ||
+                                        COALESCE(NULLIF(c.nombre, 'No disponible') || ', ', '') ||
+                                        COALESCE(NULLIF(mu.nombre, 'No disponible') || ', ', '') ||
+                                        COALESCE(NULLIF(par.nombre, 'No disponible') || ', ', '') ||
+                                        COALESCE(NULLIF(d.descripcion, 'No disponible'), '')
+                                    )
+                            , ', ') AS direccion
+                            
+                        FROM mortalidad_infantil t
+                        JOIN mortalidad m ON t.id_m = m.id_m
+                        JOIN persona_paciente pp ON m.id_paciente = pp.id_paciente
+                        LEFT JOIN direccion d ON m.id_direccion = d.id_direccion
+                        LEFT JOIN parroquia par ON d.id_parroquia = par.id_parroquia
+                        LEFT JOIN municipio mu ON par.id_municipio = mu.id_municipio
+                        LEFT JOIN ciudad c ON mu.id_ciudad = c.id_ciudad
+                        LEFT JOIN estado e ON c.id_estado = e.id_estado
+                        LEFT JOIN pais p ON e.id_pais = p.id_pais;
+
                 """
                 return pd.read_sql_query(query, conn)
             elif accion == "registrar" and datos_registro:
@@ -986,14 +1000,20 @@ def operaciones_sql_materna(accion, datos_registro=None, db=DB_PATH):
             if accion == "cargar":
                 query = """
                     SELECT m.id_m AS id, m.historia_clinica, m.nombres_apellidos, m.fecha_nacimiento,
-                           m.fecha_ingreso, m.hora_ingreso, m.fecha_defuncion, m.hora_defuncion, pp.edad,
-                           m.idx_ingreso, m.idx_defuncion,
-                           COALESCE(p.nombre || ', ', '') || 
-                           COALESCE(e.nombre || ', ', '') || 
-                           COALESCE(c.nombre || ', ', '') || 
-                           COALESCE(mu.nombre || ', ', '') || 
-                           COALESCE(par.nombre || ', ', '') || 
-                           d.descripcion AS direccion
+                        m.fecha_ingreso, m.hora_ingreso, m.fecha_defuncion, m.hora_defuncion, pp.edad,
+                        m.idx_ingreso, m.idx_defuncion,
+
+                        TRIM(
+                                TRIM(
+                                    COALESCE(NULLIF(p.nombre, 'No disponible') || ', ', '') ||
+                                    COALESCE(NULLIF(e.nombre, 'No disponible') || ', ', '') ||
+                                    COALESCE(NULLIF(c.nombre, 'No disponible') || ', ', '') ||
+                                    COALESCE(NULLIF(mu.nombre, 'No disponible') || ', ', '') ||
+                                    COALESCE(NULLIF(par.nombre, 'No disponible') || ', ', '') ||
+                                    COALESCE(NULLIF(d.descripcion, 'No disponible'), '')
+                                ),
+                        ', ') AS direccion
+
                     FROM mortalidad_materna t
                     JOIN mortalidad m ON t.id_m = m.id_m
                     JOIN persona_paciente pp ON m.id_paciente = pp.id_paciente
@@ -1002,7 +1022,8 @@ def operaciones_sql_materna(accion, datos_registro=None, db=DB_PATH):
                     LEFT JOIN municipio mu ON par.id_municipio = mu.id_municipio
                     LEFT JOIN ciudad c ON mu.id_ciudad = c.id_ciudad
                     LEFT JOIN estado e ON c.id_estado = e.id_estado
-                    LEFT JOIN pais p ON e.id_pais = p.id_pais
+                    LEFT JOIN pais p ON e.id_pais = p.id_pais;
+
                 """
                 return pd.read_sql_query(query, conn)
             elif accion == "registrar" and datos_registro:
