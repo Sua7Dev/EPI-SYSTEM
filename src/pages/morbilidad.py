@@ -11,7 +11,7 @@ from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_morb_extenso, limpiar_campos_morb_simplificado
 from utils.validaciones import validar_texto, val_texynum, val_notas, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
-from utils.botones import confirmar_eliminar, guadar_btn
+from utils.botones import confirmar_eliminar, guadar_btn, guadar_btn_3
 from utils.guardar_cambios import procesar_guardado_morb_extenso, procesar_guardado_morb_simplificado
 from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
 configurar_pagina_espanol()
@@ -132,7 +132,8 @@ def formulario_morb_extenso(db=DB_PATH):
             has_selection = edited_df[' '].any()
 
             with col_guardar:
-                guadar_btn(procesar_guardado_morb_extenso, edited_df)
+                guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")   
+                #guadar_btn(procesar_guardado_morb_extenso, edited_df)
 
             with col_descargar:
                 descargar_pdf(edited_df, "morbilidad_extensa")
@@ -153,6 +154,8 @@ def formulario_morb_extenso(db=DB_PATH):
                 )
                 if btn_eliminar:
                     confirmar_eliminar(eliminar_registros_morb_extenso, edited_df)
+            if guardar:
+                procesar_guardado_morb_extenso(edited_df)
 
     st.subheader(":material/new_label: Registrar Morbilidad", anchor=False)
 
