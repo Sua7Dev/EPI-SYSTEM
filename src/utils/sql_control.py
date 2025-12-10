@@ -298,84 +298,137 @@ def eliminar_registros_diario(edited_df):
         st.error(f"Error al eliminar: {e}", icon=":material/error:")
         
 #operaciones de morbilidad 
-
 def operaciones_sql_morb_extenso(accion, datos_registro=None, DB_PATH=DB_PATH):
-
     try:
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
 
-            # -------------------------------------------------------
-            # Cargar registros
-            # -------------------------------------------------------
+            # -----------------------------
+            # CARGAR REGISTROS
+            # -----------------------------
             if accion == "cargar":
                 query = """
-                    SELECT 
-                        m.id_morb AS id,
-                        m.nombres_apellidos,
-                        m.edad,
-                        m.diagnostico,
-                        m.fecha_registro_formulario,
-                        d.descripcion AS direccion_hogar
-                    FROM morbilidad m
-                    LEFT JOIN direccion d ON m.id_direccion_hogar = d.id_direccion
+                SELECT 
+                    m.id_morb AS id,
+                    m.id_paciente,
+                    m.id_direccion_hogar,
+                    m.nombres_apellidos,
+                    pp.edad,
+                    m.diagnostico,
+                    m.fecha_registro_formulario,
+                    COALESCE(p.nombre || ', ', '') ||
+                    COALESCE(e.nombre || ', ', '') ||
+                    COALESCE(c.nombre || ', ', '') ||
+                    COALESCE(mu.nombre || ', ', '') ||
+                    COALESCE(par.nombre || ', ', '') ||
+                    COALESCE(d.descripcion, '') AS direccion_hogar
+                FROM morbilidad m
+                LEFT JOIN direccion d ON m.id_direccion_hogar = d.id_direccion
+                LEFT JOIN parroquia par ON d.id_parroquia = par.id_parroquia
+                LEFT JOIN municipio mu ON par.id_municipio = mu.id_municipio
+                LEFT JOIN ciudad c ON mu.id_ciudad = c.id_ciudad
+                LEFT JOIN estado e ON c.id_estado = e.id_estado
+                LEFT JOIN pais p ON e.id_pais = p.id_pais
+                LEFT JOIN persona_paciente pp ON m.id_paciente = pp.id_paciente
+                ORDER BY m.fecha_registro_formulario DESC, m.id_morb DESC
                 """
                 return pd.read_sql_query(query, conn)
 
-            # -------------------------------------------------------
-            # Registrar nuevo registro
-            # -------------------------------------------------------
+            # -----------------------------
+            # REGISTRAR NUEVO REGISTRO
+            # -----------------------------
             elif accion == "registrar" and datos_registro:
+                # ...existing code...
+                rol_usuario = datos_registro.get("rol_usuario")  # "Doctor (a)", "Secretario (a)", "Administrador (a)"
+                id_doctor = datos_registro.get("id_doctor")
+                id_secretaria = datos_registro.get("id_secretaria")
+                id_administrador = datos_registro.get("id_administrador")
 
-                (nombres_apellidos, edad, diagnostico,
-                 pais_hogar, estado_hogar, ciudad_hogar,
-                 municipio_hogar, parroquia_hogar, direccion_exacta_hogar) = datos_registro
+                nombres_apellidos = datos_registro.get("nombres_apellidos")
+                edad = datos_registro.get("edad")
+                diagnostico = datos_registro.get("diagnostico")
 
-                # ------------------------------
-                # Función para dirección hogar
-                # ------------------------------
-                def obtener_o_crear_direccion(pais, estado, ciudad, municipio, parroquia, direccion):
-                    cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", (pais,))
-                    cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", (pais,))
-                    id_pais = cursor.fetchone()[0]
+                dir_data = datos_registro.get("direccion", {})
+                pais = dir_data.get("pais") or "No disponible"
+                estado = dir_data.get("estado") or "No disponible"
+                municipio = dir_data.get("municipio") or "No disponible"
+                parroquia = dir_data.get("parroquia") or "No disponible"
+                ciudad = dir_data.get("ciudad") or "No disponible"
+                direccion_exacta = dir_data.get("direccion_exacta") or "No disponible"
 
-                    cursor.execute("INSERT OR IGNORE INTO estado (nombre, id_pais) VALUES (?, ?)", (estado, id_pais))
-                    cursor.execute("SELECT id_estado FROM estado WHERE nombre = ? AND id_pais = ?", (estado, id_pais))
-                    id_estado = cursor.fetchone()[0]
+                # -----------------------------
+                # CREAR / OBTENER DIRECCIÓN
+                # -----------------------------
+                cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", (pais,))
+                cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", (pais,))
+                id_pais = cursor.fetchone()[0]
 
-                    cursor.execute("INSERT OR IGNORE INTO ciudad (nombre, id_estado) VALUES (?, ?)", (ciudad, id_estado))
-                    cursor.execute("SELECT id_ciudad FROM ciudad WHERE nombre = ? AND id_estado = ?", (ciudad, id_estado))
-                    id_ciudad = cursor.fetchone()[0]
+                cursor.execute("INSERT OR IGNORE INTO estado (nombre, id_pais) VALUES (?, ?)", (estado, id_pais))
+                cursor.execute("SELECT id_estado FROM estado WHERE nombre = ? AND id_pais = ?", (estado, id_pais))
+                id_estado = cursor.fetchone()[0]
 
-                    cursor.execute("INSERT OR IGNORE INTO municipio (nombre, id_ciudad) VALUES (?, ?)", (municipio, id_ciudad))
-                    cursor.execute("SELECT id_municipio FROM municipio WHERE nombre = ? AND id_ciudad = ?", (municipio, id_ciudad))
-                    id_municipio = cursor.fetchone()[0]
+                cursor.execute("INSERT OR IGNORE INTO ciudad (nombre, id_estado) VALUES (?, ?)", (ciudad, id_estado))
+                cursor.execute("SELECT id_ciudad FROM ciudad WHERE nombre = ? AND id_estado = ?", (ciudad, id_estado))
+                id_ciudad = cursor.fetchone()[0]
 
-                    cursor.execute("INSERT OR IGNORE INTO parroquia (nombre, id_municipio) VALUES (?, ?)", (parroquia, id_municipio))
-                    cursor.execute("SELECT id_parroquia FROM parroquia WHERE nombre = ? AND id_municipio = ?", (parroquia, id_municipio))
-                    id_parroquia = cursor.fetchone()[0]
+                cursor.execute("INSERT OR IGNORE INTO municipio (nombre, id_ciudad) VALUES (?, ?)", (municipio, id_ciudad))
+                cursor.execute("SELECT id_municipio FROM municipio WHERE nombre = ? AND id_ciudad = ?", (municipio, id_ciudad))
+                id_municipio = cursor.fetchone()[0]
 
-                    cursor.execute("INSERT OR IGNORE INTO direccion (descripcion, id_parroquia) VALUES (?, ?)",
-                                   (direccion, id_parroquia))
-                    cursor.execute("SELECT id_direccion FROM direccion WHERE descripcion = ? AND id_parroquia = ?",
-                                   (direccion, id_parroquia))
-                    return cursor.fetchone()[0]
+                cursor.execute("INSERT OR IGNORE INTO parroquia (nombre, id_municipio) VALUES (?, ?)", (parroquia, id_municipio))
+                cursor.execute("SELECT id_parroquia FROM parroquia WHERE nombre = ? AND id_municipio = ?", (parroquia, id_municipio))
+                id_parroquia = cursor.fetchone()[0]
 
-                # Crear dirección hogar
-                id_direccion_hogar = obtener_o_crear_direccion(
-                    pais_hogar, estado_hogar, ciudad_hogar, municipio_hogar, parroquia_hogar, direccion_exacta_hogar
-                )
+                cursor.execute("INSERT OR IGNORE INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_exacta, id_parroquia))
+                cursor.execute("SELECT id_direccion FROM direccion WHERE descripcion = ? AND id_parroquia = ?", (direccion_exacta, id_parroquia))
+                id_direccion_hogar = cursor.fetchone()[0]
 
-                # Insertar persona
+                # -----------------------------
+                # CREAR PACIENTE
+                # -----------------------------
                 cursor.execute("INSERT INTO persona_paciente (edad) VALUES (?)", (edad,))
                 id_paciente = cursor.lastrowid
 
-                # Insertar morbilidad
+                # -----------------------------
+                # INSERTAR EN MORBILIDAD
+                # -----------------------------
                 cursor.execute("""
                     INSERT INTO morbilidad (
-                        id_paciente, id_direccion_hogar, nombres_apellidos, edad, diagnostico, fecha_registro_formulario
-                    ) VALUES (?, ?, ?, ?, ?, ?)
-                """, (id_paciente, id_direccion_hogar, nombres_apellidos, edad, diagnostico, datetime.date.today()))
+                        id_paciente, 
+                        id_direccion_hogar,
+                        nombres_apellidos, 
+                        diagnostico, 
+                        fecha_registro_formulario
+                    ) VALUES (?, ?, ?, ?, ?)
+                """, (
+                    id_paciente,
+                    id_direccion_hogar,
+                    nombres_apellidos,
+                    diagnostico,
+                    datetime.date.today().strftime("%d/%m/%Y")
+                ))
+
+                # -----------------------------
+                # RELACIONAR PACIENTE SEGÚN ROL
+                # -----------------------------
+                if rol_usuario == "Doctor (a)" and id_doctor:
+                    cursor.execute(
+                        "INSERT OR IGNORE INTO doctor_paciente (id_doctor, id_paciente) VALUES (?, ?)",
+                        (id_doctor, id_paciente)
+                    )
+                elif rol_usuario == "Secretario (a)" and id_secretaria:
+                    cursor.execute(
+                        "INSERT OR IGNORE INTO secretaria_paciente (id_secretaria, id_paciente) VALUES (?, ?)",
+                        (id_secretaria, id_paciente)
+                    )
+                elif rol_usuario == "Administrador (a)" and id_administrador:
+                    cursor.execute("SELECT id_doctor FROM administrador WHERE id_administrador = ?", (id_administrador,))
+                    result = cursor.fetchone()
+                    if result and result[0]:
+                        cursor.execute(
+                            "INSERT OR IGNORE INTO doctor_paciente (id_doctor, id_paciente) VALUES (?, ?)",
+                            (result[0], id_paciente)
+                        )
 
                 conn.commit()
                 return True
@@ -383,9 +436,6 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, DB_PATH=DB_PATH):
     except sqlite3.Error as e:
         st.error(f"Error SQL: {e}", icon=":material/error:")
         return None
-
-
-
 def operaciones_sql_morb_simplifica(accion, datos_registro=None, db=DB_PATH):
     try:
         with sqlite3.connect(DB_PATH) as conn:
@@ -424,98 +474,105 @@ def operaciones_sql_morb_simplifica(accion, datos_registro=None, db=DB_PATH):
         st.error(f"Error en operación SQL: {e}", icon=":material/error:")
         return None
     
-    
 def eliminar_registros_morb_extenso(edited_df):
-    ids_a_eliminar = edited_df.loc[edited_df[' '], 'id'].tolist()
+    # Asegúrate de que la columna con el ID exista
+    id_col = 'id'  # Ajusta al nombre de la columna en tu edited_df
+    if id_col not in edited_df.columns:
+        st.error(f"No se encuentra la columna de ID '{id_col}' en el dataframe.", icon=":material/error:")
+        return
+
+    ids_a_eliminar = edited_df.loc[edited_df[' '], id_col].tolist()
     if not ids_a_eliminar:
         st.warning("Selecciona al menos un registro.", icon=":material/info:")
         return
 
     try:
         with sqlite3.connect(DB_PATH) as conn:
+            conn.execute("PRAGMA foreign_keys = ON;")
             cursor = conn.cursor()
 
             for id_morb in ids_a_eliminar:
-
-                # Obtener direcciones y paciente involucrado (sin nacimiento)
+                # Obtener id_paciente y id_direccion de morbilidad
                 cursor.execute("""
-                    SELECT me.id_direccion_hogar, m.id_paciente
-                    FROM morb_extenso me
-                    JOIN morbilidad m ON me.id_morb = m.id_morb
-                    WHERE me.id_morb = ?
+                    SELECT id_paciente, id_direccion_hogar
+                    FROM morbilidad
+                    WHERE id_morb = ?
                 """, (id_morb,))
                 datos = cursor.fetchone()
                 if not datos:
                     continue
 
-                id_dir_hogar, id_paciente = datos
+                id_paciente, id_dir_hogar = datos
 
-                # Eliminar registros principales
-                cursor.execute("DELETE FROM morb_extenso WHERE id_morb = ?", (id_morb,))
+                # Eliminar registro principal
                 cursor.execute("DELETE FROM morbilidad WHERE id_morb = ?", (id_morb,))
-                cursor.execute("DELETE FROM doctor_paciente WHERE id_paciente = ?", (id_paciente,))
-                cursor.execute("DELETE FROM secretaria_paciente WHERE id_paciente = ?", (id_paciente,))
-                cursor.execute("DELETE FROM persona_paciente WHERE id_paciente = ?", (id_paciente,))
+                
+                # Eliminar tablas relacionadas con el paciente
+                if id_paciente:
+                    cursor.execute("DELETE FROM doctor_paciente WHERE id_paciente = ?", (id_paciente,))
+                    cursor.execute("DELETE FROM secretaria_paciente WHERE id_paciente = ?", (id_paciente,))
+                    cursor.execute("DELETE FROM persona_paciente WHERE id_paciente = ?", (id_paciente,))
 
-                # Procesar solo la dirección de hogar
+                # Procesar eliminación de la dirección
                 if id_dir_hogar:
-                    cursor.execute("""
-                        SELECT d.id_parroquia, p.id_municipio, m.id_ciudad, c.id_estado, e.id_pais
-                        FROM direccion d
-                        LEFT JOIN parroquia p ON d.id_parroquia = p.id_parroquia
-                        LEFT JOIN municipio m ON p.id_municipio = m.id_municipio
-                        LEFT JOIN ciudad c ON m.id_ciudad = c.id_ciudad
-                        LEFT JOIN estado e ON c.id_estado = e.id_estado
-                        WHERE d.id_direccion = ?
-                    """, (id_dir_hogar,))
-                    jerarquia = cursor.fetchone()
-
-                    # Verificar si la dirección está en uso
+                    # Verificar si la dirección está en uso por otros registros
                     cursor.execute("""
                         SELECT COUNT(*)
-                        FROM morb_extenso
+                        FROM morbilidad
                         WHERE id_direccion_hogar = ?
                     """, (id_dir_hogar,))
                     if cursor.fetchone()[0] == 0:
+                        # Obtener jerarquía completa
+                        cursor.execute("""
+                            SELECT d.id_parroquia, p.id_municipio, m.id_ciudad, c.id_estado, e.id_pais
+                            FROM direccion d
+                            LEFT JOIN parroquia p ON d.id_parroquia = p.id_parroquia
+                            LEFT JOIN municipio m ON p.id_municipio = m.id_municipio
+                            LEFT JOIN ciudad c ON m.id_ciudad = c.id_ciudad
+                            LEFT JOIN estado e ON c.id_estado = e.id_estado
+                            WHERE d.id_direccion = ?
+                        """, (id_dir_hogar,))
+                        jerarquia = cursor.fetchone()
+
+                        # Eliminar dirección
                         cursor.execute("DELETE FROM direccion WHERE id_direccion = ?", (id_dir_hogar,))
 
-                    # Eliminar elementos jerárquicos si quedan huérfanos
-                    if jerarquia:
-                        id_parr, id_mun, id_ciud, id_est, id_pais = jerarquia
+                        # Eliminar jerarquía huérfana
+                        if jerarquia:
+                            id_parr, id_mun, id_ciud, id_est, id_pais = jerarquia
 
-                        if id_parr:
-                            cursor.execute("SELECT COUNT(*) FROM direccion WHERE id_parroquia = ?", (id_parr,))
-                            if cursor.fetchone()[0] == 0:
-                                cursor.execute("DELETE FROM parroquia WHERE id_parroquia = ?", (id_parr,))
+                            if id_parr:
+                                cursor.execute("SELECT COUNT(*) FROM direccion WHERE id_parroquia = ?", (id_parr,))
+                                if cursor.fetchone()[0] == 0:
+                                    cursor.execute("DELETE FROM parroquia WHERE id_parroquia = ?", (id_parr,))
 
-                        if id_mun:
-                            cursor.execute("SELECT COUNT(*) FROM parroquia WHERE id_municipio = ?", (id_mun,))
-                            if cursor.fetchone()[0] == 0:
-                                cursor.execute("DELETE FROM municipio WHERE id_municipio = ?", (id_mun,))
+                            if id_mun:
+                                cursor.execute("SELECT COUNT(*) FROM parroquia WHERE id_municipio = ?", (id_mun,))
+                                if cursor.fetchone()[0] == 0:
+                                    cursor.execute("DELETE FROM municipio WHERE id_municipio = ?", (id_mun,))
 
-                        if id_ciud:
-                            cursor.execute("SELECT COUNT(*) FROM municipio WHERE id_ciudad = ?", (id_ciud,))
-                            if cursor.fetchone()[0] == 0:
-                                cursor.execute("DELETE FROM ciudad WHERE id_ciudad = ?", (id_ciud,))
+                            if id_ciud:
+                                cursor.execute("SELECT COUNT(*) FROM municipio WHERE id_ciudad = ?", (id_ciud,))
+                                if cursor.fetchone()[0] == 0:
+                                    cursor.execute("DELETE FROM ciudad WHERE id_ciudad = ?", (id_ciud,))
 
-                        if id_est:
-                            cursor.execute("SELECT COUNT(*) FROM ciudad WHERE id_estado = ?", (id_est,))
-                            if cursor.fetchone()[0] == 0:
-                                cursor.execute("DELETE FROM estado WHERE id_estado = ?", (id_est,))
+                            if id_est:
+                                cursor.execute("SELECT COUNT(*) FROM ciudad WHERE id_estado = ?", (id_est,))
+                                if cursor.fetchone()[0] == 0:
+                                    cursor.execute("DELETE FROM estado WHERE id_estado = ?", (id_est,))
 
-                        if id_pais:
-                            cursor.execute("SELECT COUNT(*) FROM estado WHERE id_pais = ?", (id_pais,))
-                            if cursor.fetchone()[0] == 0:
-                                cursor.execute("DELETE FROM pais WHERE id_pais = ?", (id_pais,))
+                            if id_pais:
+                                cursor.execute("SELECT COUNT(*) FROM estado WHERE id_pais = ?", (id_pais,))
+                                if cursor.fetchone()[0] == 0:
+                                    cursor.execute("DELETE FROM pais WHERE id_pais = ?", (id_pais,))
 
             conn.commit()
             st.success(f"{len(ids_a_eliminar)} registros y datos asociados eliminados.", icon=":material/check_circle:")
             st.rerun()
 
-    except sqlite3.IntegrityError:
-        st.error("La Historia clínica ya existe.", icon=":material/error:")
     except sqlite3.Error as e:
         st.error(f"Error al eliminar: {e}", icon=":material/error:")
+
 
 
 def eliminar_registros_morb_simplifica(edited_df):

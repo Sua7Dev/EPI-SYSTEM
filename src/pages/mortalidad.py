@@ -1194,14 +1194,15 @@ def mostrar_morta():
     with tab2:
         st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
         col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
-        with col_izq:
-            formulario_reporte_general()
+        #with col_izq:
+            #formulario_reporte_mensual_combinado()
         #st.markdown("---")
         with col_centro:
-            formulario_reporte_mensual_combinado()
+            formulario_reporte_general()
+            
         #st.markdown("---")
-        with col_der:
-            formulario_reporte_mensual_general()
+        #with col_der:
+            #formulario_reporte_mensual_general()
         st.markdown("")
     copyright_footer_dos("Equipo Investigador", bottom="-200px")
         

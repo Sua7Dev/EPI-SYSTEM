@@ -16,6 +16,9 @@ import sys
 import os
 from pathlib import Path
 
+
+
+
 def get_project_root() -> Path:
     """Devuelve la raíz del proyecto, incluso empaquetado con PyInstaller."""
     if getattr(sys, "frozen", False):  # Si está empaquetado
@@ -53,6 +56,51 @@ def contenedores_totales():
         st.subheader(":material/trending_up: Morbilidad", anchor=False)
         st.metric(":material/arrow_right: Total", f"{totales['total_morbilidad']}", border=True)
 
+import threading
+DB_LOCK = threading.Lock()
+
+def boton_eliminar_base_datos():
+
+    st.warning("Esta acción eliminará TODA la base de datos. No se puede deshacer.", icon=":material/warning:")
+
+    if st.button(" Eliminar Base de Datos"):
+        with DB_LOCK:
+            try:
+                if os.path.exists(DB_PATH):
+                    os.remove(DB_PATH)
+                    st.success("Base de datos eliminada correctamente.", icon=":material/check_circle:")
+                else:
+                    st.info("La base de datos no existe.", icon=":material/info:")
+            except Exception as e:
+                st.error(f"Error al eliminar la base de datos: {e}", icon=":material/error:")
+                
+boton_eliminar_base_datos()
+import shutil
+def boton_descargar_bd(db_path=DB_PATH):
+    """
+    Muestra un botón en Streamlit para descargar la base de datos completa.
+    """
+    st.subheader("Descargar Base de Datos")
+
+    if st.button("Descargar BD completa"):
+        db_file = Path(db_path)
+        if db_file.exists():
+            # Crear una copia temporal para la descarga
+            tmp_file = db_file.with_name("backup_bd.db")
+            shutil.copy(db_file, tmp_file)
+
+            with open(tmp_file, "rb") as f:
+                st.download_button(
+                    label="Haz clic aquí para descargar la base de datos",
+                    data=f,
+                    file_name="base_de_datos.db",
+                    mime="application/x-sqlite3"
+                )
+            st.success("Listo, puedes descargar la BD.")
+        else:
+            st.error("No se encontró la base de datos.", icon=":warning:")
+            
+boton_descargar_bd()
 
 def graficas_dashboard():
     """

@@ -2,7 +2,7 @@ import streamlit as st
 import os
 from utils.sql_control import operaciones_sql_morb_extenso, operaciones_sql_morb_simplifica, eliminar_registros_morb_extenso, eliminar_registros_morb_simplifica
 from pathlib import Path
-import datetime
+import pandas as pd 
 from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
@@ -36,37 +36,33 @@ ASSETS_DIR = PROJECT_ROOT / "static" / "assets" / "imagenes"
 menu()
 
 def data_editor_morb_extenso(df):
-
-    df[' '] = False
-
-    columns_to_display = [col for col in df.columns if col not in [' ', 'id_morb']]
-    columns_to_show = [' '] + columns_to_display + (['id_morb'] if 'id_morb' in df.columns else [])
-    df = df[columns_to_show]
-
+    original_ids = df[['id', 'id_paciente', 'id_direccion_hogar']].reset_index(drop=True) if set(['id','id_paciente','id_direccion_hogar']).issubset(df.columns) else None
+    df_display = df.reset_index(drop=True).copy()
+    for c in ['id', 'id_paciente', 'id_direccion_hogar']:
+        if c in df_display.columns:
+            df_display.drop(columns=[c], inplace=True)
+    if " " not in df_display.columns:
+        df_display.insert(0, " ", False)
+    ordered_cols = [" ", "nombres_apellidos", "edad", "diagnostico", "fecha_registro_formulario", "direccion_hogar"]
+    rest = [c for c in df_display.columns if c not in ordered_cols]
+    columns_to_show = [c for c in (ordered_cols + rest) if c in df_display.columns]
+    df_display = df_display[columns_to_show]
     column_config = {
         " ": st.column_config.CheckboxColumn(" ", default=False, disabled=False),
-
         "nombres_apellidos": st.column_config.TextColumn("Nombres y Apellidos", disabled=False),
         "edad": st.column_config.NumberColumn("Edad", min_value=0, step=1, disabled=False),
         "diagnostico": st.column_config.TextColumn("Diagnóstico", disabled=False),
-        "fecha_registro_formulario": st.column_config.DateColumn("Registro del Formulario", disabled=True),
-        "id_paciente": st.column_config.NumberColumn("ID Paciente", disabled=True),
-        "id_direccion_hogar": st.column_config.NumberColumn("ID Dirección Hogar", disabled=True),
-
-        "id_morb": st.column_config.TextColumn("ID", disabled=True)
+        "fecha_registro_formulario": st.column_config.DateColumn("Fecha registro", format='DD/MM/YYYY', disabled=True),
+        "direccion_hogar": st.column_config.TextColumn("Dirección del hogar", disabled=True),
     }
-
-    edited_df = st.data_editor(
-        df,
-        hide_index=True,
-        column_config=column_config,
-        key="editor_morb_extenso"
-    )
-
+    for col in df_display.columns:
+        if col not in column_config and col != " ":
+            column_config[col] = st.column_config.TextColumn(col, disabled=True)
+    edited_df = st.data_editor(df_display, hide_index=True, column_config=column_config, key="editor_morb_extenso")
+    if original_ids is not None:
+        edited_df = edited_df.reset_index(drop=True)
+        edited_df = pd.concat([edited_df, original_ids], axis=1)
     return edited_df
-
-
-
 def data_editor_morb_simplifica(df_filtrado):
     df_filtrado[' '] = False
 
@@ -99,7 +95,6 @@ def data_editor_morb_simplifica(df_filtrado):
 @st.fragment
 def formulario_morb_extenso(db=DB_PATH):
 
-    # Verificar sesión
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
         return
@@ -126,13 +121,11 @@ def formulario_morb_extenso(db=DB_PATH):
         st.info("No hay datos para mostrar.", icon=":material/info:")
     else:
         mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_morbilidadex")
-
         if mostrar_editor:
             df = filtrar_por_fechas(df, 'fecha_registro_formulario')
             edited_df = data_editor_morb_extenso(df)
 
             col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(4)
-
             has_selection = edited_df[' '].any()
 
             with col_guardar:
@@ -144,8 +137,7 @@ def formulario_morb_extenso(db=DB_PATH):
             with col_descargar_seleccionado:
                 df_sel = edited_df[edited_df[' '] == True]
                 descargar_registros_seleccionados(edited_df, "morbilidad_extensa")
-                descargar_pdf(df_sel, "morbilidad_extensa_seleccionado", 
-                              label="Descarga selección", disabled=not has_selection)
+                descargar_pdf(df_sel, "morbilidad_extensa_seleccionado", label="Descarga selección", disabled=not has_selection)
 
             with col_eliminar:
                 btn_eliminar = st.button(
@@ -157,27 +149,22 @@ def formulario_morb_extenso(db=DB_PATH):
                     help="Eliminar registros seleccionados."
                 )
                 if btn_eliminar:
-
                     confirmar_eliminar(eliminar_registros_morb_extenso, edited_df)
 
     st.subheader(":material/new_label: Registrar Morbilidad", anchor=False)
 
     with st.form("form_morb_extenso"):
 
-        fecha_minima = datetime.date.today() - relativedelta(months=1)
-        fecha_maxima = datetime.date.today() + relativedelta(months=1)
-        fecha_maxima_hoy = datetime.date.today()
-        fecha_minimi_1935 = datetime.date(1935, 1, 1)
-
         # Primeras filas del formulario
-        col_nombre, col_tlf = st.columns(2)
-
+        col_nombre, col_edad = st.columns(2)
         with col_nombre:
             nombres_apellidos = st.text_input(
                 "Nombres y apellidos", max_chars=40,
                 key="nombres_apellidos_morb_extenso",
                 placeholder="Ej. Juan Pérez"
             )
+        with col_edad:
+            edad = st.number_input("Edad", min_value=0, step=1, key="edad_morb_extenso")
 
         diagnostico = st.text_area(
             "Diagnóstico", max_chars=150,
@@ -185,99 +172,58 @@ def formulario_morb_extenso(db=DB_PATH):
             placeholder="Descripción del diagnóstico"
         )
 
-        with col_tlf:
-            edad = st.number_input("Edad", min_value=0, step=1, key="edad_morb_extenso")
-
         st.markdown("**Dirección de Hogar**")
-
         col_pais, col_estado, col_muni = st.columns(3)
         with col_pais:
-            pais_hogar = st.text_input("País (Opcional)", max_chars=56,
-                                       key="pais_hogar_morb_extenso", placeholder="Venezuela")
+            pais_hogar = st.text_input("País (Opcional)", max_chars=56, key="pais_hogar_morb_extenso", placeholder="Venezuela")
         with col_estado:
-            estado_hogar = st.text_input("Estado (Opcional)", max_chars=56,
-                                         key="estado_hogar_morb_extenso", placeholder="Anzoátegui")
+            estado_hogar = st.text_input("Estado (Opcional)", max_chars=56, key="estado_hogar_morb_extenso", placeholder="Anzoátegui")
         with col_muni:
-            municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56,
-                                            key="municipio_hogar_morb_extenso", placeholder="Simón Rodríguez")
-
-        col_parroquia, col_city = st.columns(2)
+            municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_morb_extenso", placeholder="Simón Rodríguez")
+        col_parroquia, col_ciudad = st.columns(2)
         with col_parroquia:
-            parroquia_hogar = st.text_input(
-                "Parroquia", max_chars=56,
-                key="parroquia_hogar_morb_extenso",
-                placeholder="Edmundo Barrios (zona norte)"
-            )
-        with col_city:
-            ciudad_hogar = st.text_input(
-                "Ciudad", max_chars=56,
-                key="cuidad_hogar_morb_extenso",
-                placeholder="El Tigre"
-            )
-
-        direccion_exacta_hogar = st.text_area(
-            "Dirección Exacta", max_chars=150,
-            key="direccion_exacta_hogar_morb_extenso",
-            placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26"
-        )
+            parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_morb_extenso", placeholder="Edmundo Barrios (zona norte)")
+        with col_ciudad:
+            ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="cuidad_hogar_morb_extenso", placeholder="El Tigre")
+        direccion_exacta_hogar = st.text_area("Dirección Exacta", max_chars=150, key="direccion_exacta_hogar_morb_extenso", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
 
         col_reg, col_limp = st.columns([30, 1])
-
         with col_reg:
             registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
-
         with col_limp:
-            limpiar = st.form_submit_button(
-                "",
-                icon=":material/cleaning_services:",
-                on_click=limpiar_campos_morb_extenso,
-                type="tertiary",
-                help="Limpia todos los campos del formulario."
-            )
+            limpiar = st.form_submit_button("", icon=":material/cleaning_services:", on_click=limpiar_campos_morb_extenso, type="tertiary", help="Limpia todos los campos del formulario.")
 
         if registrar:
-
-            # Validaciones
+            # Validaciones básicas
             if not all([nombres_apellidos, diagnostico, parroquia_hogar, ciudad_hogar, direccion_exacta_hogar]):
                 st.error("Por favor completa todos los campos obligatorios", icon=":material/error:")
                 return
+            if not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"): return
+            if not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"): return
+            if not val_texynum(diagnostico, "El", "diagnóstico"): return
 
-            elif not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"):
-                return
-
-            elif not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"):
-                return
-
-            elif not val_texynum(diagnostico, "El", "diagnóstico"):
-                return
-
-            elif not validar_pais(pais_hogar, "El", "país del hogar"):
-                return
-
-            elif not validar_pais(estado_hogar, "El", "estado del hogar"):
-                return
-
-            elif not validar_pais(municipio_hogar, "El", "municipio del hogar"):
-                return
-
-            elif not validar_pais(parroquia_hogar, "La", "parroquia del hogar"):
-                return
-
-            elif not validar_pais(ciudad_hogar, "La", "ciudad del hogar"):
-                return
-
-            elif not val_notas(direccion_exacta_hogar, "La", "dirección del hogar"):
-                return
-
-            datos_registro = (
-                nombres_apellidos, diagnostico, edad,
-                pais_hogar, estado_hogar, municipio_hogar,
-                parroquia_hogar, ciudad_hogar, direccion_exacta_hogar
-            )
+            datos_registro = {
+                "rol_usuario": rol_usuario,
+                "nombres_apellidos": nombres_apellidos,
+                "edad": edad,
+                "diagnostico": diagnostico,
+                "direccion": {
+                    "pais": pais_hogar,
+                    "estado": estado_hogar,
+                    "municipio": municipio_hogar,
+                    "parroquia": parroquia_hogar,
+                    "ciudad": ciudad_hogar,
+                    "direccion_exacta": direccion_exacta_hogar
+                },
+                "id_doctor": id_doctor,
+                "id_secretaria": id_secretaria,
+                "id_administrador": id_administrador
+            }
 
             if operaciones_sql_morb_extenso("registrar", datos_registro=datos_registro):
                 st.success("Registro guardado.", icon=":material/check_circle:")
                 st.rerun()
+
 
 @st.fragment
 def formulario_morb_simplifica(db=DB_PATH):

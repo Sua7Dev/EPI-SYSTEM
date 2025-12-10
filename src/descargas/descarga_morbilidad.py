@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import datetime
+import math
 import os
 from io import BytesIO
 from utils.pdfbanners import CustomPDF
@@ -17,16 +17,20 @@ def limpiar_dato(valor):
             return None
     return str(valor).strip()
 
+
 def exportar_pdf_morbilidad_extensa(df, nombre_archivo):
+    pdf = CustomPDF(orientation='P', unit='mm', format='A4')
+    pdf.set_margins(15, 30, 15)
+    pdf.set_auto_page_break(auto=True, margin=20)
+
+    pdf.add_page()
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(0, 10, "DENUNCIAS OBLIGATORIAS", ln=1, align='C')
+    pdf.ln(5)
+
     if df.empty:
-        pdf = CustomPDF(orientation='P', unit='mm', format='A4')
-        pdf.set_margins(15, 30, 15)
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.add_page()
-        pdf.set_font("Arial", 'B', 12)
-        pdf.cell(0, 10, "MORBILIDAD EXTENSA", ln=1, align='J')
-        pdf.set_font("Arial", size=10)
-        pdf.cell(0, 6, "NO HUBO CASOS", ln=1, align='J')
+        pdf.set_font("Arial", '', 12)
+        pdf.cell(0, 10, "NO HUBO CASOS", ln=1, align='C')
         buffer = BytesIO()
         pdf.set_title(nombre_archivo)
         pdf.set_author("EPI-SYSTEM")
@@ -34,96 +38,104 @@ def exportar_pdf_morbilidad_extensa(df, nombre_archivo):
         buffer.seek(0)
         return buffer
 
-    pdf = CustomPDF(orientation='P', unit='mm', format='A4')
-    pdf.set_margins(15, 30, 15)
-    pdf.set_auto_page_break(auto=True, margin=15)
+    df = df.copy()
+    df['fecha_dt'] = pd.to_datetime(df['fecha_registro_formulario'], dayfirst=True, errors='coerce')
+    df['fecha_str'] = df['fecha_dt'].dt.strftime('%d/%m/%Y').fillna('Sin fecha')
 
-    for _, row in df.iterrows():
-        pdf.add_page()
+    usable_width = pdf.w - pdf.l_margin - pdf.r_margin
+    pct = [0.04, 0.22, 0.30, 0.08, 0.36]
+    col_widths = [max(10, int(usable_width * p)) for p in pct]
+    headers = ['#', 'Enfermedad', 'Nombres y Apellidos', 'Edad', 'Dirección']
 
-        # Título principal
-        pdf.set_font("Arial", 'B', 14)
-        pdf.cell(0, 10, "MORBILIDAD EXTENSA", ln=1, align='J')
+    def clean_direccion(text):
+        if not text:
+            return ""
+        componentes = [comp.strip() for comp in str(text).split(',') if comp.strip() and comp.strip().lower() != "no disponible"]
+        return ", ".join(componentes)
+
+    def num_lines_for_text(txt, width):
+        if txt is None or str(txt).strip() == "":
+            return 1
+        lines = 0
+        for part in str(txt).splitlines():
+            part = part.strip()
+            if part == "":
+                lines += 1
+                continue
+            text_width = pdf.get_string_width(part)
+            effective_width = max(1, width - 2)
+            lines += max(1, math.ceil(text_width / effective_width))
+        return lines
+
+    line_height = 5
+
+    df['_id_num'] = pd.to_numeric(df.get('id', pd.Series(dtype='float')), errors='coerce').fillna(0).astype(int)
+    df = df.sort_values(by=['fecha_dt', '_id_num'], ascending=[True, True]).reset_index(drop=True)
+
+    def print_group_header(fecha):
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(0, 8, fecha, ln=1, align='L')
         pdf.ln(2)
+        pdf.set_font("Arial", 'B', 10)
+        for i, header in enumerate(headers):
+            pdf.cell(col_widths[i], 8, header, border=0, align='C')
+        pdf.ln()
+        pdf.set_font("Arial", '', 10)
 
-        # Datos paciente
-        data = {
-            "Diagnóstico": limpiar_dato(row.get('diagnostico')),
-            "Nombres y Apellidos": limpiar_dato(row.get('nombres_apellidos')),
-            "Sexo": limpiar_dato(row.get('sexo')),
-            "Estado Civil": limpiar_dato(row.get('estado_civil')),
-            "Teléfono": limpiar_dato(row.get('telefono')),
-            "Cédula": limpiar_dato(row.get('cedula')),
-            "Historia Clínica": limpiar_dato(row.get('HC')),
-            "Edad": f"{int(row.get('edad'))} años" if pd.notnull(row.get('edad')) else None,
-            "Fecha de Registro": pd.to_datetime(row.get('fecha_registro_formulario'), errors='coerce').strftime('%d/%m/%Y') if pd.notnull(row.get('fecha_registro_formulario')) else None,
-            "Fecha de Nacimiento": pd.to_datetime(row.get('fecha_nacimiento'), errors='coerce').strftime('%d/%m/%Y') if pd.notnull(row.get('fecha_nacimiento')) else None,
-            "Dirección del Hogar": limpiar_dato(row.get('direccion_hogar')),
-            "Lugar de Nacimiento": limpiar_dato(row.get('direccion_nacimiento'))
-        }
+    def ensure_space(needed_space, fecha):
+        trigger = getattr(pdf, 'page_break_trigger', pdf.h - pdf.b_margin)
+        if pdf.get_y() + needed_space > trigger:
+            pdf.add_page()
+            print_group_header(fecha)
 
-        # Procesar direcciones para eliminar "No disponible" y componentes vacíos
-        for key in ["Dirección del Hogar", "Lugar de Nacimiento"]:
-            if data[key]:
-                componentes = [comp.strip() for comp in data[key].split(',')]
-                componentes_validos = [comp for comp in componentes if comp and comp != "No disponible"]
-                data[key] = ", ".join(componentes_validos) if componentes_validos else None
+    first_group = True
+    for fecha, df_fecha in df.groupby('fecha_str', sort=False):
+        if fecha == 'NaT' or df_fecha.empty:
+            continue
 
-        # Filtrar datos nulos o vacíos
-        data = {k: v for k, v in data.items() if v}
+        # si no es la primera agrupación, simplemente dejar pequeño espacio antes del siguiente grupo
+        if not first_group:
+            pdf.ln(3)
 
-        # Mostrar en dos columnas (excepto Dirección y Lugar de Nacimiento)
-        items = [(k, v) for k, v in data.items() if k not in ["Dirección del Hogar", "Lugar de Nacimiento"]]
-        col1_width = 45
-        col2_width = 55
-        col_total = col1_width + col2_width
+        print_group_header(fecha)
 
-        for i in range(0, len(items), 2):
-            campo1, valor1 = items[i]
-            pdf.set_font("Arial", 'B', 10)
-            pdf.cell(col1_width, 6, f"{campo1}:", ln=0)
-            pdf.set_font("Arial", '', 10)
-            pdf.multi_cell(col2_width, 6, valor1)
+        # numerar secuencialmente dentro de la fecha (1..n)
+        for seq, (_, row) in enumerate(df_fecha.reset_index(drop=True).iterrows(), start=1):
+            diagnostico = str(row.get('diagnostico', '') or '')
+            nombres = str(row.get('nombres_apellidos', '') or '')
+            edad = f"{int(row.get('edad'))} años" if pd.notnull(row.get('edad')) else ''
+            direccion = clean_direccion(row.get('direccion_hogar', ''))
+            cells = [str(seq), diagnostico, nombres, edad, direccion]
 
-            if i + 1 < len(items):
-                campo2, valor2 = items[i + 1]
-                y_actual = pdf.get_y() - 6
-                pdf.set_xy(15 + col_total, y_actual)
-                pdf.set_font("Arial", 'B', 10)
-                pdf.cell(col1_width, 6, f"{campo2}:", ln=0)
-                pdf.set_font("Arial", '', 10)
-                pdf.multi_cell(col2_width, 6, valor2)
-            else:
-                pdf.ln(6)
+            lines_per_cell = [num_lines_for_text(cells[i], col_widths[i]) for i in range(len(cells))]
+            max_lines = max(lines_per_cell)
+            row_height = max_lines * line_height
 
-        pdf.ln(5)
+            # espacio necesario: altura de fila + una pequeña separación y margen para encabezado si se produce salto
+            needed = row_height + 6
 
-        # Dirección de nacimiento y hogar
-        pdf.set_font("Arial", "", 10)
-        direccion_nac = data.get("Lugar de Nacimiento")
-        if direccion_nac:
-            pdf.set_font("Arial", "B", 10)
-            pdf.cell(50, 8, "Lugar de Nacimiento: ", ln=0)
-            pdf.set_font("Arial", "", 10)
-            pdf.multi_cell(0, 8, direccion_nac)
-            pdf.ln(2)
+            ensure_space(needed, fecha)
 
-        direccion_hogar = data.get("Dirección del Hogar")
-        if direccion_hogar:
-            pdf.set_font("Arial", "B", 10)
-            pdf.cell(50, 8, "Dirección del Hogar: ", ln=0)
-            pdf.set_font("Arial", "", 10)
-            pdf.multi_cell(0, 8, direccion_hogar)
-            pdf.ln(2)
+            x_start = pdf.get_x()
+            y_start = pdf.get_y()
 
-    # Exportación
+            for i, item in enumerate(cells):
+                x = x_start + sum(col_widths[:i])
+                y = y_start
+                pdf.set_xy(x, y)
+                pdf.multi_cell(col_widths[i], line_height, str(item), border=0, align='L')
+                pdf.rect(x, y, col_widths[i], row_height)
+
+            pdf.set_xy(x_start, y_start + row_height)
+
+        first_group = False
+
+    buffer = BytesIO()
     pdf.set_title(nombre_archivo)
     pdf.set_author("EPI-SYSTEM")
-    buffer = BytesIO()
     buffer.write(pdf.output(dest='S').encode('latin1'))
     buffer.seek(0)
     return buffer
-
 def exportar_pdf_morbilidad_simp(df, nombre_archivo):
     """Versión resumida"""
     if df.empty:

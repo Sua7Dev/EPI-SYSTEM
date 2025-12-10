@@ -417,98 +417,41 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
 # --- Funciones de Guardado Refactorizadas ---
 
 def procesar_guardado_morb_extenso(edited_df, DB_PATH=DB_PATH):
-    """
-    Procesa el guardado (INSERT o UPDATE) de registros para Morbilidad Extensa.
-    Construye sentencias UPDATE dinámicas para las tablas afectadas.
-    """
-    COLUMN_TO_TABLE_MAP = {
-        'HC': 'morb_extenso',
-        'nombres_apellidos': 'morb_extenso',
-        'direccion': 'morb_extenso',
-        'fecha_nacimiento': 'morb_extenso',
-        'estado_civil': 'morb_extenso',
-        'cedula': 'morb_extenso',
-        'telefono': 'morb_extenso',
-        'diagnostico': 'morbilidad',
-        'sexo': 'morbilidad',
-        'edad': 'persona_paciente',
-    }
-
-    try:
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
-
             for _, row in edited_df.iterrows():
-                id_morb = row.get("id") if pd.notna(row.get("id")) else row.get("id_morb")
-                
-                # --- Validaciones de datos de entrada ---
-                nombres_apellidos = row.get("nombres_apellidos", "")
-                direccion = row.get("direccion", "")
-                diagnostico = row.get("diagnostico", "")
+                id_morb = row.get("id")
+                if pd.isna(id_morb):
+                    continue
+                nombres = (row.get("nombres_apellidos") or "").strip()
+                edad = row.get("edad", None)
 
-                if not validar_texto(nombres_apellidos, "Los", "Nombres y apellidos"): return
-                if not val_notas(direccion, "La", "Dirección"): return
-                if not val_texynum(diagnostico, "El", "Diagnóstico"): return
+                if not validar_texto(nombres, "Los", "Nombres y apellidos"):
+                    return
 
-                # --- Lógica de UPDATE ---
-                if pd.notna(id_morb):
-                    updates = {
-                        'morb_extenso': {'fields': [], 'values': []},
-                        'morbilidad': {'fields': [], 'values': []},
-                        'persona_paciente': {'fields': [], 'values': []}
-                    }
+                # actualizar nombres en morbilidad
+                cursor.execute(
+                    "UPDATE morbilidad SET nombres_apellidos = ? WHERE id_morb = ?",
+                    (nombres, id_morb)
+                )
 
-                    for col, value in row.items():
-                        if col in COLUMN_TO_TABLE_MAP:
-                            table = COLUMN_TO_TABLE_MAP[col]
-                            updates[table]['fields'].append(f"{col} = ?")
-                            updates[table]['values'].append(value)
-                    
-                    if updates['morb_extenso']['fields']:
-                        sql = f"UPDATE morb_extenso SET {', '.join(updates['morb_extenso']['fields'])} WHERE id_morb = ?"
-                        values = updates['morb_extenso']['values'] + [id_morb]
-                        cursor.execute(sql, tuple(values))
-
-                    if updates['morbilidad']['fields']:
-                        sql = f"UPDATE morbilidad SET {', '.join(updates['morbilidad']['fields'])} WHERE id_morb = ?"
-                        values = updates['morbilidad']['values'] + [id_morb]
-                        cursor.execute(sql, tuple(values))
-
-                    if updates['persona_paciente']['fields']:
-                        cursor.execute("SELECT id_paciente FROM morbilidad WHERE id_morb = ?", (id_morb,))
-                        result = cursor.fetchone()
-                        if result:
-                            id_paciente = result[0]
-                            sql = f"UPDATE persona_paciente SET {', '.join(updates['persona_paciente']['fields'])} WHERE id_paciente = ?"
-                            values = updates['persona_paciente']['values'] + [id_paciente]
-                            cursor.execute(sql, tuple(values))
-                else:
-                    # --- Lógica de INSERT ---
-                    cursor.execute("INSERT INTO persona_paciente (edad) VALUES (?)", (row.get("edad"),))
-                    id_paciente = cursor.lastrowid
-
-                    cursor.execute("""
-                        INSERT INTO morbilidad (id_paciente, sexo, diagnostico, fecha_registro_formulario)
-                        VALUES (?, ?, ?, ?)
-                    """, (id_paciente, row.get("sexo"), diagnostico, datetime.date.today()))
-                    id_morb = cursor.lastrowid
-
-                    cursor.execute("""
-                        INSERT INTO morb_extenso (HC, id_morb, nombres_apellidos, direccion, fecha_nacimiento, estado_civil, cedula, telefono)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        row.get("HC"), id_morb, nombres_apellidos, direccion,
-                        row.get("fecha_nacimiento"), row.get("estado_civil"), row.get("cedula"), row.get("telefono")
-                    ))
+                # actualizar edad en persona_paciente si existe id_paciente relacionado
+                cursor.execute("SELECT id_paciente FROM morbilidad WHERE id_morb = ?", (id_morb,))
+                res = cursor.fetchone()
+                if res and res[0] is not None and pd.notna(edad):
+                    try:
+                        edad_val = int(edad)
+                        cursor.execute("UPDATE persona_paciente SET edad = ? WHERE id_paciente = ?", (edad_val, res[0]))
+                    except Exception:
+                        st.error("Edad inválida" + str(id_morb), icon=":material/error:")
+                        return
 
             conn.commit()
             notificacion_cambios()
+            st.session_state["reset_form_morb_extenso"] = True
             st.rerun()
-            return True
-    except sqlite3.Error as e:
-        st.error(f"Error en operación SQL (Extenso): {e}", icon=":material/error:")
-        return False
-
+            return 
+    
 def procesar_guardado_morb_simplificado(edited_df, DB_PATH=DB_PATH):
     """
     Procesa el guardado (INSERT o UPDATE) de registros para Morbilidad Simplificada.

@@ -186,4 +186,3 @@ def agregar_contra_nueva(nombre_usuario, contrasena_hasheada): # NO ESTA LISTA
     finally:
         if conn:
             conn.close()
-# --- FIN FUNCIONES NUEVAS ---

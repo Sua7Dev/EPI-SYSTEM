@@ -79,8 +79,8 @@ def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False
             output = _exportar_pdf(df, nombre_base)
             area_descargada = "Registro_Diario"
         elif nombre_base.lower() in ["morbilidad_extensa", "morbilidad_extensa_seleccionado"]:
-            output = exportar_pdf_morbilidad_extensa(df, nombre_base)
-            area_descargada = "Morbilidad_Extensa"
+            output = exportar_pdf_morbilidad_extensa(df, "denuncias obligatorias")
+            area_descargada = "denuncias_obligatorias"
         elif nombre_base.lower() in ["morbilidad_simplificada", "morbilidad_simplificada_seleccionado"]:
             output = exportar_pdf_morbilidad_simp(df, nombre_base)
             area_descargada = "Morbilidad_Simplificada"

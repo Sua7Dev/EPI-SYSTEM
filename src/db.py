@@ -460,7 +460,6 @@ def create_table_morbilidad(conn):
             id_paciente INTEGER,
             id_direccion_hogar INTEGER,
             nombres_apellidos TEXT,
-            edad INTEGER,
             diagnostico TEXT,
             fecha_registro_formulario DATE,
             FOREIGN KEY (id_paciente) REFERENCES persona_paciente(id_paciente) ON DELETE CASCADE,
