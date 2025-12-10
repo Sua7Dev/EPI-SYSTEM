@@ -13,6 +13,7 @@ from utils.limpieza import limpiar_campos_morb_extenso, limpiar_campos_morb_simp
 from utils.validaciones import validar_texto, val_texynum, val_notas, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
 from utils.botones import confirmar_eliminar, guadar_btn
 from utils.guardar_cambios import procesar_guardado_morb_extenso, procesar_guardado_morb_simplificado
+from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
 configurar_pagina_espanol()
 
 DB_PATH = os.getenv("hospital.db", "hospital.db")
@@ -308,7 +309,22 @@ def mostrar_morb():
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
         return
-    formulario_morb_extenso()
+    tab1, tab2 = st.tabs(["| :material/personal_injury: Morbilidad |", 
+                                "| :material/article_shortcut: Reporte General |"])
+    with tab1:
+        formulario_morb_extenso()
+    with tab2:
+        st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
+        col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
+        #with col_izq:
+            #formulario_reporte_mensual_combinado()
+        #st.markdown("---")
+        with col_centro:
+            formulario_reporte_general_morbilidad()
+        #st.markdown("---")
+        #with col_der:
+            #formulario_reporte_mensual_general()
+        st.markdown("")
     copyright_footer_dos("Equipo Investigador")
 
 mostrar_morb()

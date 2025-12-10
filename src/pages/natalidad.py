@@ -13,6 +13,7 @@ from utils.limpieza import limpiar_campos_natalidad
 from utils.botones import confirmar_eliminar, guadar_btn
 from utils.guardar_cambios import procesar_guardado_cambios_natalidad
 configurar_pagina_espanol()
+from reportes.natalidad_general import formulario_reporte_general_natalidad
 import sys
 
 
@@ -199,7 +200,22 @@ def mostrar_nata():
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     logo(tamano="100%")
-    formulario_natalidad()
+    tab1, tab2 = st.tabs(["| :material/pregnant_woman: Natalidad |", 
+                                "| :material/article_shortcut: Reporte General |"])
+    with tab1:
+        formulario_natalidad()
+    with tab2:
+        st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
+        col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
+        #with col_izq:
+            #formulario_reporte_mensual_combinado()
+        #st.markdown("---")
+        with col_centro:
+            formulario_reporte_general_natalidad()
+        #st.markdown("---")
+        #with col_der:
+            #formulario_reporte_mensual_general()
+        st.markdown("")
     copyright_footer_dos("Equipo Investigador")
 
 mostrar_nata()
