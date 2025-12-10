@@ -29,7 +29,7 @@ def _exportar_pdf_natalidad(df, nombre_archivo):
     df_filtered = df_filtered[[col for col in df_filtered.columns if col not in columns_to_exclude]]
 
     # Normalizar fecha a datetime y formato para impresión
-    df_filtered['fecha_dt'] = pd.to_datetime(df_filtered['fecha'], errors='coerce')
+    df_filtered['fecha_dt'] = pd.to_datetime(df_filtered['fecha'], dayfirst=True, errors='coerce')
     df_filtered['fecha'] = df_filtered['fecha_dt'].dt.strftime('%d/%m/%Y')
 
     for col in ['partos', 'cesareas', 'varones', 'hembras', 'gemelar', 'mto', 'partos_extrahospitalarios']:

@@ -134,7 +134,8 @@ def formulario_neonatal(db=DB_PATH):
                         descargar_pdf(df_sel, "mortalidad_neonatal_seleccionado", label="Descarga selección", disabled=not has_selection)
                 else:
                     with col_guardar:
-                        guadar_btn(procesar_guardado_cambios_mortalidad_neonatal, edited_df) 
+                        guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")   
+                        #guadar_btn(procesar_guardado_cambios_mortalidad_neonatal, edited_df) 
                     with col_descargar:
                         descargar_pdf(edited_df, "mortalidad_neonatal")                
                     with col_descargar_seleccionado:
@@ -147,6 +148,8 @@ def formulario_neonatal(db=DB_PATH):
                                                 help="Eliminar registros seleccionados.")
                         if btn_eliminar:
                             confirmar_eliminar(eliminar_registros_neonatal, edited_df)
+                    if guardar:
+                        procesar_guardado_cambios_mortalidad_neonatal(edited_df)
 
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Neonatal", anchor=False)
@@ -275,9 +278,9 @@ def formulario_neonatal(db=DB_PATH):
                     return
                 elif not validar_cinco_espacios(nombre_madre, "El", "nombre de la madre"):
                     return
-                elif not val_notas(idx_ingreso, "La", "IDX de ingreso"):
+                elif not val_texynum(idx_ingreso, "La", "IDX de ingreso"):
                     return
-                elif not val_notas(idx_defuncion, "La", "IDX de defuncion"):
+                elif not val_texynum(idx_defuncion, "La", "IDX de defuncion"):
                     return   
                 elif not validar_pais(pais_hogar, "El", "pais del hogar"):
                     return
@@ -292,7 +295,7 @@ def formulario_neonatal(db=DB_PATH):
                 elif not val_notas(direccion_exacta, "La", "direccion exacta del hogar"):
                     return
                 elif peso == 0.0 or talla == 0.0:
-                    st.error("Peso y talla deben ser mayores a 0 para los registros diarios.", icon=":material/error:")
+                    st.error("Peso y talla deben ser mayores a 0.", icon=":material/error:")
                     return
                 else:
                     if operaciones_sql_neonatal("registrar", datos_registro=datos_registro):
@@ -397,7 +400,8 @@ def formulario_infantil(db=DB_PATH):
                         descargar_pdf(df_sel, "mortalidad_infantil_seleccionado", label="Descarga selección", disabled=not has_selection)
                 else:
                     with col_guardar:
-                        guadar_btn(procesar_guardado_cambios_mortalidad_infantil, edited_df) 
+                        guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")  
+                        #guadar_btn(procesar_guardado_cambios_mortalidad_infantil, edited_df) 
                     with col_descargar:
                         descargar_pdf(edited_df, "mortalidad_infantil")            
                     with col_descargar_seleccionado:
@@ -410,6 +414,8 @@ def formulario_infantil(db=DB_PATH):
                                                 help="Eliminar registros seleccionados.")
                         if btn_eliminar:
                             confirmar_eliminar(eliminar_registros_infantil, edited_df)
+                    if guardar:
+                        procesar_guardado_cambios_mortalidad_infantil(edited_df) 
 
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Infantil", anchor=False)
@@ -619,7 +625,8 @@ def formulario_materna(db=DB_PATH):
                         descargar_pdf(df_sel, "mortalidad_materna_seleccionado", label="Descarga selección", disabled=not has_selection)
                 else:
                     with col_guardar:
-                        guadar_btn(procesar_guardado_cambios_mortalidad_materna, edited_df) 
+                        guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")  
+                        #guadar_btn(procesar_guardado_cambios_mortalidad_materna, edited_df) 
                     with col_descargar:
                         descargar_pdf(edited_df, "mortalidad_materna")                
                     with col_descargar_seleccionado:
@@ -632,6 +639,8 @@ def formulario_materna(db=DB_PATH):
                                                 help="Eliminar registros seleccionados.")
                         if btn_eliminar:
                             confirmar_eliminar(eliminar_registros_materna, edited_df)
+                    if guardar:
+                        procesar_guardado_cambios_mortalidad_materna(edited_df) 
 
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Materna", anchor=False)

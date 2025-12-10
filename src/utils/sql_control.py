@@ -316,12 +316,19 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, DB_PATH=DB_PATH):
                     pp.edad,
                     m.diagnostico,
                     m.fecha_registro_formulario,
-                    COALESCE(p.nombre || ', ', '') ||
-                    COALESCE(e.nombre || ', ', '') ||
-                    COALESCE(c.nombre || ', ', '') ||
-                    COALESCE(mu.nombre || ', ', '') ||
-                    COALESCE(par.nombre || ', ', '') ||
-                    COALESCE(d.descripcion, '') AS direccion_hogar
+                    TRIM(
+                        REPLACE(
+                            (
+                                CASE WHEN p.nombre IS NOT NULL AND p.nombre <> 'No disponible' THEN p.nombre || ', ' ELSE '' END ||
+                                CASE WHEN e.nombre IS NOT NULL AND e.nombre <> 'No disponible' THEN e.nombre || ', ' ELSE '' END ||
+                                CASE WHEN c.nombre IS NOT NULL AND c.nombre <> 'No disponible' THEN c.nombre || ', ' ELSE '' END ||
+                                CASE WHEN mu.nombre IS NOT NULL AND mu.nombre <> 'No disponible' THEN mu.nombre || ', ' ELSE '' END ||
+                                CASE WHEN par.nombre IS NOT NULL AND par.nombre <> 'No disponible' THEN par.nombre || ', ' ELSE '' END ||
+                                CASE WHEN d.descripcion IS NOT NULL AND d.descripcion <> 'No disponible' THEN d.descripcion ELSE '' END
+                            ),
+                            ', ,', ','
+                        )
+                    ) AS direccion_hogar
                 FROM morbilidad m
                 LEFT JOIN direccion d ON m.id_direccion_hogar = d.id_direccion
                 LEFT JOIN parroquia par ON d.id_parroquia = par.id_parroquia

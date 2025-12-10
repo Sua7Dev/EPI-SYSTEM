@@ -34,8 +34,8 @@ def data_editor_natalidad(df, rol_usuario):
     if " " not in df.columns:
         df.insert(0, " ", False)
 
-    columns_to_display = [col for col in df.columns if col not in [" ", "id"]]
-    columns_to_show = [" "] + columns_to_display + (["id"] if "id" in df.columns else [])
+    columns_to_display = [col for col in df.columns if col not in [" ", "id", "id_doctor", "fecha_registro_formulario"]]
+    columns_to_show = [" "] + columns_to_display
     df = df[columns_to_show]
     
 
@@ -121,7 +121,8 @@ def formulario_natalidad():
                             descargar_pdf(df_sel, "natalidad_seleccionado", label="Descarga selección", disabled=not has_selection)
                     else:
                         with col_guadar:
-                            guadar_btn(procesar_guardado_cambios_natalidad, edited_df)                
+                            guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")  
+                            #guadar_btn(procesar_guardado_cambios_natalidad, edited_df)                
                         with col_descargar_todo:
                                 descargar_pdf(edited_df, "natalidad")                
                         with col_des_seleccionado:
@@ -134,6 +135,8 @@ def formulario_natalidad():
                                                     help="Eliminar registros seleccionados.")
                             if btn_eliminar:
                                 confirmar_eliminar(eliminar_registros_natalidad, edited_df)
+                        if guardar:
+                            procesar_guardado_cambios_natalidad(edited_df)
                     
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Natalidad", anchor=False)

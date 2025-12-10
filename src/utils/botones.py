@@ -23,9 +23,6 @@ def guadar_btn(funcion_receptora=None, variable_1=None, key_1=None):
         # aqui va la funcion receptora
         return funcion_receptora(variable_1)
     
-# probando
-def guadar_btn_3(key_1=None):
-    guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", key=key_1, type="primary")    
 
 def guadar_btn_2(funcion_receptora=None, variable_1=None, variable_2=None):
     guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch")

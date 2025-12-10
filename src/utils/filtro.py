@@ -16,7 +16,7 @@ def filtrar_por_fechas(df, columna_fecha='fecha_registro_formulario'):
     if columna_fecha is None or columna_fecha not in df.columns:
         return df
     try:
-        df[columna_fecha] = pd.to_datetime(df[columna_fecha], errors='coerce')
+        df[columna_fecha] = pd.to_datetime(df[columna_fecha], dayfirst=True, errors='coerce')
         if df[columna_fecha].isna().all():
             return df
         st.subheader(":material/calendar_clock: Filtrar por Fechas", anchor=False)

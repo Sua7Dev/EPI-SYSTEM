@@ -11,7 +11,7 @@ from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_morb_extenso, limpiar_campos_morb_simplificado
 from utils.validaciones import validar_texto, val_texynum, val_notas, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
-from utils.botones import confirmar_eliminar, guadar_btn, guadar_btn_3
+from utils.botones import confirmar_eliminar, guadar_btn
 from utils.guardar_cambios import procesar_guardado_morb_extenso, procesar_guardado_morb_simplificado
 from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
 configurar_pagina_espanol()

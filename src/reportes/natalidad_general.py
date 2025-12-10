@@ -2,7 +2,75 @@ import streamlit as st
 import datetime
 import sqlite3
 import os
+import pandas as pd
+from io import BytesIO
+from descargas.descarga_natalidad import _exportar_pdf_natalidad
+
 DB_PATH = os.getenv("hospital.db", "hospital.db")
+DATE_FORMAT = "DD/MM/YYYY"
+
+
+def _consultar_natalidad(year=None, specific_date=None, start_date=None, end_date=None):
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            where_clauses = []
+            params = []
+
+            # Expresión que convertirá 'DD/MM/YYYY' -> 'YYYY-MM-DD' cuando corresponda
+            fecha_iso_expr = """
+                CASE
+                    WHEN instr(fecha, '/') > 0 AND length(fecha) >= 8
+                        THEN substr(fecha, 7, 4) || '-' || substr(fecha, 4, 2) || '-' || substr(fecha, 1, 2)
+                    ELSE fecha
+                END
+            """
+
+            if year:
+                where_clauses.append(f"strftime('%Y', date({fecha_iso_expr})) = ?")
+                params.append(str(year))
+            if specific_date:
+                # specific_date es datetime.date -> comparar con ISO YYYY-MM-DD
+                where_clauses.append(f"date({fecha_iso_expr}) = date(?)")
+                params.append(specific_date.strftime("%Y-%m-%d"))
+            if start_date and end_date:
+                where_clauses.append(f"date({fecha_iso_expr}) BETWEEN date(?) AND date(?)")
+                params.extend([start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")])
+
+            where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+
+            query = f"""
+                SELECT
+                    id_nata AS id,
+                    fecha,
+                    partos,
+                    cesareas,
+                    varones,
+                    hembras,
+                    gemelar,
+                    mto,
+                    partos_extrahospitalarios,
+                    id_doctor,
+                    fecha_registro_formulario
+                FROM natalidad
+                {where_sql}
+                ORDER BY date({fecha_iso_expr}) DESC, id_nata DESC
+            """
+
+            df = pd.read_sql_query(query, conn, params=params)
+            # Mantener columna 'fecha' tal como está (DD/MM/YYYY) para el renderizador.
+            return df
+    except Exception:
+        return pd.DataFrame()
+
+
+def exportar_pdf_natalidad_general(year=None, specific_date=None, start_date=None, end_date=None):
+    """
+    Obtiene registros filtrados y devuelve BytesIO con el PDF usando _exportar_pdf_natalidad.
+    """
+    df = _consultar_natalidad(year=year, specific_date=specific_date, start_date=start_date, end_date=end_date)
+    nombre_archivo = "Natalidad_General"
+    return _exportar_pdf_natalidad(df, nombre_archivo)
+
 
 def formulario_reporte_general_natalidad():
     st.subheader(":material/description: General de Natalidad", anchor=False)
@@ -11,62 +79,80 @@ def formulario_reporte_general_natalidad():
             timeframe_key = "timeframe_general_reporte"
             if timeframe_key not in st.session_state:
                 st.session_state[timeframe_key] = "Año"
-            
+
             timeframe = st.selectbox(
                 "Seleccionar período",
-                ["Año", "Fecha Específica", "Rango de Fechas"], 
-                key="mortag", 
+                ["Año", "Fecha Específica", "Rango de Fechas"],
+                key="natalidad_timeframe",
                 on_change=lambda: st.session_state.update({timeframe_key: st.session_state[timeframe_key]})
             )
-            
+
             year, specific_date, start_date, end_date = None, None, None, None
             pdf_buffer = None
 
             if timeframe == "Año":
-                conn = sqlite3.connect(DB_PATH)
-                cursor = conn.cursor()
-                cursor.execute("SELECT DISTINCT strftime('%Y', fecha_registro_formulario) FROM natalidad ORDER BY 1 DESC")
-                available_years = [int(row[0]) for row in cursor.fetchall() if row[0]]
-                conn.close()
+                # obtener años disponibles a partir de la fecha normalizada
+                try:
+                    with sqlite3.connect(DB_PATH) as conn:
+                        cur = conn.cursor()
+                        cur.execute("""
+                            SELECT DISTINCT strftime('%Y', date(
+                                CASE
+                                    WHEN instr(fecha, '/') > 0 AND length(fecha) >= 8
+                                        THEN substr(fecha, 7, 4) || '-' || substr(fecha, 4, 2) || '-' || substr(fecha, 1, 2)
+                                    ELSE fecha
+                                END
+                            )) AS yr
+                            FROM natalidad
+                            WHERE fecha IS NOT NULL
+                            ORDER BY yr DESC
+                        """)
+                        available_years = [int(r[0]) for r in cur.fetchall() if r[0]]
+                except Exception:
+                    available_years = []
 
                 if not available_years:
                     st.error("Sin datos registrados.", icon=":material/error:")
                     return
 
-                year = st.selectbox("Año", available_years, key="year_general_reporte")
-                pdf_buffer = 3#exportar_pdf_Natalidad_general(year=year)
+                year = st.selectbox("Año", available_years, key="year_general_reporte_natalidad")
+                pdf_buffer = exportar_pdf_natalidad_general(year=year)
 
             elif timeframe == "Fecha Específica":
                 specific_date = st.date_input(
-                    "Fecha", 
-                    format="DD/MM/YYYY",
-                    min_value=datetime.date(2000, 1, 1), 
-                    max_value=datetime.date(2050, 12, 31), 
-                    key="specific_date_general_reporte"
+                    "Fecha",
+                    value=datetime.date.today(),
+                    format=DATE_FORMAT,
+                    min_value=datetime.date(2000, 1, 1),
+                    max_value=datetime.date(2050, 12, 31),
+                    key="specific_date_general_reporte_natalidad"
                 )
-                pdf_buffer = 2#exportar_pdf_Natalidad_general(specific_date=specific_date)
+                pdf_buffer = exportar_pdf_natalidad_general(specific_date=specific_date)
 
-            else:  
+            else:
                 col_start, col_end = st.columns(2)
                 with col_start:
                     start_date = st.date_input(
-                        "Fecha Inicio", 
-                        format="DD/MM/YYYY", 
-                        min_value=datetime.date(2000, 1, 1), 
-                        max_value=datetime.date(2050, 12, 31), 
-                        key="start_date_general_reporte"
+                        "Fecha Inicio",
+                        value=(datetime.date.today() - datetime.timedelta(days=30)),
+                        format=DATE_FORMAT,
+                        min_value=datetime.date(2000, 1, 1),
+                        max_value=datetime.date(2050, 12, 31),
+                        key="start_date_general_reporte_natalidad"
                     )
                 with col_end:
                     end_date = st.date_input(
-                        "Fecha Fin", 
-                        format="DD/MM/YYYY", 
-                        min_value=datetime.date(2000, 1, 1), 
-                        max_value=datetime.date(2050, 12, 31), 
-                        value=datetime.date.today(), 
-                        key="end_date_general_reporte"
+                        "Fecha Fin",
+                        value=datetime.date.today(),
+                        format=DATE_FORMAT,
+                        min_value=datetime.date(2000, 1, 1),
+                        max_value=datetime.date(2050, 12, 31),
+                        key="end_date_general_reporte_natalidad"
                     )
-                if end_date >= start_date:
-                    pdf_buffer = 1#exportar_pdf_Natalidad_general(start_date=start_date, end_date=end_date)
+                if end_date < start_date:
+                    st.error("La fecha fin debe ser igual o posterior a la fecha inicio.", icon=":material/error:")
+                    return
+                pdf_buffer = exportar_pdf_natalidad_general(start_date=start_date, end_date=end_date)
 
             if pdf_buffer:
                 fecha_actual = datetime.datetime.now()
@@ -75,17 +161,17 @@ def formulario_reporte_general_natalidad():
                 meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
                 fecha_hora_str = f"{fecha_str}_{hora_str}_{meridiano}"
 
+                content = pdf_buffer.getvalue() if hasattr(pdf_buffer, "getvalue") else pdf_buffer
                 st.download_button(
                     label="Descargar Reporte",
-                    data=pdf_buffer,
+                    data=content,
                     file_name=f"Reporte_Natalidad_General_{fecha_hora_str}.pdf",
                     mime="application/pdf",
                     icon=":material/download:",
-                    key=f"download_general_{fecha_hora_str}_reporte",
+                    key=f"download_natalidad_general_{fecha_hora_str}",
                     use_container_width=True,
                     type="primary"
                 )
-
             else:
                 st.error("No hay datos para el período seleccionado.", icon=":material/error:")
         except Exception as e:

@@ -40,16 +40,54 @@ def procesar_guardado_cambios_mortalidad_neonatal(edited_df, DB_PATH=DB_PATH):
             historia_clinica = str(row.get("historia_clinica", ""))
             nombres_apellidos = row.get("nombres_apellidos", "")
             nombre_madre = row.get("nombre_madre", "")
+            idx_ingreso = row.get("idx_ingreso", "")
+            idx_defuncion = row.get("idx_ingreso", "")
             # Validaciones (adaptadas de mortalidad.py)
-            if not val_num_espacios(historia_clinica, "La", "Historia clínica"):
+            #if not val_num_espacios(historia_clinica, "La", "Historia clínica"):
+            #    return
+            #if not validar_texto(nombres_apellidos, "Los", "Nombres y apellidos"):
+            #    return
+            #if not validar_texto(nombre_madre, "Los", "Nombre de la madre"):
+            #    return
+            #if float(row.get("peso", 0)) <= 0 or float(row.get("talla", 0)) <= 0:
+            #    st.error("Peso y talla deben ser mayores a 0 para Muerte Neonatal", icon=":material/error:")
+            #    return
+            peso_raw = row.get("peso", None)
+            talla_raw = row.get("talla", None)
+
+            # Detectar None o NaN (pandas/numpy)
+            if pd.isna(peso_raw) or pd.isna(talla_raw) or peso_raw is None or talla_raw is None:
+                st.error("Peso y talla no deben estar vacíos.", icon=":material/error:")
                 return
-            if not validar_texto(nombres_apellidos, "Los", "Nombres y apellidos"):
+
+            # Intentar convertir a float con manejo de errores
+            try:
+                peso = float(peso_raw)
+                talla = float(talla_raw)
+            except (TypeError, ValueError):
+                st.error("Peso y talla deben ser números válidos.", icon=":material/error:")
                 return
-            if not validar_texto(nombre_madre, "Los", "Nombre de la madre"):
+
+            # nuevas
+            if not val_num_espacios(historia_clinica, "La", "historia clinica"):
                 return
-            if float(row.get("peso", 0)) <= 0 or float(row.get("talla", 0)) <= 0:
-                st.error("Peso y talla deben ser mayores a 0 para Muerte Neonatal", icon=":material/error:")
+            elif not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"):
                 return
+            elif not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"):
+                return
+            elif not validar_texto(nombre_madre, "El", "nombre de la madre"):
+                return
+            elif not validar_cinco_espacios(nombre_madre, "El", "nombre de la madre"):
+                return
+            elif not val_texynum(idx_ingreso, "La", "IDX de ingreso"):
+                return
+            elif not val_texynum(idx_defuncion, "La", "IDX de defuncion"):
+                return   
+            # Validar valores positivos
+            if peso <= 0 or talla <= 0:
+                st.error("Peso y talla deben ser mayores a 0 para los registros diarios.", icon=":material/error:")
+                return
+
             # Actualización dinámica
             updates = {
                 'mortalidad': {'fields': [], 'values': []},
@@ -555,10 +593,25 @@ def procesar_guardado_cambios_reg_diario(edited_df, DB_PATH=DB_PATH):
                 if not validar_texto(row.get(field, ""), "El", label):
                     return
 
-            peso = float(row.get("peso", 0)) if pd.notna(row.get("peso", 0)) else 0
-            talla = float(row.get("talla", 0)) if pd.notna(row.get("talla", 0)) else 0
+            peso_raw = row.get("peso", None)
+            talla_raw = row.get("talla", None)
+
+            # Detectar None o NaN (pandas/numpy)
+            if pd.isna(peso_raw) or pd.isna(talla_raw) or peso_raw is None or talla_raw is None:
+                st.error("Peso y talla no deben estar vacíos.", icon=":material/error:")
+                return
+
+            # Intentar convertir a float con manejo de errores
+            try:
+                peso = float(peso_raw)
+                talla = float(talla_raw)
+            except (TypeError, ValueError):
+                st.error("Peso y talla deben ser números válidos.", icon=":material/error:")
+                return
+
+            # Validar valores positivos
             if peso <= 0 or talla <= 0:
-                st.error("El peso y la talla deben ser mayores a 0 para los registros diarios.", icon=":material/error:")
+                st.error("Peso y talla deben ser mayores a 0 para los registros diarios.", icon=":material/error:")
                 return
 
             if not val_notas(row.get("autopsia", ""), "La", "autopsia"):
