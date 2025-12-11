@@ -136,29 +136,49 @@ def formulario_reporte_general_morbilidad():
                 )
                 pdf_buffer = exportar_pdf_morbilidad_general(specific_date=specific_date)
 
+            # ----------------------------
+# RANGO DE FECHAS
+# ----------------------------
             else:
+                # Obtener fecha mínima y máxima de registros
+                try:
+                    with sqlite3.connect(DB_PATH) as conn:
+                        df_fechas = pd.read_sql_query("""
+                            SELECT fecha_registro_formulario
+                            FROM morbilidad
+                            WHERE fecha_registro_formulario IS NOT NULL
+                        """, conn)
+                    if not df_fechas.empty:
+                        df_fechas["fecha_iso"] = pd.to_datetime(df_fechas["fecha_registro_formulario"], dayfirst=True, errors='coerce')
+                        min_fecha = df_fechas["fecha_iso"].min().date()
+                        max_fecha = df_fechas["fecha_iso"].max().date()
+                    else:
+                        min_fecha = datetime.date.today() - datetime.timedelta(days=30)
+                        max_fecha = datetime.date.today()
+                except Exception:
+                    min_fecha = datetime.date.today() - datetime.timedelta(days=30)
+                    max_fecha = datetime.date.today()
+
                 col_start, col_end = st.columns(2)
                 with col_start:
                     start_date = st.date_input(
                         "Fecha Inicio",
-                        value=(datetime.date.today() - datetime.timedelta(days=30)),
+                        value=min_fecha,
                         format="DD/MM/YYYY",
-                        min_value=datetime.date(2000, 1, 1),
-                        max_value=datetime.date(2050, 12, 31),
                         key="start_date_general_reporte"
                     )
                 with col_end:
                     end_date = st.date_input(
                         "Fecha Fin",
-                        value=datetime.date.today(),
+                        value=max_fecha,
                         format="DD/MM/YYYY",
-                        min_value=datetime.date(2000, 1, 1),
-                        max_value=datetime.date(2050, 12, 31),
                         key="end_date_general_reporte"
                     )
+
                 if end_date < start_date:
                     st.error("La fecha fin debe ser igual o posterior a la fecha inicio.", icon=":material/error:")
                     return
+
                 pdf_buffer = exportar_pdf_morbilidad_general(start_date=start_date, end_date=end_date)
 
             if pdf_buffer:

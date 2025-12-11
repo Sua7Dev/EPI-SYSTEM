@@ -202,7 +202,9 @@ def create_table_departamento(conn):
         CREATE TABLE IF NOT EXISTS departamento (
             id_departamento INTEGER PRIMARY KEY AUTOINCREMENT,
             descripcion TEXT,
-            nombre TEXT NOT NULL UNIQUE
+            nombre TEXT NOT NULL UNIQUE,
+            mision TEXT,
+            vision TEXT
         );
         ''')
     except sqlite3.Error as e:
@@ -248,34 +250,6 @@ def create_table_doctor_departamento(conn):
             PRIMARY KEY (id_doctor, id_departamento),
             FOREIGN KEY (id_departamento) REFERENCES departamento(id_departamento) ON DELETE CASCADE,
             FOREIGN KEY (id_doctor) REFERENCES doctor(id_doctor) ON DELETE CASCADE
-        );
-        ''')
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
-
-def create_table_mision(conn):
-    try:
-        conn.execute('''
-        CREATE TABLE IF NOT EXISTS mision (
-            id_mision INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_departamento INTEGER NOT NULL UNIQUE,
-            contenido TEXT NOT NULL,
-            FOREIGN KEY (id_departamento) REFERENCES departamento(id_departamento) ON DELETE CASCADE
-        );
-        ''')
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
-
-def create_table_vision(conn):
-    try:
-        conn.execute('''
-        CREATE TABLE IF NOT EXISTS vision (
-            id_vision INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_departamento INTEGER NOT NULL UNIQUE,
-            contenido TEXT NOT NULL,
-            FOREIGN KEY (id_departamento) REFERENCES departamento(id_departamento) ON DELETE CASCADE
         );
         ''')
     except sqlite3.Error as e:
@@ -594,8 +568,6 @@ def create_all_tables(db='hospital.db'):#
         create_table_departamento_hospital(conn)
         create_table_secretaria_departamento(conn)
         create_table_doctor_departamento(conn)
-        create_table_mision(conn)
-        create_table_vision(conn)
         create_table_persona_paciente(conn)
         create_table_doctor_paciente(conn)
         create_table_secretaria_paciente(conn)

@@ -58,51 +58,39 @@ def hospital():
     # aqui la informacion del personal
 
 def mision():
-    try: # conexion a la bd
+    try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT contenido FROM mision WHERE id_departamento = (SELECT id_departamento FROM departamento WHERE nombre = ?)", ('Epidemiología',))
-        texto_mision = cursor.fetchone()[0]
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
-
-    try: # lo que se ve
+        cursor.execute("SELECT mision FROM departamento WHERE nombre = 'Epidemiología'")
+        row = cursor.fetchone()
+        conn.close()
+        
+        texto = (row[0] if row and row[0] else "Misión no definida aún.")
+        
         with st.popover("Misión", icon=":material/target:", width="stretch"):
             st.header(":material/target: Misión", divider="gray", anchor=False)
-            st.markdown(
-                f"""
-                <div style="text-align: justify; margin: 10px 0;">
-                    {texto_mision}
-                </div>
-                """, unsafe_allow_html=True)
-        conn.close()
+            st.markdown(f"<div style='text-align: justify; margin: 10px 0;'>{texto}</div>", unsafe_allow_html=True)
+            
     except Exception as e:
-       st.error(f"Ocurrió un error: {e}")
+        st.error(f"Error al cargar la misión: {e}", icon=":material/error:")
+        
 
 def vision():
-    try: # bd
+    try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT contenido FROM vision WHERE id_departamento = (SELECT id_departamento FROM departamento WHERE nombre = ?)", ('Epidemiología',))
-        texto_vision = cursor.fetchone()[0]
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
-    
-    try: # lo q se ve
+        cursor.execute("SELECT vision FROM departamento WHERE nombre = 'Epidemiología'")
+        row = cursor.fetchone()
+        conn.close()
+        
+        texto = (row[0] if row and row[0] else "Visión no definida aún.")
+        
         with st.popover("Visión", icon=":material/emoji_objects:", width="stretch"):
             st.header(":material/emoji_objects: Visión", divider="gray", anchor=False)
-            st.markdown(
-                f"""
-                <div style="text-align: justify; margin: 10px 0;">
-                    {texto_vision}
-                </div>
-                """, unsafe_allow_html=True)
-        conn.close()
+            st.markdown(f"<div style='text-align: justify; margin: 10px 0;'>{texto}</div>", unsafe_allow_html=True)
+            
     except Exception as e:
-       st.error(f"Ocurrió un error: {e}")
-
+        st.error(f"Error al cargar la visión: {e}", icon=":material/error:")
 def manual_de_uso():
     try:
         with st.popover("Manual de usuario", icon=":material/developer_guide:", width="stretch"):

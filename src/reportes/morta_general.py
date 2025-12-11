@@ -1,4 +1,3 @@
-
 import pandas as pd
 import sqlite3
 import datetime
@@ -7,13 +6,35 @@ from io import BytesIO
 import locale
 from utils.pdfbanners import CustomPDF
 import os
+
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
+
 
 def limpiar_dato(valor):
     if pd.isna(valor) or valor is None:
         return ""
     return str(valor).strip()
+
+
+def obtener_rango_fechas_mortalidad():
+    """Devuelve la fecha mínima y máxima de registros de mortalidad."""
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            df = pd.read_sql_query("""
+                SELECT fecha_registro_formulario
+                FROM mortalidad
+                WHERE fecha_registro_formulario IS NOT NULL
+            """, conn)
+        if df.empty:
+            return datetime.date.today() - datetime.timedelta(days=30), datetime.date.today()
+        df['fecha_iso'] = pd.to_datetime(df['fecha_registro_formulario'], dayfirst=True, errors='coerce')
+        min_fecha = df['fecha_iso'].min().date()
+        max_fecha = df['fecha_iso'].max().date()
+        return min_fecha, max_fecha
+    except Exception:
+        return datetime.date.today() - datetime.timedelta(days=30), datetime.date.today()
+
 
 def exportar_pdf_mortalidad_general(year=None, specific_date=None, start_date=None, end_date=None):
     try:
@@ -172,14 +193,10 @@ def exportar_pdf_mortalidad_general(year=None, specific_date=None, start_date=No
                     if pd.notnull(row['nombre_madre']):
                         fields.append(f"Nombre Madre: {limpiar_dato(row['nombre_madre'])}")
 
-                # Procesar dirección para eliminar "No disponible" y componentes vacíos
                 direccion = limpiar_dato(row['direccion'])
                 if direccion:
-                    # Dividir la dirección por comas y limpiar cada componente
                     componentes = [comp.strip() for comp in direccion.split(',')]
-                    # Filtrar componentes vacíos o "No disponible"
                     componentes_validos = [comp for comp in componentes if comp and comp != "No disponible"]
-                    # Volver a concatenar con comas
                     direccion_limpia = ", ".join(componentes_validos) if componentes_validos else None
                     if direccion_limpia:
                         fields.append(f"Dirección: {direccion_limpia}")

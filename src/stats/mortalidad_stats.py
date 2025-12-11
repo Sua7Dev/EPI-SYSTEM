@@ -180,7 +180,7 @@ def morta_ultimo_ano_chart():
         df["mes_es"] = df["month"].dt.strftime("%B %Y").str.capitalize()
 
         chart = alt.Chart(df).mark_area().encode(
-            x=alt.X("mes_es:O", title="Mes"),   
+            x=alt.X("mes_es:O", title="Mes"),
             y="cantidad:Q",
             color="categoria:N",
             row=alt.Row("categoria:N").sort(["Maternal", "Infantil", "Neonatal"])
@@ -190,7 +190,10 @@ def morta_ultimo_ano_chart():
             title=f"Mortalidad por Mes - {selected_year}"
         )
 
-        st.altair_chart(chart, use_container_width=True)
+        # ✔ MOVER GRÁFICA A LA IZQUIERDA
+        col1, col2 = st.columns([1, 0.5])
+        with col1:
+            st.altair_chart(chart, use_container_width=True)
 
     except sqlite3.Error as e:
         st.error(f"Error al acceder a la base de datos: {e}", icon=":material/error:")

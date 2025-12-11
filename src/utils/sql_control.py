@@ -17,10 +17,11 @@ def insertar_hospital_info():
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
+
         cursor.execute("SELECT id_hospital FROM hospital WHERE nombre = ?", 
                       ("Hospital General Dr. Felipe Guevara Rojas",))
         if cursor.fetchone():
-            return
+            return  
 
         cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", ('Venezuela',))
         cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", ('Venezuela',))
@@ -43,26 +44,31 @@ def insertar_hospital_info():
         id_parroquia = cursor.fetchone()[0]
 
         descripcion_direccion = "Av. Libertador 17 (17 Av. Libertador), El Tigre, código postal 6050."
-        cursor.execute("INSERT OR IGNORE INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (descripcion_direccion, id_parroquia))
-        cursor.execute("SELECT id_direccion FROM direccion WHERE descripcion = ? AND id_parroquia = ?", (descripcion_direccion, id_parroquia))
+        cursor.execute("INSERT OR IGNORE INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", 
+                      (descripcion_direccion, id_parroquia))
+        cursor.execute("SELECT id_direccion FROM direccion WHERE descripcion = ? AND id_parroquia = ?", 
+                      (descripcion_direccion, id_parroquia))
         id_direccion = cursor.fetchone()[0]
 
-        descripcion_hospital = "El Hospital General Dr. Felipe Guevara Rojas es un centro de salud público ubicado en El Tigre, estado Anzoátegui, Venezuela, que pertenece al Distrito Sanitario N° V. Como hospital general, su función es ofrecer una amplia gama de servicios de salud, que van desde consultas de emergencia hasta atención especializada en diversas áreas."
+        descripcion_hospital = (
+            "El Hospital General Dr. Felipe Guevara Rojas es un centro de salud público ubicado en El Tigre, "
+            "estado Anzoátegui, Venezuela, que pertenece al Distrito Sanitario N° V. Como hospital general, "
+            "su función es ofrecer una amplia gama de servicios de salud, que van desde consultas de emergencia "
+            "hasta atención especializada en diversas áreas."
+        )
         cursor.execute("INSERT INTO hospital (nombre, descripcion, id_direccion) VALUES (?, ?, ?)", 
                       ("Hospital General Dr. Felipe Guevara Rojas", descripcion_hospital, id_direccion))
-        cursor.execute("SELECT id_hospital FROM hospital WHERE nombre = ?", ("Hospital General Dr. Felipe Guevara Rojas",))
+        cursor.execute("SELECT id_hospital FROM hospital WHERE nombre = ?", 
+                      ("Hospital General Dr. Felipe Guevara Rojas",))
         id_hospital = cursor.fetchone()[0]
 
-        descripcion_departamento = (
-            """El Departamento de Epidemiología del Hospital General Dr. Felipe Guevara Rojas es una unidad vital dedicada a la prevención y control de enfermedades infecciosas dentro de la institución. Bajo la dirección del Dr. Olivier Ladera, el equipo se centra en la vigilancia activa, investigando cualquier brote potencial para proteger tanto a los pacientes como al personal."""
-        )
-        cursor.execute("INSERT OR IGNORE INTO departamento (nombre, descripcion) VALUES (?, ?)", 
-                      ('Epidemiología', descripcion_departamento))
-        cursor.execute("SELECT id_departamento FROM departamento WHERE nombre = ?", ('Epidemiología',))
-        id_departamento = cursor.fetchone()[0]
 
-        cursor.execute("INSERT OR IGNORE INTO departamento_hospital (id_departamento, id_hospital) VALUES (?, ?)", 
-                      (id_departamento, id_hospital))
+        descripcion_departamento = (
+            "El Departamento de Epidemiología del Hospital General Dr. Felipe Guevara Rojas es una unidad vital "
+            "dedicada a la prevención y control de enfermedades infecciosas dentro de la institución. Bajo la "
+            "dirección del Dr. Olivier Ladera, el equipo se centra en la vigilancia activa, investigando cualquier "
+            "brote potencial para proteger tanto a los pacientes como al personal."
+        )
 
         mision_texto = (
             "Departamento de epidemiología hospitalaria 'Dr. Felipe Guevara Rojas' tiene como misión proveer de información "
@@ -71,8 +77,6 @@ def insertar_hospital_info():
             "Salud del Estado Venezolano y de los vínculos interinstitucionales que sustentan en conjunto las acciones administrativas, "
             "asistenciales y docentes para la consecución de los objetivos del servicio como elemento organizacional clave dentro del hospital."
         )
-        cursor.execute("INSERT OR IGNORE INTO mision (id_departamento, contenido) VALUES (?, ?)", 
-                      (id_departamento, mision_texto))
 
         vision_texto = (
             "Ser un servicio que fortalezca la vigilancia epidemiológica y de los problemas de salud de la población de la zona Sur del "
@@ -81,17 +85,28 @@ def insertar_hospital_info():
             "del Estado Venezolano en la cual los usuarios internos y externos se sientan satisfechos por el servicio y producto proporcionado "
             "por el hospital 'Dr. Felipe Guevara Rojas'."
         )
-        cursor.execute("INSERT OR IGNORE INTO vision (id_departamento, contenido) VALUES (?, ?)", 
-                      (id_departamento, vision_texto))
+
+        cursor.execute("""
+            INSERT OR IGNORE INTO departamento (nombre, descripcion, mision, vision) 
+            VALUES (?, ?, ?, ?)
+        """, ('Epidemiología', descripcion_departamento, mision_texto, vision_texto))
+
+        cursor.execute("SELECT id_departamento FROM departamento WHERE nombre = ?", ('Epidemiología',))
+        id_departamento = cursor.fetchone()[0]
+
+        cursor.execute("INSERT OR IGNORE INTO departamento_hospital (id_departamento, id_hospital) VALUES (?, ?)", 
+                      (id_departamento, id_hospital))
 
         conn.commit()
-    except sqlite3.Error:
+        st.success("Datos iniciales del hospital insertados correctamente.")
+
+    except sqlite3.Error as e:
         if conn:
             conn.rollback()
+        st.error(f"Error al insertar datos iniciales: {e}")
     finally:
         if conn:
             conn.close()
-            
 #operaciones de natalidad
 def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
     try:
