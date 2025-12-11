@@ -98,7 +98,7 @@ def insertar_hospital_info():
                       (id_departamento, id_hospital))
 
         conn.commit()
-        st.success("Datos iniciales del hospital insertados correctamente.")
+        #st.success("Datos iniciales del hospital insertados correctamente.")
 
     except sqlite3.Error as e:
         if conn:
