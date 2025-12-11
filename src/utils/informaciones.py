@@ -37,12 +37,13 @@ def nosotros():
     nosotros_sg = st.popover("Sobre Nosotros", icon=":material/contact_support:", width="stretch")
     with nosotros_sg:
         st.subheader(":material/contact_page: Contactanos al:", divider="gray", anchor=False)
-        st.markdown(":green[Whatsapp:]")
-        st.write("Samuel Urbano: +58 0424-8528064")
-        st.markdown("Gustavo Heredia: +58 0414-7966434")
+        #st.markdown(":green[Whatsapp:]")
         st.markdown(":red[Gmail:]")
-        st.markdown("Samuel Urbano: samuel.urbano.arana@gmail.com")
+        st.write("Samuel Urbano: samuel.urbano.arana@gmail.com")
         st.markdown("Gustavo Heredia: newpersonal98@gmail.com")
+        st.markdown("Arturo Noriega: arturonoriega2321@gmail.com")
+        st.markdown("Antonella Reyes: antonellareyes04@gmail.com")
+
 
 def hospital():
     _, col_titulo = st.columns([1.29, 2.8])

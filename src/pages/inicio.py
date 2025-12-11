@@ -74,7 +74,7 @@ def boton_eliminar_base_datos():
             except Exception as e:
                 st.error(f"Error al eliminar la base de datos: {e}", icon=":material/error:")
                 
-boton_eliminar_base_datos()
+#boton_eliminar_base_datos()
 import shutil
 def boton_descargar_bd(db_path=DB_PATH):
     """
@@ -100,7 +100,7 @@ def boton_descargar_bd(db_path=DB_PATH):
         else:
             st.error("No se encontró la base de datos.", icon=":warning:")
             
-boton_descargar_bd()
+#boton_descargar_bd()
 
 def graficas_dashboard():
     """
