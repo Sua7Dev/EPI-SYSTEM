@@ -85,7 +85,7 @@ def procesar_guardado_cambios_mortalidad_neonatal(edited_df, DB_PATH=DB_PATH):
                 return   
             # Validar valores positivos
             if peso <= 0 or talla <= 0:
-                st.error("Peso y talla deben ser mayores a 0 para los registros diarios.", icon=":material/error:")
+                st.error("Peso y talla deben ser mayores a 0.", icon=":material/error:")
                 return
 
             # Actualización dinámica
