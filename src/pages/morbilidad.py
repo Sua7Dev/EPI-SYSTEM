@@ -188,9 +188,9 @@ def formulario_morb_extenso(db=DB_PATH):
             municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_morb_extenso", placeholder="Simón Rodríguez")
         col_parroquia, col_ciudad = st.columns(2)
         with col_parroquia:
-            parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_morb_extenso", placeholder="Edmundo Barrios (zona norte)")
+            parroquia_hogar = st.text_input("Parroquia (Opcional)", max_chars=56, key="parroquia_hogar_morb_extenso", placeholder="Edmundo Barrios (zona norte)")
         with col_ciudad:
-            ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="cuidad_hogar_morb_extenso", placeholder="El Tigre")
+            ciudad_hogar = st.text_input("Ciudad (Opcional)", max_chars=56, key="cuidad_hogar_morb_extenso", placeholder="El Tigre")
         direccion_exacta_hogar = st.text_area("Dirección Exacta", max_chars=150, key="direccion_exacta_hogar_morb_extenso", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
 
         col_reg, col_limp = st.columns([30, 1])
@@ -201,7 +201,7 @@ def formulario_morb_extenso(db=DB_PATH):
 
         if registrar:
             # Validaciones básicas
-            if not all([nombres_apellidos, diagnostico, parroquia_hogar, ciudad_hogar, direccion_exacta_hogar]):
+            if not all([nombres_apellidos, diagnostico, direccion_exacta_hogar]):
                 st.error("Por favor completa todos los campos obligatorios", icon=":material/error:")
                 return
             if not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"): return

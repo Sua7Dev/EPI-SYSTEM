@@ -313,14 +313,12 @@ def eliminar_registros_diario(edited_df):
         st.error(f"Error al eliminar: {e}", icon=":material/error:")
         
 #operaciones de morbilidad 
+
 def operaciones_sql_morb_extenso(accion, datos_registro=None, DB_PATH=DB_PATH):
     try:
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
 
-            # -----------------------------
-            # CARGAR REGISTROS
-            # -----------------------------
             if accion == "cargar":
                 query = """
                 SELECT 
@@ -341,7 +339,7 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, DB_PATH=DB_PATH):
                                 CASE WHEN par.nombre IS NOT NULL AND par.nombre <> 'No disponible' THEN par.nombre || ', ' ELSE '' END ||
                                 CASE WHEN d.descripcion IS NOT NULL AND d.descripcion <> 'No disponible' THEN d.descripcion ELSE '' END
                             ),
-                            ', ,', ','
+                            ', ,', ',' 
                         )
                     ) AS direccion_hogar
                 FROM morbilidad m
@@ -356,12 +354,8 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, DB_PATH=DB_PATH):
                 """
                 return pd.read_sql_query(query, conn)
 
-            # -----------------------------
-            # REGISTRAR NUEVO REGISTRO
-            # -----------------------------
             elif accion == "registrar" and datos_registro:
-                # ...existing code...
-                rol_usuario = datos_registro.get("rol_usuario")  # "Doctor (a)", "Secretario (a)", "Administrador (a)"
+                rol_usuario = datos_registro.get("rol_usuario")
                 id_doctor = datos_registro.get("id_doctor")
                 id_secretaria = datos_registro.get("id_secretaria")
                 id_administrador = datos_registro.get("id_administrador")
@@ -371,49 +365,55 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, DB_PATH=DB_PATH):
                 diagnostico = datos_registro.get("diagnostico")
 
                 dir_data = datos_registro.get("direccion", {})
-                pais = dir_data.get("pais") or "No disponible"
+                pais = dir_data.get("pais")
                 estado = dir_data.get("estado") or "No disponible"
                 municipio = dir_data.get("municipio") or "No disponible"
                 parroquia = dir_data.get("parroquia") or "No disponible"
                 ciudad = dir_data.get("ciudad") or "No disponible"
                 direccion_exacta = dir_data.get("direccion_exacta") or "No disponible"
 
-                # -----------------------------
-                # CREAR / OBTENER DIRECCIÓN
-                # -----------------------------
-                cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", (pais,))
-                cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", (pais,))
-                id_pais = cursor.fetchone()[0]
+                if pais:
+                    cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", (pais,))
+                    cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", (pais,))
+                    id_pais = cursor.fetchone()[0]
+                else:
+                    id_pais = None
 
-                cursor.execute("INSERT OR IGNORE INTO estado (nombre, id_pais) VALUES (?, ?)", (estado, id_pais))
-                cursor.execute("SELECT id_estado FROM estado WHERE nombre = ? AND id_pais = ?", (estado, id_pais))
-                id_estado = cursor.fetchone()[0]
+                if estado:
+                    cursor.execute("INSERT OR IGNORE INTO estado (nombre, id_pais) VALUES (?, ?)", (estado, id_pais))
+                    cursor.execute("SELECT id_estado FROM estado WHERE nombre = ? AND id_pais = ?", (estado, id_pais))
+                    id_estado = cursor.fetchone()[0]
+                else:
+                    id_estado = None
 
-                cursor.execute("INSERT OR IGNORE INTO ciudad (nombre, id_estado) VALUES (?, ?)", (ciudad, id_estado))
-                cursor.execute("SELECT id_ciudad FROM ciudad WHERE nombre = ? AND id_estado = ?", (ciudad, id_estado))
-                id_ciudad = cursor.fetchone()[0]
+                if ciudad:
+                    cursor.execute("INSERT OR IGNORE INTO ciudad (nombre, id_estado) VALUES (?, ?)", (ciudad, id_estado))
+                    cursor.execute("SELECT id_ciudad FROM ciudad WHERE nombre = ? AND id_estado = ?", (ciudad, id_estado))
+                    id_ciudad = cursor.fetchone()[0]
+                else:
+                    id_ciudad = None
 
-                cursor.execute("INSERT OR IGNORE INTO municipio (nombre, id_ciudad) VALUES (?, ?)", (municipio, id_ciudad))
-                cursor.execute("SELECT id_municipio FROM municipio WHERE nombre = ? AND id_ciudad = ?", (municipio, id_ciudad))
-                id_municipio = cursor.fetchone()[0]
+                if municipio:
+                    cursor.execute("INSERT OR IGNORE INTO municipio (nombre, id_ciudad) VALUES (?, ?)", (municipio, id_ciudad))
+                    cursor.execute("SELECT id_municipio FROM municipio WHERE nombre = ? AND id_ciudad = ?", (municipio, id_ciudad))
+                    id_municipio = cursor.fetchone()[0]
+                else:
+                    id_municipio = None
 
-                cursor.execute("INSERT OR IGNORE INTO parroquia (nombre, id_municipio) VALUES (?, ?)", (parroquia, id_municipio))
-                cursor.execute("SELECT id_parroquia FROM parroquia WHERE nombre = ? AND id_municipio = ?", (parroquia, id_municipio))
-                id_parroquia = cursor.fetchone()[0]
+                if parroquia:
+                    cursor.execute("INSERT OR IGNORE INTO parroquia (nombre, id_municipio) VALUES (?, ?)", (parroquia, id_municipio))
+                    cursor.execute("SELECT id_parroquia FROM parroquia WHERE nombre = ? AND id_municipio = ?", (parroquia, id_municipio))
+                    id_parroquia = cursor.fetchone()[0]
+                else:
+                    id_parroquia = None
 
                 cursor.execute("INSERT OR IGNORE INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_exacta, id_parroquia))
                 cursor.execute("SELECT id_direccion FROM direccion WHERE descripcion = ? AND id_parroquia = ?", (direccion_exacta, id_parroquia))
                 id_direccion_hogar = cursor.fetchone()[0]
 
-                # -----------------------------
-                # CREAR PACIENTE
-                # -----------------------------
                 cursor.execute("INSERT INTO persona_paciente (edad) VALUES (?)", (edad,))
                 id_paciente = cursor.lastrowid
 
-                # -----------------------------
-                # INSERTAR EN MORBILIDAD
-                # -----------------------------
                 cursor.execute("""
                     INSERT INTO morbilidad (
                         id_paciente, 
@@ -430,9 +430,6 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, DB_PATH=DB_PATH):
                     datetime.date.today().strftime("%d/%m/%Y")
                 ))
 
-                # -----------------------------
-                # RELACIONAR PACIENTE SEGÚN ROL
-                # -----------------------------
                 if rol_usuario == "Doctor (a)" and id_doctor:
                     cursor.execute(
                         "INSERT OR IGNORE INTO doctor_paciente (id_doctor, id_paciente) VALUES (?, ?)",
@@ -454,10 +451,14 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, DB_PATH=DB_PATH):
 
                 conn.commit()
                 return True
-
+    except sqlite3.IntegrityError:
+        st.error("La Historia clinica ya existe.", icon=":material/error:")
+        return
     except sqlite3.Error as e:
-        st.error(f"Error SQL: {e}", icon=":material/error:")
+        st.error(f"Error en operación SQL: {e}", icon=":material/error:")
         return None
+
+
 def operaciones_sql_morb_simplifica(accion, datos_registro=None, db=DB_PATH):
     try:
         with sqlite3.connect(DB_PATH) as conn:
