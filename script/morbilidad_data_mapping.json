@@ -1,0 +1,1802 @@
+[
+    {
+        "nombres_apellidos": "Daniel Moreno Bohorquez",
+        "direccion_exacta": "Carrera 21, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Trastorno bipolar",
+        "fecha_reg": "2025-02-09"
+    },
+    {
+        "nombres_apellidos": "Esteban Peraza Calder\u00f3n",
+        "direccion_exacta": "Carrera 30, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Osteoporosis",
+        "fecha_reg": "2024-01-24"
+    },
+    {
+        "nombres_apellidos": "No\u00e9 Avila Ram\u00edrez",
+        "direccion_exacta": "Carrera 99, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "TDAH en adultos",
+        "fecha_reg": "2025-07-08"
+    },
+    {
+        "nombres_apellidos": "Jacobo Castillo Garc\u00eda",
+        "direccion_exacta": "Avenida 50, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Rub\u00e9ola",
+        "fecha_reg": "2025-12-18"
+    },
+    {
+        "nombres_apellidos": "Beatriz Abreu Zapata",
+        "direccion_exacta": "Avenida 26, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Leucemia",
+        "fecha_reg": "2025-08-13"
+    },
+    {
+        "nombres_apellidos": "Yosmary Marques Maldonado",
+        "direccion_exacta": "Carrera 49, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Dengue",
+        "fecha_reg": "2024-03-16"
+    },
+    {
+        "nombres_apellidos": "Yajaira Lozano Quiroz",
+        "direccion_exacta": "Calle 23, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Enfermedad de M\u00e9ni\u00e8re",
+        "fecha_reg": "2024-07-20"
+    },
+    {
+        "nombres_apellidos": "Clara Sandoval Bolivar",
+        "direccion_exacta": "Carrera 83, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Trombosis",
+        "fecha_reg": "2025-11-24"
+    },
+    {
+        "nombres_apellidos": "Mercedes Barboza Lara",
+        "direccion_exacta": "Calle 31, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Lumbalgia",
+        "fecha_reg": "2025-07-17"
+    },
+    {
+        "nombres_apellidos": "Xiomara Valenzuela Brice\u00f1o",
+        "direccion_exacta": "Calle 28, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "Estre\u00f1imiento",
+        "fecha_reg": "2025-01-17"
+    },
+    {
+        "nombres_apellidos": "Francisca Mendoza Asuaje",
+        "direccion_exacta": "Avenida 26, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Diabetes tipo 2",
+        "fecha_reg": "2025-01-06"
+    },
+    {
+        "nombres_apellidos": "Ferm\u00edn Salinas Salas",
+        "direccion_exacta": "Carrera 40, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Otitis",
+        "fecha_reg": "2025-10-10"
+    },
+    {
+        "nombres_apellidos": "Marco Berm\u00fadez Gonz\u00e1lez",
+        "direccion_exacta": "Avenida 72, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Fiebre amarilla",
+        "fecha_reg": "2025-09-26"
+    },
+    {
+        "nombres_apellidos": "Sa\u00fal Bolivar N\u00fa\u00f1ez",
+        "direccion_exacta": "Calle 22, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Migra\u00f1a",
+        "fecha_reg": "2025-06-02"
+    },
+    {
+        "nombres_apellidos": "Marta Jim\u00e9nez Cadenas",
+        "direccion_exacta": "Avenida 55, Sector Centro, cerca del CDI.",
+        "diagnostico": "Trombosis",
+        "fecha_reg": "2025-08-09"
+    },
+    {
+        "nombres_apellidos": "Julio Cordero P\u00e9rez",
+        "direccion_exacta": "Avenida 19, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Retinopat\u00eda diab\u00e9tica",
+        "fecha_reg": "2024-01-29"
+    },
+    {
+        "nombres_apellidos": "Ram\u00f3n Jim\u00e9nez Abreu",
+        "direccion_exacta": "Calle 57, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "Estre\u00f1imiento",
+        "fecha_reg": "2024-05-08"
+    },
+    {
+        "nombres_apellidos": "Dolores Benitez Cicero",
+        "direccion_exacta": "Carrera 70, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Hernia discal",
+        "fecha_reg": "2025-12-19"
+    },
+    {
+        "nombres_apellidos": "Claudia Qui\u00f1ones Bolivar",
+        "direccion_exacta": "Avenida 24, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Faringitis",
+        "fecha_reg": "2024-07-28"
+    },
+    {
+        "nombres_apellidos": "Leonardo Figueroa Pe\u00f1a",
+        "direccion_exacta": "Carrera 42, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "Esquizofrenia",
+        "fecha_reg": "2024-12-26"
+    },
+    {
+        "nombres_apellidos": "G\u00e9nesis B\u00e1ez Lozano",
+        "direccion_exacta": "Avenida 91, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "Diarrea",
+        "fecha_reg": "2024-08-06"
+    },
+    {
+        "nombres_apellidos": "C\u00e9sar Romero Causado",
+        "direccion_exacta": "Calle 33, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Cirrosis hep\u00e1tica",
+        "fecha_reg": "2024-09-25"
+    },
+    {
+        "nombres_apellidos": "\u00c1ngel Serrano Campo",
+        "direccion_exacta": "Carrera 93, Sector Centro, cerca del CDI.",
+        "diagnostico": "Otitis",
+        "fecha_reg": "2024-05-24"
+    },
+    {
+        "nombres_apellidos": "Camila Cicero Avila",
+        "direccion_exacta": "Carrera 99, Sector V\u00eda San Tom\u00e9, cerca del CDI.",
+        "diagnostico": "Infarto agudo al miocardio",
+        "fecha_reg": "2025-11-02"
+    },
+    {
+        "nombres_apellidos": "Joaqu\u00edn Calles Arias",
+        "direccion_exacta": "Avenida 14, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "TDAH en adultos",
+        "fecha_reg": "2025-09-23"
+    },
+    {
+        "nombres_apellidos": "Ismael Cardona Quintero",
+        "direccion_exacta": "Carrera 86, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Hernia discal",
+        "fecha_reg": "2025-07-02"
+    },
+    {
+        "nombres_apellidos": "Fidel Serrano Mar\u00edn",
+        "direccion_exacta": "Calle 90, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "T\u00e9tanos",
+        "fecha_reg": "2025-03-05"
+    },
+    {
+        "nombres_apellidos": "Beatriz Henr\u00edquez Brice\u00f1o",
+        "direccion_exacta": "Avenida 8, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Hepatitis B",
+        "fecha_reg": "2025-11-15"
+    },
+    {
+        "nombres_apellidos": "Enrique Arguello Figueroa",
+        "direccion_exacta": "Avenida 73, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Obstrucci\u00f3n intestinal",
+        "fecha_reg": "2024-11-25"
+    },
+    {
+        "nombres_apellidos": "Marta V\u00e1squez Ch\u00e1vez",
+        "direccion_exacta": "Calle 52, Sector El Palomar, cerca del CDI.",
+        "diagnostico": "Tuberculosis",
+        "fecha_reg": "2024-08-24"
+    },
+    {
+        "nombres_apellidos": "Eduardo Calder\u00f3n Y\u00e9pez",
+        "direccion_exacta": "Calle 49, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Gripe (influenza)",
+        "fecha_reg": "2024-03-16"
+    },
+    {
+        "nombres_apellidos": "Josefina Cerrada B\u00e1ez",
+        "direccion_exacta": "Calle 77, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Reflujo gastroesof\u00e1gico (ERGE)",
+        "fecha_reg": "2024-02-28"
+    },
+    {
+        "nombres_apellidos": "Julio Calles C\u00e1rdenas",
+        "direccion_exacta": "Calle 98, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Zoster (culebrilla)",
+        "fecha_reg": "2024-05-31"
+    },
+    {
+        "nombres_apellidos": "Mari\u00e1ngel Barreto Henr\u00edquez",
+        "direccion_exacta": "Calle 94, Sector Centro, cerca del CDI.",
+        "diagnostico": "Apendicitis",
+        "fecha_reg": "2024-03-12"
+    },
+    {
+        "nombres_apellidos": "Catalina Borjas Rivas",
+        "direccion_exacta": "Calle 95, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Retinopat\u00eda diab\u00e9tica",
+        "fecha_reg": "2024-02-23"
+    },
+    {
+        "nombres_apellidos": "Guillermo Zabala Arcila",
+        "direccion_exacta": "Calle 36, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Insuficiencia respiratoria baja",
+        "fecha_reg": "2025-12-28"
+    },
+    {
+        "nombres_apellidos": "Olga Prieto Colmenares",
+        "direccion_exacta": "Carrera 63, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "Pancreatitis",
+        "fecha_reg": "2025-11-26"
+    },
+    {
+        "nombres_apellidos": "Gloria Acosta Palacios",
+        "direccion_exacta": "Avenida 19, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "Miomatosis uterina",
+        "fecha_reg": "2025-02-03"
+    },
+    {
+        "nombres_apellidos": "In\u00e9s Quintana Benitez",
+        "direccion_exacta": "Avenida 82, Sector Centro, cerca del CDI.",
+        "diagnostico": "Hepatitis A",
+        "fecha_reg": "2024-12-14"
+    },
+    {
+        "nombres_apellidos": "Yosmary Medina Salas",
+        "direccion_exacta": "Carrera 10, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "EPOC (Enfermedad Pulmonar Obstructiva Cr\u00f3nica)",
+        "fecha_reg": "2025-09-30"
+    },
+    {
+        "nombres_apellidos": "Roberto Silva Bello",
+        "direccion_exacta": "Calle 28, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "Hepatitis A",
+        "fecha_reg": "2024-03-06"
+    },
+    {
+        "nombres_apellidos": "V\u00edctor Calles Mora",
+        "direccion_exacta": "Avenida 33, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Fiebre amarilla",
+        "fecha_reg": "2025-11-14"
+    },
+    {
+        "nombres_apellidos": "Ignacio Cordero Colina",
+        "direccion_exacta": "Avenida 31, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "COVID-19",
+        "fecha_reg": "2025-06-18"
+    },
+    {
+        "nombres_apellidos": "Miguel Reyes S\u00e1nchez",
+        "direccion_exacta": "Carrera 21, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "T\u00e9tanos",
+        "fecha_reg": "2025-01-17"
+    },
+    {
+        "nombres_apellidos": "Bernarda Alvarado Valdez",
+        "direccion_exacta": "Carrera 33, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Insomnio",
+        "fecha_reg": "2025-12-11"
+    },
+    {
+        "nombres_apellidos": "Roberto Bello Salazar",
+        "direccion_exacta": "Avenida 10, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Pielonefritis",
+        "fecha_reg": "2024-05-24"
+    },
+    {
+        "nombres_apellidos": "Julio Trejo Aular",
+        "direccion_exacta": "Calle 59, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Osteoartritis",
+        "fecha_reg": "2025-02-01"
+    },
+    {
+        "nombres_apellidos": "Eduardo Zapata L\u00f3pez",
+        "direccion_exacta": "Avenida 97, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Diarrea",
+        "fecha_reg": "2024-11-06"
+    },
+    {
+        "nombres_apellidos": "Mari\u00e1ngel Ospina M\u00e1rquez",
+        "direccion_exacta": "Avenida 51, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Cefalea tensional",
+        "fecha_reg": "2024-05-14"
+    },
+    {
+        "nombres_apellidos": "Yusmary Zabala Bautista",
+        "direccion_exacta": "Avenida 28, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Otitis",
+        "fecha_reg": "2025-01-03"
+    },
+    {
+        "nombres_apellidos": "Isaac Uribe Brice\u00f1o",
+        "direccion_exacta": "Calle 17, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Hipertensi\u00f3n arterial",
+        "fecha_reg": "2024-07-16"
+    },
+    {
+        "nombres_apellidos": "Lidia Zambrano Cabrera",
+        "direccion_exacta": "Carrera 49, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Fiebre tifoidea",
+        "fecha_reg": "2024-08-12"
+    },
+    {
+        "nombres_apellidos": "G\u00e9nesis Carrillo Toro",
+        "direccion_exacta": "Avenida 82, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Hernia discal",
+        "fecha_reg": "2024-09-02"
+    },
+    {
+        "nombres_apellidos": "Gabriela Soto Figueroa",
+        "direccion_exacta": "Avenida 71, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Diabetes tipo 2",
+        "fecha_reg": "2024-05-26"
+    },
+    {
+        "nombres_apellidos": "Patricio Vel\u00e1squez Cardona",
+        "direccion_exacta": "Calle 94, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "T\u00e9tanos",
+        "fecha_reg": "2025-10-06"
+    },
+    {
+        "nombres_apellidos": "Erick Mej\u00eda Zambrano",
+        "direccion_exacta": "Carrera 72, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Fiebre tifoidea",
+        "fecha_reg": "2024-05-27"
+    },
+    {
+        "nombres_apellidos": "Sebasti\u00e1n Del Castillo Toro",
+        "direccion_exacta": "Avenida 10, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Enfermedad de Parkinson",
+        "fecha_reg": "2024-12-06"
+    },
+    {
+        "nombres_apellidos": "Yusbely Abreu Prieto",
+        "direccion_exacta": "Calle 65, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Insuficiencia respiratoria baja",
+        "fecha_reg": "2024-09-16"
+    },
+    {
+        "nombres_apellidos": "Edith Estrada Rivera",
+        "direccion_exacta": "Avenida 10, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "Obesidad",
+        "fecha_reg": "2025-08-12"
+    },
+    {
+        "nombres_apellidos": "Javier Bohorquez Palma",
+        "direccion_exacta": "Carrera 97, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Enfermedad de M\u00e9ni\u00e8re",
+        "fecha_reg": "2024-11-28"
+    },
+    {
+        "nombres_apellidos": "Oriana Mora Arroyo",
+        "direccion_exacta": "Calle 69, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Varicela",
+        "fecha_reg": "2024-05-12"
+    },
+    {
+        "nombres_apellidos": "Mario Qui\u00f1ones Bustamante",
+        "direccion_exacta": "Avenida 53, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Obesidad",
+        "fecha_reg": "2025-05-13"
+    },
+    {
+        "nombres_apellidos": "Fernando Aular Ar\u00e9valo",
+        "direccion_exacta": "Avenida 2, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Hipertiroidismo",
+        "fecha_reg": "2025-08-10"
+    },
+    {
+        "nombres_apellidos": "Elias Gonz\u00e1lez Rojas",
+        "direccion_exacta": "Calle 58, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Insuficiencia respiratoria baja",
+        "fecha_reg": "2024-09-18"
+    },
+    {
+        "nombres_apellidos": "Yulimar V\u00e1squez Bohorquez",
+        "direccion_exacta": "Carrera 89, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Depresi\u00f3n",
+        "fecha_reg": "2025-03-05"
+    },
+    {
+        "nombres_apellidos": "Gonzalo Castro Palacios",
+        "direccion_exacta": "Carrera 59, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Esquizofrenia",
+        "fecha_reg": "2025-06-05"
+    },
+    {
+        "nombres_apellidos": "Juana Bautista Rojas",
+        "direccion_exacta": "Carrera 31, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Bronquitis",
+        "fecha_reg": "2025-07-28"
+    },
+    {
+        "nombres_apellidos": "Rub\u00e9n Rangel Cicero",
+        "direccion_exacta": "Avenida 12, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "EPOC (Enfermedad Pulmonar Obstructiva Cr\u00f3nica)",
+        "fecha_reg": "2025-07-07"
+    },
+    {
+        "nombres_apellidos": "Gregorio Pulido Rold\u00e1n",
+        "direccion_exacta": "Calle 11, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Esclerosis m\u00faltiple",
+        "fecha_reg": "2024-11-19"
+    },
+    {
+        "nombres_apellidos": "Mauricio Sandoval Qui\u00f1ones",
+        "direccion_exacta": "Avenida 13, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Cirrosis hep\u00e1tica",
+        "fecha_reg": "2025-08-12"
+    },
+    {
+        "nombres_apellidos": "Ninoska Toro Cisneros",
+        "direccion_exacta": "Avenida 12, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Virus del Papiloma Humano (VPH)",
+        "fecha_reg": "2024-02-11"
+    },
+    {
+        "nombres_apellidos": "Eduardo Ruiz Vel\u00e1squez",
+        "direccion_exacta": "Calle 99, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Hepatitis B",
+        "fecha_reg": "2025-12-05"
+    },
+    {
+        "nombres_apellidos": "Elias Ram\u00edrez Ortiz",
+        "direccion_exacta": "Carrera 100, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Insomnio",
+        "fecha_reg": "2025-01-14"
+    },
+    {
+        "nombres_apellidos": "Manuela Zambrano Cano",
+        "direccion_exacta": "Carrera 27, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Toxoplasmosis",
+        "fecha_reg": "2024-10-25"
+    },
+    {
+        "nombres_apellidos": "V\u00edctor Vel\u00e1squez Rosales",
+        "direccion_exacta": "Calle 12, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Gripe (influenza)",
+        "fecha_reg": "2024-03-17"
+    },
+    {
+        "nombres_apellidos": "Jacobo Toro Quintero",
+        "direccion_exacta": "Carrera 24, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Pielonefritis",
+        "fecha_reg": "2024-10-14"
+    },
+    {
+        "nombres_apellidos": "Nicol\u00e1s Fern\u00e1ndez Rivera",
+        "direccion_exacta": "Carrera 26, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Hepatitis B",
+        "fecha_reg": "2024-10-09"
+    },
+    {
+        "nombres_apellidos": "Julio Bravo Acosta",
+        "direccion_exacta": "Calle 39, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "Varicela",
+        "fecha_reg": "2025-01-29"
+    },
+    {
+        "nombres_apellidos": "Esteban Bautista Arteaga",
+        "direccion_exacta": "Carrera 57, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Estre\u00f1imiento",
+        "fecha_reg": "2024-03-04"
+    },
+    {
+        "nombres_apellidos": "Elvira M\u00e1rquez Su\u00e1rez",
+        "direccion_exacta": "Avenida 22, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Toxoplasmosis",
+        "fecha_reg": "2025-01-15"
+    },
+    {
+        "nombres_apellidos": "Gabriel Rinc\u00f3n Contreras",
+        "direccion_exacta": "Avenida 49, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "Hipotiroidismo",
+        "fecha_reg": "2025-06-30"
+    },
+    {
+        "nombres_apellidos": "Mario Cicero Aguilar",
+        "direccion_exacta": "Carrera 11, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Faringitis",
+        "fecha_reg": "2025-08-24"
+    },
+    {
+        "nombres_apellidos": "Rigoberto Arroyo Arguello",
+        "direccion_exacta": "Carrera 10, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Gripe (influenza)",
+        "fecha_reg": "2024-02-09"
+    },
+    {
+        "nombres_apellidos": "Julia Silva Pe\u00f1a",
+        "direccion_exacta": "Calle 66, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "T\u00e9tanos",
+        "fecha_reg": "2025-12-31"
+    },
+    {
+        "nombres_apellidos": "Sof\u00eda Consalvi M\u00e1rquez",
+        "direccion_exacta": "Carrera 84, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Colitis ulcerosa",
+        "fecha_reg": "2025-05-29"
+    },
+    {
+        "nombres_apellidos": "Alejandro Campos M\u00e1rquez",
+        "direccion_exacta": "Carrera 80, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Estre\u00f1imiento",
+        "fecha_reg": "2024-02-22"
+    },
+    {
+        "nombres_apellidos": "Mar\u00eda Ch\u00e1vez Ortiz",
+        "direccion_exacta": "Avenida 96, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "Toxoplasmosis",
+        "fecha_reg": "2024-05-28"
+    },
+    {
+        "nombres_apellidos": "Alberto Sandoval Naranjo",
+        "direccion_exacta": "Avenida 67, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Hepatitis A",
+        "fecha_reg": "2025-01-20"
+    },
+    {
+        "nombres_apellidos": "Teresa Ch\u00e1vez Ruiz",
+        "direccion_exacta": "Avenida 12, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Miomatosis uterina",
+        "fecha_reg": "2024-05-23"
+    },
+    {
+        "nombres_apellidos": "Fernando B\u00e1ez Prieto",
+        "direccion_exacta": "Avenida 11, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Migra\u00f1a",
+        "fecha_reg": "2024-07-08"
+    },
+    {
+        "nombres_apellidos": "Valeria Lucena Vel\u00e1squez",
+        "direccion_exacta": "Avenida 38, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Retinopat\u00eda diab\u00e9tica",
+        "fecha_reg": "2024-10-27"
+    },
+    {
+        "nombres_apellidos": "Gregorio Vidal Cordero",
+        "direccion_exacta": "Carrera 39, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Migra\u00f1a",
+        "fecha_reg": "2025-03-28"
+    },
+    {
+        "nombres_apellidos": "Joaqu\u00edn Celis Calder\u00f3n",
+        "direccion_exacta": "Carrera 86, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Resfriado com\u00fan",
+        "fecha_reg": "2024-04-18"
+    },
+    {
+        "nombres_apellidos": "Petra Fern\u00e1ndez Ospina",
+        "direccion_exacta": "Carrera 14, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Hipotiroidismo",
+        "fecha_reg": "2024-01-16"
+    },
+    {
+        "nombres_apellidos": "Sof\u00eda Colmenares Valenzuela",
+        "direccion_exacta": "Calle 45, Sector V\u00eda San Tom\u00e9, cerca del CDI.",
+        "diagnostico": "Miop\u00eda",
+        "fecha_reg": "2025-11-27"
+    },
+    {
+        "nombres_apellidos": "Ulises Hern\u00e1ndez Villegas",
+        "direccion_exacta": "Carrera 96, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Ansiedad",
+        "fecha_reg": "2025-04-13"
+    },
+    {
+        "nombres_apellidos": "Valentina Aular Sierra",
+        "direccion_exacta": "Carrera 19, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Trastorno bipolar",
+        "fecha_reg": "2025-12-03"
+    },
+    {
+        "nombres_apellidos": "Fidel Cabrera Pereira",
+        "direccion_exacta": "Calle 37, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Insuficiencia respiratoria baja",
+        "fecha_reg": "2025-05-31"
+    },
+    {
+        "nombres_apellidos": "Ramiro Granados Acosta",
+        "direccion_exacta": "Avenida 25, Sector El Palomar, cerca del CDI.",
+        "diagnostico": "Resfriado com\u00fan",
+        "fecha_reg": "2024-11-16"
+    },
+    {
+        "nombres_apellidos": "Ferm\u00edn Vega Gallegos",
+        "direccion_exacta": "Carrera 5, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Hipertensi\u00f3n arterial",
+        "fecha_reg": "2025-02-10"
+    },
+    {
+        "nombres_apellidos": "Petra Causado Vargas",
+        "direccion_exacta": "Avenida 44, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Hipotiroidismo",
+        "fecha_reg": "2025-11-26"
+    },
+    {
+        "nombres_apellidos": "Jorge Olivo Acosta",
+        "direccion_exacta": "Calle 80, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Urticaria",
+        "fecha_reg": "2024-12-22"
+    },
+    {
+        "nombres_apellidos": "David Aguilar Lara",
+        "direccion_exacta": "Calle 55, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Miop\u00eda",
+        "fecha_reg": "2024-12-12"
+    },
+    {
+        "nombres_apellidos": "Bernardo Naranjo Causado",
+        "direccion_exacta": "Calle 71, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Hipertensi\u00f3n arterial",
+        "fecha_reg": "2025-03-06"
+    },
+    {
+        "nombres_apellidos": "Camila Asuaje Bustamante",
+        "direccion_exacta": "Avenida 13, Sector V\u00eda San Tom\u00e9, cerca del CDI.",
+        "diagnostico": "Endometriosis",
+        "fecha_reg": "2024-12-18"
+    },
+    {
+        "nombres_apellidos": "Rigoberto Murillo Bravo",
+        "direccion_exacta": "Carrera 9, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Mononucleosis infecciosa",
+        "fecha_reg": "2024-02-28"
+    },
+    {
+        "nombres_apellidos": "Petra Jim\u00e9nez Qui\u00f1ones",
+        "direccion_exacta": "Carrera 39, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "C\u00e1ncer de mama",
+        "fecha_reg": "2025-03-04"
+    },
+    {
+        "nombres_apellidos": "Elena Rinc\u00f3n Arismendi",
+        "direccion_exacta": "Carrera 31, Sector El Palomar, cerca del CDI.",
+        "diagnostico": "Hipertiroidismo",
+        "fecha_reg": "2025-12-30"
+    },
+    {
+        "nombres_apellidos": "Natalia Arteaga Cedeno",
+        "direccion_exacta": "Calle 52, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Esclerosis m\u00faltiple",
+        "fecha_reg": "2024-05-27"
+    },
+    {
+        "nombres_apellidos": "Armando Fajardo Palacios",
+        "direccion_exacta": "Avenida 76, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Apendicitis",
+        "fecha_reg": "2025-04-27"
+    },
+    {
+        "nombres_apellidos": "Esther Granados Fajardo",
+        "direccion_exacta": "Calle 67, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Hipercolesterolemia",
+        "fecha_reg": "2025-06-26"
+    },
+    {
+        "nombres_apellidos": "Alicia Qui\u00f1ones Soto",
+        "direccion_exacta": "Carrera 57, Sector Centro, cerca del CDI.",
+        "diagnostico": "Urticaria",
+        "fecha_reg": "2025-11-03"
+    },
+    {
+        "nombres_apellidos": "Roc\u00edo Reyes Cerrada",
+        "direccion_exacta": "Calle 71, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Esquizofrenia",
+        "fecha_reg": "2024-02-05"
+    },
+    {
+        "nombres_apellidos": "Ra\u00fal Marcano D\u00edaz",
+        "direccion_exacta": "Carrera 54, Sector Km 55, cerca del CDI.",
+        "diagnostico": "S\u00edncope",
+        "fecha_reg": "2025-01-07"
+    },
+    {
+        "nombres_apellidos": "Cecilia Bautista Barrios",
+        "direccion_exacta": "Avenida 97, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "Rub\u00e9ola",
+        "fecha_reg": "2025-12-03"
+    },
+    {
+        "nombres_apellidos": "Milagros Zabala Ortega",
+        "direccion_exacta": "Calle 26, Sector Centro, cerca del CDI.",
+        "diagnostico": "Es\u00f3fago de Barrett",
+        "fecha_reg": "2025-11-09"
+    },
+    {
+        "nombres_apellidos": "Elvira Hern\u00e1ndez Serrano",
+        "direccion_exacta": "Avenida 63, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Meningitis",
+        "fecha_reg": "2024-10-14"
+    },
+    {
+        "nombres_apellidos": "Irma Cerrada Ortega",
+        "direccion_exacta": "Avenida 30, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Dispepsia funcional",
+        "fecha_reg": "2025-04-04"
+    },
+    {
+        "nombres_apellidos": "Gustavo Maldonado Ortega",
+        "direccion_exacta": "Carrera 55, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Hipertiroidismo",
+        "fecha_reg": "2025-09-17"
+    },
+    {
+        "nombres_apellidos": "Salvador Berm\u00fadez Arias",
+        "direccion_exacta": "Calle 77, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Zoster (culebrilla)",
+        "fecha_reg": "2025-03-15"
+    },
+    {
+        "nombres_apellidos": "Rodrigo Redondo Jaimes",
+        "direccion_exacta": "Avenida 25, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Lumbalgia",
+        "fecha_reg": "2025-07-05"
+    },
+    {
+        "nombres_apellidos": "Marta Figueroa Valencia",
+        "direccion_exacta": "Carrera 11, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Enfermedad de Graves",
+        "fecha_reg": "2024-08-09"
+    },
+    {
+        "nombres_apellidos": "Ver\u00f3nica Santana Zabala",
+        "direccion_exacta": "Avenida 81, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Diarrea",
+        "fecha_reg": "2025-08-25"
+    },
+    {
+        "nombres_apellidos": "Daniela Arjona Restrepo",
+        "direccion_exacta": "Avenida 12, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Asma",
+        "fecha_reg": "2024-07-17"
+    },
+    {
+        "nombres_apellidos": "Andrea Fuentes Carvajal",
+        "direccion_exacta": "Carrera 92, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Diarrea",
+        "fecha_reg": "2025-03-21"
+    },
+    {
+        "nombres_apellidos": "Rigoberto L\u00f3pez Ramos",
+        "direccion_exacta": "Carrera 2, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Obesidad",
+        "fecha_reg": "2024-06-06"
+    },
+    {
+        "nombres_apellidos": "Gonzalo Pe\u00f1a Garc\u00eda",
+        "direccion_exacta": "Calle 51, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Neumon\u00eda",
+        "fecha_reg": "2024-09-18"
+    },
+    {
+        "nombres_apellidos": "Amparo Acosta Galindo",
+        "direccion_exacta": "Avenida 11, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Lumbalgia",
+        "fecha_reg": "2025-06-21"
+    },
+    {
+        "nombres_apellidos": "Natalia Carre\u00f1o Duarte",
+        "direccion_exacta": "Avenida 90, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Pancreatitis",
+        "fecha_reg": "2025-08-04"
+    },
+    {
+        "nombres_apellidos": "Gabriela Carrillo Rivera",
+        "direccion_exacta": "Calle 98, Sector El Centro, cerca del CDI.",
+        "diagnostico": "C\u00e1ncer de mama",
+        "fecha_reg": "2024-06-25"
+    },
+    {
+        "nombres_apellidos": "Eugenio Gonz\u00e1lez Sandoval",
+        "direccion_exacta": "Carrera 59, Sector Centro, cerca del CDI.",
+        "diagnostico": "Endometriosis",
+        "fecha_reg": "2024-11-18"
+    },
+    {
+        "nombres_apellidos": "Soledad Valencia Fuentes",
+        "direccion_exacta": "Calle 24, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Rinitis al\u00e9rgica",
+        "fecha_reg": "2024-01-16"
+    },
+    {
+        "nombres_apellidos": "Julio Pe\u00f1a Ramos",
+        "direccion_exacta": "Carrera 93, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "COVID-19",
+        "fecha_reg": "2024-02-25"
+    },
+    {
+        "nombres_apellidos": "Ronaldo Garc\u00eda B\u00e1ez",
+        "direccion_exacta": "Carrera 68, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Alzheimer",
+        "fecha_reg": "2024-01-05"
+    },
+    {
+        "nombres_apellidos": "G\u00e9nesis Zambrano Ar\u00e9valo",
+        "direccion_exacta": "Carrera 64, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Diarrea",
+        "fecha_reg": "2025-10-07"
+    },
+    {
+        "nombres_apellidos": "Rigoberto Vel\u00e1squez Jaimes",
+        "direccion_exacta": "Carrera 64, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Tuberculosis",
+        "fecha_reg": "2024-01-08"
+    },
+    {
+        "nombres_apellidos": "Luisana B\u00e1ez Paz",
+        "direccion_exacta": "Carrera 51, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Obesidad",
+        "fecha_reg": "2025-05-06"
+    },
+    {
+        "nombres_apellidos": "Silvia Alvarado S\u00e1nchez",
+        "direccion_exacta": "Calle 19, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Infarto agudo al miocardio",
+        "fecha_reg": "2025-10-27"
+    },
+    {
+        "nombres_apellidos": "Javier Aranda Valdez",
+        "direccion_exacta": "Carrera 40, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "Escabiosis (sarna)",
+        "fecha_reg": "2025-05-31"
+    },
+    {
+        "nombres_apellidos": "Olga Celis Montes",
+        "direccion_exacta": "Calle 71, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Rabia",
+        "fecha_reg": "2025-06-16"
+    },
+    {
+        "nombres_apellidos": "Elena Zambrano Toro",
+        "direccion_exacta": "Carrera 35, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Obesidad",
+        "fecha_reg": "2024-08-23"
+    },
+    {
+        "nombres_apellidos": "Bernarda Bernal Moreno",
+        "direccion_exacta": "Calle 67, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Retinopat\u00eda diab\u00e9tica",
+        "fecha_reg": "2025-11-25"
+    },
+    {
+        "nombres_apellidos": "Patricio T\u00e9llez Zapata",
+        "direccion_exacta": "Calle 52, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Endometriosis",
+        "fecha_reg": "2024-03-19"
+    },
+    {
+        "nombres_apellidos": "Walter Caraballo Mart\u00ednez",
+        "direccion_exacta": "Avenida 73, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Alzheimer",
+        "fecha_reg": "2024-12-24"
+    },
+    {
+        "nombres_apellidos": "Elena Cisneros Zambrano",
+        "direccion_exacta": "Calle 45, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Gastritis",
+        "fecha_reg": "2025-01-12"
+    },
+    {
+        "nombres_apellidos": "Oriana Bolivar Ar\u00e9valo",
+        "direccion_exacta": "Avenida 68, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Hepatitis C",
+        "fecha_reg": "2025-05-11"
+    },
+    {
+        "nombres_apellidos": "Manuela Peraza Rivas",
+        "direccion_exacta": "Carrera 58, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Hipertensi\u00f3n arterial",
+        "fecha_reg": "2024-05-31"
+    },
+    {
+        "nombres_apellidos": "Teresa Garc\u00eda Arcila",
+        "direccion_exacta": "Calle 37, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Migra\u00f1a",
+        "fecha_reg": "2024-06-28"
+    },
+    {
+        "nombres_apellidos": "Joaqu\u00edn Contreras Mora",
+        "direccion_exacta": "Calle 1, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Osteoartritis",
+        "fecha_reg": "2025-05-31"
+    },
+    {
+        "nombres_apellidos": "Juana Salinas Paredes",
+        "direccion_exacta": "Avenida 50, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Malaria",
+        "fecha_reg": "2024-07-31"
+    },
+    {
+        "nombres_apellidos": "Ronaldo S\u00e1nchez Toro",
+        "direccion_exacta": "Calle 7, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Intolerancia a la lactosa",
+        "fecha_reg": "2025-06-21"
+    },
+    {
+        "nombres_apellidos": "Xiomara Santana Caballero",
+        "direccion_exacta": "Carrera 95, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Lues connatal",
+        "fecha_reg": "2025-06-25"
+    },
+    {
+        "nombres_apellidos": "Gonzalo Pe\u00f1a Guerrero",
+        "direccion_exacta": "Avenida 96, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Urticaria",
+        "fecha_reg": "2024-12-02"
+    },
+    {
+        "nombres_apellidos": "Luc\u00eda Pulido Gil",
+        "direccion_exacta": "Calle 54, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Demencia",
+        "fecha_reg": "2025-04-08"
+    },
+    {
+        "nombres_apellidos": "Beatriz Zambrano Sierra",
+        "direccion_exacta": "Calle 61, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Intolerancia a la lactosa",
+        "fecha_reg": "2024-12-17"
+    },
+    {
+        "nombres_apellidos": "Elena Vega Ch\u00e1vez",
+        "direccion_exacta": "Calle 45, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Anemia",
+        "fecha_reg": "2024-05-22"
+    },
+    {
+        "nombres_apellidos": "Mar\u00eda Blanco M\u00e1rquez",
+        "direccion_exacta": "Calle 40, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Otitis",
+        "fecha_reg": "2024-02-02"
+    },
+    {
+        "nombres_apellidos": "Eva Escobar Ibarra",
+        "direccion_exacta": "Carrera 40, Sector Centro, cerca del CDI.",
+        "diagnostico": "Otitis",
+        "fecha_reg": "2024-01-13"
+    },
+    {
+        "nombres_apellidos": "Gladys T\u00e9llez Parra",
+        "direccion_exacta": "Avenida 22, Sector Centro, cerca del CDI.",
+        "diagnostico": "T\u00e9tanos",
+        "fecha_reg": "2024-12-22"
+    },
+    {
+        "nombres_apellidos": "Alberto Arrate Cano",
+        "direccion_exacta": "Carrera 54, Sector V\u00eda San Tom\u00e9, cerca del CDI.",
+        "diagnostico": "Rinitis al\u00e9rgica",
+        "fecha_reg": "2025-07-06"
+    },
+    {
+        "nombres_apellidos": "Ruth Zambrano Carvajal",
+        "direccion_exacta": "Avenida 20, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Lupus",
+        "fecha_reg": "2025-08-31"
+    },
+    {
+        "nombres_apellidos": "Beatriz Hern\u00e1ndez Rojas",
+        "direccion_exacta": "Carrera 89, Sector V\u00eda San Tom\u00e9, cerca del CDI.",
+        "diagnostico": "Guillain-Barr\u00e9 (s\u00edndrome de)",
+        "fecha_reg": "2025-03-10"
+    },
+    {
+        "nombres_apellidos": "Cecilia Rold\u00e1n Paredes",
+        "direccion_exacta": "Calle 8, Sector Centro, cerca del CDI.",
+        "diagnostico": "Fibromialgia",
+        "fecha_reg": "2025-03-27"
+    },
+    {
+        "nombres_apellidos": "Claudia Fuentes Cruz",
+        "direccion_exacta": "Avenida 92, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Diarrea",
+        "fecha_reg": "2024-03-17"
+    },
+    {
+        "nombres_apellidos": "Camila Morales Palacios",
+        "direccion_exacta": "Avenida 66, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Hepatitis B",
+        "fecha_reg": "2025-08-05"
+    },
+    {
+        "nombres_apellidos": "Aar\u00f3n Redondo Zabala",
+        "direccion_exacta": "Avenida 95, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Difteria",
+        "fecha_reg": "2025-07-28"
+    },
+    {
+        "nombres_apellidos": "Mateo Bravo Salas",
+        "direccion_exacta": "Avenida 52, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Urticaria",
+        "fecha_reg": "2024-11-21"
+    },
+    {
+        "nombres_apellidos": "Eduardo Guti\u00e9rrez Bustamante",
+        "direccion_exacta": "Avenida 58, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "Psoriasis",
+        "fecha_reg": "2024-03-01"
+    },
+    {
+        "nombres_apellidos": "Ignacio Rinc\u00f3n Sandoval",
+        "direccion_exacta": "Avenida 8, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Diabetes tipo 2",
+        "fecha_reg": "2025-02-14"
+    },
+    {
+        "nombres_apellidos": "Zulay Gil Paredes",
+        "direccion_exacta": "Carrera 81, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Enfermedad de M\u00e9ni\u00e8re",
+        "fecha_reg": "2024-05-11"
+    },
+    {
+        "nombres_apellidos": "Oscar Cisneros Rangel",
+        "direccion_exacta": "Avenida 46, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "EPOC (Enfermedad Pulmonar Obstructiva Cr\u00f3nica)",
+        "fecha_reg": "2025-01-14"
+    },
+    {
+        "nombres_apellidos": "Soledad Izquierdo Quiroz",
+        "direccion_exacta": "Carrera 4, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "Diabetes tipo 2",
+        "fecha_reg": "2025-05-11"
+    },
+    {
+        "nombres_apellidos": "Elvira Zambrano Rangel",
+        "direccion_exacta": "Carrera 24, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Dispepsia funcional",
+        "fecha_reg": "2024-12-29"
+    },
+    {
+        "nombres_apellidos": "Luisa Maldonado Gil",
+        "direccion_exacta": "Carrera 64, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Depresi\u00f3n",
+        "fecha_reg": "2024-11-17"
+    },
+    {
+        "nombres_apellidos": "Pablo Ch\u00e1vez Marques",
+        "direccion_exacta": "Calle 60, Sector El Palomar, cerca del CDI.",
+        "diagnostico": "Reflujo gastroesof\u00e1gico (ERGE)",
+        "fecha_reg": "2025-11-18"
+    },
+    {
+        "nombres_apellidos": "Miguel Arroyo Jim\u00e9nez",
+        "direccion_exacta": "Calle 5, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Enfermedad de M\u00e9ni\u00e8re",
+        "fecha_reg": "2024-10-16"
+    },
+    {
+        "nombres_apellidos": "Aar\u00f3n Caraballo D\u00edaz",
+        "direccion_exacta": "Carrera 32, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Enfermedad de Crohn",
+        "fecha_reg": "2024-11-06"
+    },
+    {
+        "nombres_apellidos": "Salvador Le\u00f3n Barrios",
+        "direccion_exacta": "Avenida 65, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Retinopat\u00eda diab\u00e9tica",
+        "fecha_reg": "2024-08-16"
+    },
+    {
+        "nombres_apellidos": "Ra\u00fal Valdez Lara",
+        "direccion_exacta": "Carrera 7, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "Enfermedad de Parkinson",
+        "fecha_reg": "2025-02-18"
+    },
+    {
+        "nombres_apellidos": "Francisca Rangel Olivo",
+        "direccion_exacta": "Avenida 17, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Dengue",
+        "fecha_reg": "2025-11-30"
+    },
+    {
+        "nombres_apellidos": "Gerardo S\u00e1nchez Bustamante",
+        "direccion_exacta": "Calle 37, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Trombosis",
+        "fecha_reg": "2025-04-30"
+    },
+    {
+        "nombres_apellidos": "Rita Peraza Barros",
+        "direccion_exacta": "Carrera 59, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Enfermedad de M\u00e9ni\u00e8re",
+        "fecha_reg": "2025-05-09"
+    },
+    {
+        "nombres_apellidos": "G\u00e9nesis Arguello G\u00f3mez",
+        "direccion_exacta": "Avenida 8, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "Esquizofrenia",
+        "fecha_reg": "2024-12-19"
+    },
+    {
+        "nombres_apellidos": "David V\u00e1squez Azocar",
+        "direccion_exacta": "Calle 86, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Trastorno de ansiedad generalizada",
+        "fecha_reg": "2024-05-03"
+    },
+    {
+        "nombres_apellidos": "\u00c1ngela Marcano Fuentes",
+        "direccion_exacta": "Avenida 18, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Gastritis",
+        "fecha_reg": "2024-09-21"
+    },
+    {
+        "nombres_apellidos": "Gregorio Arteaga Trejo",
+        "direccion_exacta": "Calle 17, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "Miop\u00eda",
+        "fecha_reg": "2024-11-17"
+    },
+    {
+        "nombres_apellidos": "\u00d3scar Carre\u00f1o T\u00e9llez",
+        "direccion_exacta": "Avenida 63, Sector V\u00eda San Tom\u00e9, cerca del CDI.",
+        "diagnostico": "Mononucleosis infecciosa",
+        "fecha_reg": "2025-04-18"
+    },
+    {
+        "nombres_apellidos": "Luc\u00eda Moreno Arroyo",
+        "direccion_exacta": "Calle 85, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Depresi\u00f3n",
+        "fecha_reg": "2024-04-28"
+    },
+    {
+        "nombres_apellidos": "Lilian Pinto Pinto",
+        "direccion_exacta": "Calle 2, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Insomnio",
+        "fecha_reg": "2024-07-28"
+    },
+    {
+        "nombres_apellidos": "Rodrigo Mej\u00eda Cortez",
+        "direccion_exacta": "Carrera 91, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Enfermedad de Crohn",
+        "fecha_reg": "2025-01-31"
+    },
+    {
+        "nombres_apellidos": "Valent\u00edn Rivera Hern\u00e1ndez",
+        "direccion_exacta": "Avenida 16, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Hipercolesterolemia",
+        "fecha_reg": "2025-08-10"
+    },
+    {
+        "nombres_apellidos": "Rosa Valdez Duarte",
+        "direccion_exacta": "Carrera 79, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Hipotiroidismo",
+        "fecha_reg": "2025-10-31"
+    },
+    {
+        "nombres_apellidos": "Yusbely Betancourt Benitez",
+        "direccion_exacta": "Carrera 65, Sector Centro, cerca del CDI.",
+        "diagnostico": "Diabetes tipo 1",
+        "fecha_reg": "2024-01-06"
+    },
+    {
+        "nombres_apellidos": "Ramiro Soto Varela",
+        "direccion_exacta": "Carrera 20, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Artritis",
+        "fecha_reg": "2025-05-22"
+    },
+    {
+        "nombres_apellidos": "Irma Trujillo Correa",
+        "direccion_exacta": "Calle 100, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Escabiosis (sarna)",
+        "fecha_reg": "2024-04-27"
+    },
+    {
+        "nombres_apellidos": "Marta Brice\u00f1o Arias",
+        "direccion_exacta": "Avenida 59, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Cistitis",
+        "fecha_reg": "2024-09-19"
+    },
+    {
+        "nombres_apellidos": "Petra Lara Qui\u00f1ones",
+        "direccion_exacta": "Calle 90, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Cistitis",
+        "fecha_reg": "2025-04-28"
+    },
+    {
+        "nombres_apellidos": "Ra\u00fal Cisneros Cabrera",
+        "direccion_exacta": "Calle 7, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "TDAH (Trastorno por D\u00e9ficit de Atenci\u00f3n e Hiperactividad)",
+        "fecha_reg": "2025-09-24"
+    },
+    {
+        "nombres_apellidos": "Bernarda Parra Duarte",
+        "direccion_exacta": "Avenida 3, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Resfriado com\u00fan",
+        "fecha_reg": "2025-06-24"
+    },
+    {
+        "nombres_apellidos": "Yolanda Celis Valdez",
+        "direccion_exacta": "Avenida 93, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "Hipotiroidismo",
+        "fecha_reg": "2025-09-02"
+    },
+    {
+        "nombres_apellidos": "Matilde C\u00e1rdenas Aular",
+        "direccion_exacta": "Avenida 56, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Reflujo gastroesof\u00e1gico (ERGE)",
+        "fecha_reg": "2025-09-21"
+    },
+    {
+        "nombres_apellidos": "Alejandra Bustamante Zambrano",
+        "direccion_exacta": "Calle 40, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Difteria",
+        "fecha_reg": "2024-08-24"
+    },
+    {
+        "nombres_apellidos": "Lidia Zambrano Prieto",
+        "direccion_exacta": "Carrera 24, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Pancreatitis",
+        "fecha_reg": "2025-11-07"
+    },
+    {
+        "nombres_apellidos": "Olivia Valera Arias",
+        "direccion_exacta": "Carrera 90, Sector Centro, cerca del CDI.",
+        "diagnostico": "Difteria",
+        "fecha_reg": "2025-09-12"
+    },
+    {
+        "nombres_apellidos": "Oscar Ortiz Lara",
+        "direccion_exacta": "Calle 65, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Enfermedad de M\u00e9ni\u00e8re",
+        "fecha_reg": "2024-03-13"
+    },
+    {
+        "nombres_apellidos": "Milagros Pe\u00f1a Vidal",
+        "direccion_exacta": "Calle 74, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Miop\u00eda",
+        "fecha_reg": "2025-02-12"
+    },
+    {
+        "nombres_apellidos": "Luis Barboza Ruiz",
+        "direccion_exacta": "Carrera 13, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Cefalea tensional",
+        "fecha_reg": "2025-08-26"
+    },
+    {
+        "nombres_apellidos": "Fernando Duarte Colmenares",
+        "direccion_exacta": "Carrera 48, Sector Km 55, cerca del CDI.",
+        "diagnostico": "T\u00e9tanos",
+        "fecha_reg": "2025-08-20"
+    },
+    {
+        "nombres_apellidos": "Concepci\u00f3n Galindo Vargas",
+        "direccion_exacta": "Calle 50, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Dengue",
+        "fecha_reg": "2025-09-04"
+    },
+    {
+        "nombres_apellidos": "Olivia V\u00e1squez Redondo",
+        "direccion_exacta": "Carrera 30, Sector Km 55, cerca del CDI.",
+        "diagnostico": "VIH/SIDA",
+        "fecha_reg": "2025-03-19"
+    },
+    {
+        "nombres_apellidos": "Agust\u00edn Ch\u00e1vez Paz",
+        "direccion_exacta": "Carrera 73, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Insuficiencia respiratoria baja",
+        "fecha_reg": "2025-03-18"
+    },
+    {
+        "nombres_apellidos": "Camila Navarro Vel\u00e1squez",
+        "direccion_exacta": "Carrera 62, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "S\u00edncope",
+        "fecha_reg": "2025-11-09"
+    },
+    {
+        "nombres_apellidos": "Francisca Granados Correa",
+        "direccion_exacta": "Calle 3, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Dispepsia funcional",
+        "fecha_reg": "2025-07-01"
+    },
+    {
+        "nombres_apellidos": "Valentina Le\u00f3n Caballero",
+        "direccion_exacta": "Avenida 70, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Hipercolesterolemia",
+        "fecha_reg": "2025-06-22"
+    },
+    {
+        "nombres_apellidos": "Marco Arguello Ospina",
+        "direccion_exacta": "Calle 84, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Lumbalgia",
+        "fecha_reg": "2024-12-05"
+    },
+    {
+        "nombres_apellidos": "Crist\u00f3bal Zambrano Campos",
+        "direccion_exacta": "Calle 99, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Urticaria",
+        "fecha_reg": "2024-01-11"
+    },
+    {
+        "nombres_apellidos": "Ana Peraza V\u00e9liz",
+        "direccion_exacta": "Calle 68, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Lupus",
+        "fecha_reg": "2024-02-18"
+    },
+    {
+        "nombres_apellidos": "Mariana Navia Marques",
+        "direccion_exacta": "Avenida 68, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Artritis",
+        "fecha_reg": "2025-12-19"
+    },
+    {
+        "nombres_apellidos": "Margarita Arismendi Mej\u00eda",
+        "direccion_exacta": "Avenida 21, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Rinitis al\u00e9rgica",
+        "fecha_reg": "2025-04-21"
+    },
+    {
+        "nombres_apellidos": "Natalia Arcila Bernal",
+        "direccion_exacta": "Carrera 51, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "C\u00e1ncer de colon",
+        "fecha_reg": "2025-11-15"
+    },
+    {
+        "nombres_apellidos": "Yolanda Jim\u00e9nez Trejo",
+        "direccion_exacta": "Avenida 14, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Virus del Papiloma Humano (VPH)",
+        "fecha_reg": "2024-10-21"
+    },
+    {
+        "nombres_apellidos": "Marta Galindo Quintana",
+        "direccion_exacta": "Calle 17, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Enfermedad de M\u00e9ni\u00e8re",
+        "fecha_reg": "2024-05-09"
+    },
+    {
+        "nombres_apellidos": "Leonardo Gil Casas",
+        "direccion_exacta": "Carrera 95, Sector El Centro, cerca del CDI.",
+        "diagnostico": "TDAH (Trastorno por D\u00e9ficit de Atenci\u00f3n e Hiperactividad)",
+        "fecha_reg": "2025-10-24"
+    },
+    {
+        "nombres_apellidos": "Daniel Gallegos M\u00e9ndez",
+        "direccion_exacta": "Avenida 5, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Colecistitis",
+        "fecha_reg": "2025-11-23"
+    },
+    {
+        "nombres_apellidos": "Laura Medina Cicero",
+        "direccion_exacta": "Carrera 13, Sector Centro, cerca del CDI.",
+        "diagnostico": "Obesidad",
+        "fecha_reg": "2024-02-01"
+    },
+    {
+        "nombres_apellidos": "Eduardo Maldonado Trejo",
+        "direccion_exacta": "Calle 56, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Osteoartritis",
+        "fecha_reg": "2025-03-16"
+    },
+    {
+        "nombres_apellidos": "H\u00e9ctor Colmenares Cantillo",
+        "direccion_exacta": "Calle 66, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "Estre\u00f1imiento",
+        "fecha_reg": "2025-12-14"
+    },
+    {
+        "nombres_apellidos": "Fernando Salcedo Caraballo",
+        "direccion_exacta": "Calle 55, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Gastritis",
+        "fecha_reg": "2025-05-11"
+    },
+    {
+        "nombres_apellidos": "Nelly Vel\u00e1squez Medina",
+        "direccion_exacta": "Carrera 91, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Insomnio",
+        "fecha_reg": "2024-03-01"
+    },
+    {
+        "nombres_apellidos": "Alejandra Cortez Maldonado",
+        "direccion_exacta": "Avenida 42, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Dengue",
+        "fecha_reg": "2025-02-18"
+    },
+    {
+        "nombres_apellidos": "Valentina Guerrero Prieto",
+        "direccion_exacta": "Calle 100, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Sordera",
+        "fecha_reg": "2024-06-27"
+    },
+    {
+        "nombres_apellidos": "Teresa Cortez Berm\u00fadez",
+        "direccion_exacta": "Carrera 74, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Dengue",
+        "fecha_reg": "2025-11-08"
+    },
+    {
+        "nombres_apellidos": "Julio Rodr\u00edguez Causado",
+        "direccion_exacta": "Calle 59, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Trastorno bipolar",
+        "fecha_reg": "2024-07-28"
+    },
+    {
+        "nombres_apellidos": "Jes\u00fas Torres Pulido",
+        "direccion_exacta": "Avenida 75, Sector El Palomar, cerca del CDI.",
+        "diagnostico": "Fiebre tifoidea",
+        "fecha_reg": "2024-02-02"
+    },
+    {
+        "nombres_apellidos": "Sof\u00eda Barreto Brice\u00f1o",
+        "direccion_exacta": "Carrera 39, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Toxoplasmosis",
+        "fecha_reg": "2025-06-10"
+    },
+    {
+        "nombres_apellidos": "Walter Navia Carvajal",
+        "direccion_exacta": "Carrera 13, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "TDAH en adultos",
+        "fecha_reg": "2025-09-30"
+    },
+    {
+        "nombres_apellidos": "Lismar Jaimes L\u00f3pez",
+        "direccion_exacta": "Calle 41, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Hepatitis B",
+        "fecha_reg": "2024-02-02"
+    },
+    {
+        "nombres_apellidos": "Alba Reyes Salcedo",
+        "direccion_exacta": "Carrera 36, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Bronquitis",
+        "fecha_reg": "2024-11-22"
+    },
+    {
+        "nombres_apellidos": "Eugenio Carre\u00f1o Redondo",
+        "direccion_exacta": "Carrera 3, Sector El Palomar, cerca del CDI.",
+        "diagnostico": "Rabia",
+        "fecha_reg": "2025-05-02"
+    },
+    {
+        "nombres_apellidos": "Lismar Del Castillo Serrano",
+        "direccion_exacta": "Carrera 92, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Esclerosis m\u00faltiple",
+        "fecha_reg": "2024-02-05"
+    },
+    {
+        "nombres_apellidos": "Daniela Abreu Y\u00e1nez",
+        "direccion_exacta": "Carrera 76, Sector Centro, cerca del CDI.",
+        "diagnostico": "Infecci\u00f3n urinaria",
+        "fecha_reg": "2024-11-13"
+    },
+    {
+        "nombres_apellidos": "Gregorio L\u00f3pez Padilla",
+        "direccion_exacta": "Calle 25, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "C\u00e1ncer de pr\u00f3stata",
+        "fecha_reg": "2024-07-09"
+    },
+    {
+        "nombres_apellidos": "Bernardo Fajardo Guti\u00e9rrez",
+        "direccion_exacta": "Carrera 47, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Enfermedad de Crohn",
+        "fecha_reg": "2025-07-22"
+    },
+    {
+        "nombres_apellidos": "Josefina Arismendi Rangel",
+        "direccion_exacta": "Carrera 36, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Lumbalgia",
+        "fecha_reg": "2024-09-14"
+    },
+    {
+        "nombres_apellidos": "Mar\u00eda Ibarra Le\u00f3n",
+        "direccion_exacta": "Avenida 51, Sector El Palomar, cerca del CDI.",
+        "diagnostico": "VIH/SIDA",
+        "fecha_reg": "2024-02-22"
+    },
+    {
+        "nombres_apellidos": "Matilde Romero Gil",
+        "direccion_exacta": "Calle 1, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Hipertiroidismo",
+        "fecha_reg": "2024-09-09"
+    },
+    {
+        "nombres_apellidos": "Patricia Ar\u00e9valo Barros",
+        "direccion_exacta": "Calle 18, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Gripe (influenza)",
+        "fecha_reg": "2024-09-15"
+    },
+    {
+        "nombres_apellidos": "Roberto Sandoval Ram\u00edrez",
+        "direccion_exacta": "Calle 37, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Intolerancia a la lactosa",
+        "fecha_reg": "2025-01-13"
+    },
+    {
+        "nombres_apellidos": "Carmen Ibarra Zambrano",
+        "direccion_exacta": "Avenida 38, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Miop\u00eda",
+        "fecha_reg": "2024-12-11"
+    },
+    {
+        "nombres_apellidos": "Catalina Causado Naranjo",
+        "direccion_exacta": "Carrera 2, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Depresi\u00f3n",
+        "fecha_reg": "2025-08-08"
+    },
+    {
+        "nombres_apellidos": "Andr\u00e9s Zambrano Rivera",
+        "direccion_exacta": "Carrera 49, Sector Centro, cerca del CDI.",
+        "diagnostico": "Trastorno bipolar",
+        "fecha_reg": "2024-10-08"
+    },
+    {
+        "nombres_apellidos": "Emma Bohorquez Toro",
+        "direccion_exacta": "Calle 63, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Sarampi\u00f3n",
+        "fecha_reg": "2025-02-12"
+    },
+    {
+        "nombres_apellidos": "Hugo Ortega Restrepo",
+        "direccion_exacta": "Carrera 98, Sector El Palomar, cerca del CDI.",
+        "diagnostico": "Dengue",
+        "fecha_reg": "2025-05-12"
+    },
+    {
+        "nombres_apellidos": "Dami\u00e1n Colmenares Ruiz",
+        "direccion_exacta": "Carrera 82, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "EPOC (Enfermedad Pulmonar Obstructiva Cr\u00f3nica)",
+        "fecha_reg": "2025-10-17"
+    },
+    {
+        "nombres_apellidos": "Esther Bautista Avila",
+        "direccion_exacta": "Avenida 8, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Gastritis",
+        "fecha_reg": "2025-01-13"
+    },
+    {
+        "nombres_apellidos": "Salvador Valencia Barros",
+        "direccion_exacta": "Avenida 23, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Cefalea tensional",
+        "fecha_reg": "2024-01-31"
+    },
+    {
+        "nombres_apellidos": "Camila Celis P\u00e9rez",
+        "direccion_exacta": "Avenida 42, Sector V\u00eda Clarines, cerca del CDI.",
+        "diagnostico": "C\u00e1ncer de colon",
+        "fecha_reg": "2025-05-11"
+    },
+    {
+        "nombres_apellidos": "Carlos Trejo Moreno",
+        "direccion_exacta": "Calle 49, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "C\u00e1ncer de colon",
+        "fecha_reg": "2024-10-15"
+    },
+    {
+        "nombres_apellidos": "Fernanda Cadenas Cisneros",
+        "direccion_exacta": "Avenida 86, Sector Pueblo Nuevo Sur, cerca del CDI.",
+        "diagnostico": "Gripe (influenza)",
+        "fecha_reg": "2025-07-26"
+    },
+    {
+        "nombres_apellidos": "Irma Sierra Lucena",
+        "direccion_exacta": "Avenida 8, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Toxoplasmosis",
+        "fecha_reg": "2025-04-19"
+    },
+    {
+        "nombres_apellidos": "Mayerling Betancourt Villegas",
+        "direccion_exacta": "Avenida 31, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Esclerosis m\u00faltiple",
+        "fecha_reg": "2024-09-26"
+    },
+    {
+        "nombres_apellidos": "Alonso Zambrano Zapata",
+        "direccion_exacta": "Avenida 75, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "COVID-19",
+        "fecha_reg": "2025-04-15"
+    },
+    {
+        "nombres_apellidos": "Leonardo Cerrada Vidal",
+        "direccion_exacta": "Avenida 84, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Neumon\u00eda",
+        "fecha_reg": "2024-09-13"
+    },
+    {
+        "nombres_apellidos": "Mario Guerra Consalvi",
+        "direccion_exacta": "Avenida 42, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Colitis ulcerosa",
+        "fecha_reg": "2025-05-26"
+    },
+    {
+        "nombres_apellidos": "Emilio Lara Cardona",
+        "direccion_exacta": "Calle 2, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Enfermedad de Parkinson",
+        "fecha_reg": "2025-09-14"
+    },
+    {
+        "nombres_apellidos": "Antonio Vargas Consalvi",
+        "direccion_exacta": "Calle 70, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Rinitis al\u00e9rgica",
+        "fecha_reg": "2025-04-13"
+    },
+    {
+        "nombres_apellidos": "Ignacio Cedeno Cruz",
+        "direccion_exacta": "Carrera 42, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Varicela",
+        "fecha_reg": "2024-07-17"
+    },
+    {
+        "nombres_apellidos": "Joaqu\u00edn Marques Moreno",
+        "direccion_exacta": "Avenida 60, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Lues connatal",
+        "fecha_reg": "2024-05-11"
+    },
+    {
+        "nombres_apellidos": "Yusmary Moreno Reyes",
+        "direccion_exacta": "Avenida 82, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Virus del Papiloma Humano (VPH)",
+        "fecha_reg": "2024-12-23"
+    },
+    {
+        "nombres_apellidos": "Emanuel Montes Vargas",
+        "direccion_exacta": "Avenida 64, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Urticaria",
+        "fecha_reg": "2024-03-03"
+    },
+    {
+        "nombres_apellidos": "Pablo Palacios Pinto",
+        "direccion_exacta": "Avenida 61, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Intolerancia a la lactosa",
+        "fecha_reg": "2024-12-05"
+    },
+    {
+        "nombres_apellidos": "Enrique Qui\u00f1ones Mora",
+        "direccion_exacta": "Calle 42, Sector V\u00eda San Tom\u00e9, cerca del CDI.",
+        "diagnostico": "Fiebre tifoidea",
+        "fecha_reg": "2025-12-04"
+    },
+    {
+        "nombres_apellidos": "Matilde Restrepo Mar\u00edn",
+        "direccion_exacta": "Avenida 74, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Diabetes tipo 1",
+        "fecha_reg": "2024-07-15"
+    },
+    {
+        "nombres_apellidos": "Joaqu\u00edn Gallegos Olivo",
+        "direccion_exacta": "Calle 39, Sector El Palomar, cerca del CDI.",
+        "diagnostico": "Fiebre tifoidea",
+        "fecha_reg": "2024-03-08"
+    },
+    {
+        "nombres_apellidos": "Crist\u00f3bal Prieto Barros",
+        "direccion_exacta": "Avenida 75, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Depresi\u00f3n",
+        "fecha_reg": "2025-08-04"
+    },
+    {
+        "nombres_apellidos": "Yusbely P\u00e9rez Bautista",
+        "direccion_exacta": "Calle 56, Sector Los Olivos, cerca del CDI.",
+        "diagnostico": "Hepatitis A",
+        "fecha_reg": "2024-09-27"
+    },
+    {
+        "nombres_apellidos": "Josefina Cantillo Sierra",
+        "direccion_exacta": "Carrera 27, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Lupus",
+        "fecha_reg": "2025-06-06"
+    },
+    {
+        "nombres_apellidos": "Paula Santana Quiroz",
+        "direccion_exacta": "Carrera 95, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Otitis",
+        "fecha_reg": "2024-11-24"
+    },
+    {
+        "nombres_apellidos": "Catalina Cordero Montes",
+        "direccion_exacta": "Carrera 59, Sector Casco Central, cerca del CDI.",
+        "diagnostico": "Urticaria",
+        "fecha_reg": "2025-04-23"
+    },
+    {
+        "nombres_apellidos": "Luisa Cedeno Redondo",
+        "direccion_exacta": "Avenida 22, Sector El Casco, cerca del CDI.",
+        "diagnostico": "S\u00edncope",
+        "fecha_reg": "2025-10-24"
+    },
+    {
+        "nombres_apellidos": "Valeria Cardona Fuentes",
+        "direccion_exacta": "Calle 4, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Zoster (culebrilla)",
+        "fecha_reg": "2024-01-21"
+    },
+    {
+        "nombres_apellidos": "Baltazar Zambrano Montes",
+        "direccion_exacta": "Calle 71, Sector Las Malvinas, cerca del CDI.",
+        "diagnostico": "Hipotiroidismo",
+        "fecha_reg": "2025-09-29"
+    },
+    {
+        "nombres_apellidos": "Sebasti\u00e1n Fuentes Caballero",
+        "direccion_exacta": "Carrera 93, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Endometriosis",
+        "fecha_reg": "2025-11-20"
+    },
+    {
+        "nombres_apellidos": "Mariana Mendoza Palma",
+        "direccion_exacta": "Avenida 36, Sector El Palomar, cerca del CDI.",
+        "diagnostico": "Insomnio",
+        "fecha_reg": "2024-06-04"
+    },
+    {
+        "nombres_apellidos": "Margarita Casas Causado",
+        "direccion_exacta": "Calle 12, Sector Campo Alegre, cerca del CDI.",
+        "diagnostico": "Malaria",
+        "fecha_reg": "2024-02-03"
+    },
+    {
+        "nombres_apellidos": "Sa\u00fal Barreto Barboza",
+        "direccion_exacta": "Calle 32, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Endometriosis",
+        "fecha_reg": "2025-05-29"
+    },
+    {
+        "nombres_apellidos": "Gabriela Bohorquez P\u00e9rez",
+        "direccion_exacta": "Carrera 77, Sector Barrio Sim\u00f3n Bol\u00edvar, cerca del CDI.",
+        "diagnostico": "Diabetes tipo 1",
+        "fecha_reg": "2024-05-05"
+    },
+    {
+        "nombres_apellidos": "Ra\u00fal Brito Carvajal",
+        "direccion_exacta": "Carrera 41, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Apendicitis",
+        "fecha_reg": "2025-04-13"
+    },
+    {
+        "nombres_apellidos": "C\u00e9sar Le\u00f3n Valdez",
+        "direccion_exacta": "Avenida 10, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Miop\u00eda",
+        "fecha_reg": "2024-01-18"
+    },
+    {
+        "nombres_apellidos": "No\u00e9 Baron Delgado",
+        "direccion_exacta": "Calle 25, Sector El Palomar, cerca del CDI.",
+        "diagnostico": "Insuficiencia respiratoria baja",
+        "fecha_reg": "2024-01-15"
+    },
+    {
+        "nombres_apellidos": "Roberto Acosta Romero",
+        "direccion_exacta": "Avenida 99, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "V\u00e9rtigo",
+        "fecha_reg": "2024-01-23"
+    },
+    {
+        "nombres_apellidos": "Rita Rold\u00e1n Varela",
+        "direccion_exacta": "Carrera 67, Sector El Casco, cerca del CDI.",
+        "diagnostico": "Guillain-Barr\u00e9 (s\u00edndrome de)",
+        "fecha_reg": "2025-07-09"
+    },
+    {
+        "nombres_apellidos": "Samuel Cicero Barros",
+        "direccion_exacta": "Calle 53, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "COVID-19",
+        "fecha_reg": "2025-08-15"
+    },
+    {
+        "nombres_apellidos": "Andr\u00e9s Lara Cicero",
+        "direccion_exacta": "Calle 67, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Esquizofrenia",
+        "fecha_reg": "2025-03-21"
+    },
+    {
+        "nombres_apellidos": "Cristian Jaimes Bautista",
+        "direccion_exacta": "Carrera 13, Sector La Esperanza, cerca del CDI.",
+        "diagnostico": "Obstrucci\u00f3n intestinal",
+        "fecha_reg": "2024-04-26"
+    },
+    {
+        "nombres_apellidos": "Natalia Colina Barreto",
+        "direccion_exacta": "Calle 23, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Tuberculosis",
+        "fecha_reg": "2024-05-28"
+    },
+    {
+        "nombres_apellidos": "Irma L\u00f3pez Figueroa",
+        "direccion_exacta": "Avenida 54, Sector El Centro, cerca del CDI.",
+        "diagnostico": "Cefalea tensional",
+        "fecha_reg": "2025-10-12"
+    },
+    {
+        "nombres_apellidos": "Diego Uribe Arismendi",
+        "direccion_exacta": "Carrera 62, Sector Punta de Mata, cerca del CDI.",
+        "diagnostico": "Tuberculosis",
+        "fecha_reg": "2024-06-24"
+    },
+    {
+        "nombres_apellidos": "Ferm\u00edn Bautista Henr\u00edquez",
+        "direccion_exacta": "Calle 88, Sector Sector Las Vegas, cerca del CDI.",
+        "diagnostico": "Enfermedad de Crohn",
+        "fecha_reg": "2025-04-29"
+    },
+    {
+        "nombres_apellidos": "Baltazar Bautista Sierra",
+        "direccion_exacta": "Avenida 81, Sector Km 55, cerca del CDI.",
+        "diagnostico": "Insuficiencia respiratoria baja",
+        "fecha_reg": "2024-03-12"
+    }
+]

@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from utils.sql_control import operaciones_sql_morb_extenso, operaciones_sql_morb_simplifica, eliminar_registros_morb_extenso, eliminar_registros_morb_simplifica
+from utils.sql_control import operaciones_sql_morb_extenso, eliminar_registros_morb_extenso
 from pathlib import Path
 import pandas as pd 
 from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
@@ -9,10 +9,10 @@ from pages.menu import menu
 from dateutil.relativedelta import relativedelta
 from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados
 from utils.base_64 import img_a_base64
-from utils.limpieza import limpiar_campos_morb_extenso, limpiar_campos_morb_simplificado
+from utils.limpieza import limpiar_campos_morb_extenso
 from utils.validaciones import validar_texto, val_texynum, val_notas, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
 from utils.botones import confirmar_eliminar, guadar_btn
-from utils.guardar_cambios import procesar_guardado_morb_extenso, procesar_guardado_morb_simplificado
+from utils.guardar_cambios import procesar_guardado_morb_extenso
 from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
 configurar_pagina_espanol()
 
@@ -37,61 +37,52 @@ ASSETS_DIR = PROJECT_ROOT / "static" / "assets" / "imagenes"
 menu()
 
 def data_editor_morb_extenso(df):
-    original_ids = df[['id', 'id_paciente', 'id_direccion_hogar']].reset_index(drop=True) if set(['id','id_paciente','id_direccion_hogar']).issubset(df.columns) else None
-    df_display = df.reset_index(drop=True).copy()
-    for c in ['id', 'id_paciente', 'id_direccion_hogar']:
-        if c in df_display.columns:
-            df_display.drop(columns=[c], inplace=True)
-    if " " not in df_display.columns:
-        df_display.insert(0, " ", False)
-    ordered_cols = [" ", "nombres_apellidos", "edad", "diagnostico", "fecha_registro_formulario", "direccion_hogar"]
-    rest = [c for c in df_display.columns if c not in ordered_cols]
-    columns_to_show = [c for c in (ordered_cols + rest) if c in df_display.columns]
-    df_display = df_display[columns_to_show]
+
+    # Columna de selección
+    if " " not in df.columns:
+        df.insert(0, " ", False)
+
+    # Mostrar TODO excepto ids internos, pero dejar id AL FINAL
+    columns_to_display = [
+        col for col in df.columns
+        if col not in [" ", "id_paciente", "id_direccion_hogar"]
+    ]
+
+    # Asegurar id al final
+    if "id" in columns_to_display:
+        columns_to_display.remove("id")
+        columns_to_display.append("id")
+
+    columns_to_show = [" "] + columns_to_display
+    df = df[columns_to_show]
+
+    # Configuración de columnas
     column_config = {
-        " ": st.column_config.CheckboxColumn(" ", default=False, disabled=False),
-        "nombres_apellidos": st.column_config.TextColumn("Nombres y Apellidos", disabled=False),
-        "edad": st.column_config.NumberColumn("Edad", min_value=0, step=1, disabled=False),
-        "diagnostico": st.column_config.TextColumn("Diagnóstico", disabled=False),
-        "fecha_registro_formulario": st.column_config.DateColumn("Fecha registro", format='DD/MM/YYYY', disabled=True),
-        "direccion_hogar": st.column_config.TextColumn("Dirección del hogar", disabled=True),
+        " ": st.column_config.CheckboxColumn(" ", default=False),
+        "nombres_apellidos": st.column_config.TextColumn("Nombres y Apellidos"),
+        "edad": st.column_config.NumberColumn("Edad", min_value=0, step=1),
+        "diagnostico": st.column_config.TextColumn("Diagnóstico"),
+        "fecha_registro_formulario": st.column_config.DateColumn(
+            "Fecha registro", format="DD/MM/YYYY", disabled=True
+        ),
+        "direccion_hogar": st.column_config.TextColumn(
+            "Dirección del hogar", disabled=True
+        ),
+        "id": st.column_config.NumberColumn("ID", disabled=True),
     }
-    for col in df_display.columns:
-        if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=True)
-    edited_df = st.data_editor(df_display, hide_index=True, column_config=column_config, key="editor_morb_extenso")
-    if original_ids is not None:
-        edited_df = edited_df.reset_index(drop=True)
-        edited_df = pd.concat([edited_df, original_ids], axis=1)
-    return edited_df
 
-# deprecado
-def data_editor_morb_simplifica(df_filtrado):
-    df_filtrado[' '] = False
-
-
-    columns_to_display = [col for col in df_filtrado.columns if col not in [' ', 'id']]
-    columns_to_show = [' '] + columns_to_display + (['id'] if 'id' in df_filtrado.columns else [])
-    df_filtrado = df_filtrado[columns_to_show]
-    
-    column_config = {
-        " ": st.column_config.CheckboxColumn(" ", default=False, disabled=False),
-        "fecha_registro_formulario": st.column_config.DateColumn("Registro De Formulario",format='DD/MM/YYYY', disabled=True),
-        "diagnostico": st.column_config.TextColumn("Diagnóstico", disabled=False),
-        "sexo": st.column_config.SelectboxColumn("Sexo", options=["Masculino", "Femenino"], disabled=False),
-        "edad": st.column_config.NumberColumn("Edad", min_value=0, step=1, disabled=False),
-        "id": st.column_config.TextColumn("ID", disabled=True),
-    }
+    # El resto solo lectura
     for col in columns_to_show:
-        if col not in column_config and col != ' ':
+        if col not in column_config and col != " ":
             column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
     edited_df = st.data_editor(
-        df_filtrado,
+        df,
         hide_index=True,
         column_config=column_config,
-        key="editor_morb_simplifica"
+        key="editor_morb_extenso"
     )
+
     return edited_df
 
 
@@ -231,79 +222,6 @@ def formulario_morb_extenso(db=DB_PATH):
                 st.rerun()
 
 
-@st.fragment
-def formulario_morb_simplifica(db=DB_PATH):
-    if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
-        return
-    nombre_usuario = st.session_state["autenticado_usuario"]
-    info_usuario = obtener_info_usuario(nombre_usuario)
-    if not info_usuario:
-        st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
-        return
-    rol_usuario = info_usuario["rol"]
-    id_doctor = info_usuario["id_doctor"]
-    id_secretaria = info_usuario["id_secretaria"]
-    id_administrador = info_usuario["id_administrador"]
-
-    st.subheader(":material/table: Datos de Morbilidad Simplificada", anchor=False)
-    df = operaciones_sql_morb_simplifica("cargar")
-    if df is None:
-        return
-
-    if df.empty:
-        st.info("No hay datos para mostrar.", icon=":material/info:")
-    else:
-        mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_morbsim")
-
-        if mostrar_editor:
-            df = filtrar_por_fechas(df, 'fecha_registro_formulario')
-            edited_df = data_editor_morb_simplifica(df)
-            has_selection = edited_df[' '].any()
-            col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(4)
-
-            with col_descargar:
-                descargar_pdf(edited_df, "morbilidad_simplificada")        
-            with col_descargar_seleccionado:
-                df_sel = edited_df[edited_df[' '] == True]
-                descargar_registros_seleccionados(edited_df, "morbilidad_simplificada")
-                descargar_pdf(df_sel, "morbilidad_simplificada_seleccionado", label="Descarga selección", disabled=not has_selection)
-            with col_eliminar:
-                btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="delete_morbilidad_simplificada", 
-                                        disabled=not has_selection, width="stretch",
-                                        help="Eliminar registros seleccionados.")
-                if btn_eliminar:
-                    confirmar_eliminar(eliminar_registros_morb_simplifica, edited_df)
-            with col_guardar:
-                guadar_btn(procesar_guardado_morb_simplificado, edited_df)
-
-    st.subheader(":material/new_label: Registrar Morbilidad Simplificada", anchor=False)
-    with st.form("form_morb_simplifica"):
-        col_izq, col_der = st.columns(2)
-        with col_izq:
-            diagnostico = st.text_area("Diagnóstico", max_chars=150, height=152, 
-                                       key="diagnostico_morb_simplifica", placeholder="Descripción del diagnóstico")
-        with col_der:
-            edad = st.number_input("Edad", min_value=0, step=1, key="edad_morb_simplifica")
-            sexo = st.selectbox("Sexo", ["Masculino", "Femenino"], key="sexo_morb_simplifica")
-        col_reg, col_limp = st.columns([30, 1])
-        with col_reg:
-            registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
-        with col_limp:
-            limpiar = st.form_submit_button("", icon=":material/cleaning_services:", on_click=limpiar_campos_morb_simplificado, 
-                                            type="tertiary", help="Limpia todos los campos del formulario.")
-        if registrar:
-            if not diagnostico:
-                st.error("Por favor completa el diagnóstico", icon=":material/error:")
-                return
-            elif not val_notas(diagnostico, "El", "diagnostico"):
-                return
-            else:
-                datos_registro = (diagnostico, edad, sexo, id_doctor, id_administrador, id_secretaria, rol_usuario)
-                if operaciones_sql_morb_simplifica("registrar", datos_registro=datos_registro):
-                    st.success("Registro guardado.", icon=":material/check_circle:")
-                    st.rerun()
-
 def mostrar_morb():
     logo_bandera = ASSETS_DIR / "imagebanderanueva2.png"
     
@@ -321,14 +239,10 @@ def mostrar_morb():
     with tab2:
         st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
         col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
-        #with col_izq:
-            #formulario_reporte_mensual_combinado()
-        #st.markdown("---")
+
         with col_centro:
             formulario_reporte_general_morbilidad()
-        #st.markdown("---")
-        #with col_der:
-            #formulario_reporte_mensual_general()
+
         st.markdown("")
     copyright_footer_dos("Equipo Investigador")
 

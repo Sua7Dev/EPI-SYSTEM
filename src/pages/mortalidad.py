@@ -2,21 +2,20 @@ import streamlit as st
 import datetime
 import pandas as pd
 from pathlib import Path
-from utils.sql_control import operaciones_sql_neonatal, eliminar_registros_neonatal, operaciones_sql_infantil, eliminar_registros_infantil, operaciones_sql_materna, eliminar_registros_materna, operaciones_sql_mensual_infantil, eliminar_registros_mensual_infantil, operaciones_sql_mensual_neonatal, eliminar_registros_mensual_neonatal, operaciones_sql_mensual_general, eliminar_registros_mensual_general, calcular_tasa_por_ano, calcular_tasa_por_ano_infantil, calcular_tasa_por_ano_neonatal
+from utils.sql_control import operaciones_sql_neonatal, eliminar_registros_neonatal, operaciones_sql_infantil, eliminar_registros_infantil, operaciones_sql_materna, eliminar_registros_materna
 from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
 from dateutil.relativedelta import relativedelta
 from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados
 from utils.base_64 import img_a_base64
-from utils.limpieza import limpiar_campos_mensual_general, limpiar_campos_mensual_neonatal, limpiar_campos_mensual_infantil, limpiar_campos_materna, limpiar_campos_infantil, limpiar_campos_neonatal
+from utils.limpieza import limpiar_campos_materna, limpiar_campos_infantil, limpiar_campos_neonatal
 from utils.validaciones import validar_texto, val_texynum, val_notas, val_num_espacios, validar_cinco_espacios, validar_pais
 from utils.botones import confirmar_eliminar, guadar_btn
 from utils.guardar_cambios import (procesar_guardado_cambios_mortalidad_neonatal,
                                    procesar_guardado_cambios_mortalidad_infantil, procesar_guardado_cambios_mortalidad_materna,
-                                   procesar_guardado_cambios_mensual_neonatal, procesar_guardado_cambios_mensual_infantil,
-                                   procesar_guardado_cambios_mensual_general)
-from utils.reportes import formulario_reporte_general, formulario_reporte_mensual_combinado, formulario_reporte_mensual_general
+                                   )
+from utils.reportes import formulario_reporte_general 
 import os
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
@@ -39,45 +38,98 @@ ASSETS_DIR = PROJECT_ROOT / "static" / "assets" / "imagenes"
 
 #NEONATAL
 def data_editor_neonatal(df_filtrado, rol_usuario):
+
     if " " not in df_filtrado.columns:
         df_filtrado.insert(0, " ", False)
 
+    # Mostrar todo excepto columna de selección
+    columns_to_display = [
+        col for col in df_filtrado.columns
+        if col not in [" "]
+    ]
 
-    columns_to_display = [col for col in df_filtrado.columns if col not in [" ", "id"]]
-
+    # Mover id al final
+    if "id" in columns_to_display:
+        columns_to_display.remove("id")
+        columns_to_display.append("id")
 
     columns_to_show = [" "] + columns_to_display
-
     df_filtrado = df_filtrado[columns_to_show]
-
 
     column_config = {
         " ": st.column_config.CheckboxColumn(" ", default=False, disabled=False),
-        "fecha_registro_formulario": st.column_config.DateColumn("Fecha registro", format='DD/MM/YYYY',disabled=True),
-        "historia_clinica": st.column_config.TextColumn("Historia clínica", disabled=True),
-        "nombres_apellidos": st.column_config.TextColumn("Nombres y Apellidos", disabled=(rol_usuario == "Secretario (a)")),
-        "nombre_madre": st.column_config.TextColumn("Nombre de la madre", disabled=(rol_usuario == "Secretario (a)")),
-        "fecha_nacimiento": st.column_config.TextColumn("Fecha de nacimiento", disabled=True),
-        "hora_nacimiento": st.column_config.TextColumn("Hora de nacimiento", disabled=True),
-        "fecha_ingreso": st.column_config.TextColumn("Fecha de ingreso", disabled=True),
-        "hora_ingreso": st.column_config.TextColumn("Hora de ingreso", disabled=True),
-        "fecha_defuncion": st.column_config.DateColumn("Fecha de defunción", format='DD/MM/YYYY',disabled=True),
-        "hora_defuncion": st.column_config.TextColumn("Hora de defunción", disabled=True),
+        "fecha_registro_formulario": st.column_config.DateColumn(
+            "Fecha registro", format="DD/MM/YYYY", disabled=True
+        ),
+        "historia_clinica": st.column_config.TextColumn(
+            "Historia clínica", disabled=True
+        ),
+        "nombres_apellidos": st.column_config.TextColumn(
+            "Nombres y Apellidos", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "nombre_madre": st.column_config.TextColumn(
+            "Nombre de la madre", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "fecha_nacimiento": st.column_config.TextColumn(
+            "Fecha de nacimiento", disabled=True
+        ),
+        "hora_nacimiento": st.column_config.TextColumn(
+            "Hora de nacimiento", disabled=True
+        ),
+        "fecha_ingreso": st.column_config.TextColumn(
+            "Fecha de ingreso", disabled=True
+        ),
+        "hora_ingreso": st.column_config.TextColumn(
+            "Hora de ingreso", disabled=True
+        ),
+        "fecha_defuncion": st.column_config.DateColumn(
+            "Fecha de defunción", format="DD/MM/YYYY", disabled=True
+        ),
+        "hora_defuncion": st.column_config.TextColumn(
+            "Hora de defunción", disabled=True
+        ),
         "edad": st.column_config.TextColumn("Edad", disabled=True),
         "tiempo": st.column_config.TextColumn("Tiempo de edad", disabled=True),
-        "idx_ingreso": st.column_config.TextColumn("IDX de ingreso", disabled=(rol_usuario == "Secretario (a)")),
-        "idx_defuncion": st.column_config.TextColumn("IDX de defunción", disabled=(rol_usuario == "Secretario (a)")),
-        "semanas_gestacion": st.column_config.NumberColumn("Semanas de gestación", min_value=0, step=1, disabled=(rol_usuario == "Secretario (a)")),
-        "peso": st.column_config.NumberColumn("Peso (kg)", min_value=0.0, step=0.1, format="%.1f", disabled=(rol_usuario == "Secretario (a)")),
-        "talla": st.column_config.NumberColumn("Talla (cm)", min_value=0.0, step=0.1, format="%.1f", disabled=(rol_usuario == "Secretario (a)")),
-        "pais_hogar": st.column_config.TextColumn("País", disabled=(rol_usuario == "Secretario (a)")),
-        "estado_hogar": st.column_config.TextColumn("Estado", disabled=(rol_usuario == "Secretario (a)")),
-        "municipio_hogar": st.column_config.TextColumn("Municipio", disabled=(rol_usuario == "Secretario (a)")),
-        "parroquia_hogar": st.column_config.TextColumn("Parroquia", disabled=(rol_usuario == "Secretario (a)")),
-        "ciudad_hogar": st.column_config.TextColumn("Ciudad", disabled=(rol_usuario == "Secretario (a)")),
-        "direccion": st.column_config.TextColumn("Dirección", disabled=True),
+        "idx_ingreso": st.column_config.TextColumn(
+            "IDX de ingreso", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "idx_defuncion": st.column_config.TextColumn(
+            "IDX de defunción", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "semanas_gestacion": st.column_config.NumberColumn(
+            "Semanas de gestación", min_value=0, step=1,
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "peso": st.column_config.NumberColumn(
+            "Peso (kg)", min_value=0.0, step=0.1, format="%.1f",
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "talla": st.column_config.NumberColumn(
+            "Talla (cm)", min_value=0.0, step=0.1, format="%.1f",
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "pais_hogar": st.column_config.TextColumn(
+            "País", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "estado_hogar": st.column_config.TextColumn(
+            "Estado", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "municipio_hogar": st.column_config.TextColumn(
+            "Municipio", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "parroquia_hogar": st.column_config.TextColumn(
+            "Parroquia", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "ciudad_hogar": st.column_config.TextColumn(
+            "Ciudad", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "direccion": st.column_config.TextColumn(
+            "Dirección", disabled=True
+        ),
         "id": st.column_config.TextColumn("ID", disabled=True),
-        "registrado_por": st.column_config.TextColumn("Registrado por", disabled=True),
+        "registrado_por": st.column_config.TextColumn(
+            "Registrado por", disabled=True
+        ),
     }
 
     for col in columns_to_show:
@@ -90,7 +142,9 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
         column_config=column_config,
         key="editor_neonatal"
     )
+
     return edited_df
+
 
 @st.fragment
 def formulario_neonatal(db=DB_PATH):
@@ -308,57 +362,111 @@ def formulario_neonatal(db=DB_PATH):
 
 #INFANTIL 
 def data_editor_infantil(df, rol_usuario):
+
     if " " not in df.columns:
         df.insert(0, " ", False)
 
+    # Mostrar todo excepto columna de selección
+    columns_to_display = [col for col in df.columns if col not in [" "]]
 
-    columns_to_display = [col for col in df.columns if col not in [" ", "id"]]
+    # Mover id al final
+    if "id" in columns_to_display:
+        columns_to_display.remove("id")
+        columns_to_display.append("id")
 
     columns_to_show = [" "] + columns_to_display
-
-    df_filtrado = df[columns_to_show]
-
+    df = df[columns_to_show]
 
     column_config = {
         " ": st.column_config.CheckboxColumn(" ", default=False, disabled=False),
-        "fecha_registro_formulario": st.column_config.DateColumn("Fecha registro", disabled=True),
-        "historia_clinica": st.column_config.TextColumn("Historia clínica", disabled=True),
-        "nombres_apellidos": st.column_config.TextColumn("Nombres y Apellidos", disabled=(rol_usuario == "Secretario (a)")),
-        "nombre_madre": st.column_config.TextColumn("Nombre de la madre", disabled=(rol_usuario == "Secretario (a)")),
-        "fecha_nacimiento": st.column_config.TextColumn("Fecha de nacimiento", disabled=True),
-        "hora_nacimiento": st.column_config.TextColumn("Hora de nacimiento", disabled=True),
-        "fecha_ingreso": st.column_config.TextColumn("Fecha de ingreso", disabled=True),
-        "hora_ingreso": st.column_config.TextColumn("Hora de ingreso", disabled=True),
-        "fecha_defuncion": st.column_config.DateColumn("Fecha de defunción", format='DD/MM/YYYY', disabled=True),
-        "hora_defuncion": st.column_config.TextColumn("Hora de defunción", disabled=True),
+        "fecha_registro_formulario": st.column_config.DateColumn(
+            "Fecha registro", disabled=True
+        ),
+        "historia_clinica": st.column_config.TextColumn(
+            "Historia clínica", disabled=True
+        ),
+        "nombres_apellidos": st.column_config.TextColumn(
+            "Nombres y Apellidos", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "nombre_madre": st.column_config.TextColumn(
+            "Nombre de la madre", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "fecha_nacimiento": st.column_config.TextColumn(
+            "Fecha de nacimiento", disabled=True
+        ),
+        "hora_nacimiento": st.column_config.TextColumn(
+            "Hora de nacimiento", disabled=True
+        ),
+        "fecha_ingreso": st.column_config.TextColumn(
+            "Fecha de ingreso", disabled=True
+        ),
+        "hora_ingreso": st.column_config.TextColumn(
+            "Hora de ingreso", disabled=True
+        ),
+        "fecha_defuncion": st.column_config.DateColumn(
+            "Fecha de defunción", format="DD/MM/YYYY", disabled=True
+        ),
+        "hora_defuncion": st.column_config.TextColumn(
+            "Hora de defunción", disabled=True
+        ),
         "edad": st.column_config.TextColumn("Edad", disabled=True),
         "tiempo": st.column_config.TextColumn("Tiempo de edad", disabled=True),
-        "idx_ingreso": st.column_config.TextColumn("IDX de ingreso", disabled=(rol_usuario == "Secretario (a)")),
-        "idx_defuncion": st.column_config.TextColumn("IDX de defunción", disabled=(rol_usuario == "Secretario (a)")),
-        "semanas_gestacion": st.column_config.NumberColumn("Semanas de gestación", min_value=0, step=1, disabled=(rol_usuario == "Secretario (a)")),
-        "peso": st.column_config.NumberColumn("Peso (kg)", min_value=0.0, step=0.1, format="%.1f", disabled=(rol_usuario == "Secretario (a)")),
-        "talla": st.column_config.NumberColumn("Talla (cm)", min_value=0.0, step=0.1, format="%.1f", disabled=(rol_usuario == "Secretario (a)")),
-        "pais_hogar": st.column_config.TextColumn("País", disabled=(rol_usuario == "Secretario (a)")),
-        "estado_hogar": st.column_config.TextColumn("Estado", disabled=(rol_usuario == "Secretario (a)")),
-        "municipio_hogar": st.column_config.TextColumn("Municipio", disabled=(rol_usuario == "Secretario (a)")),
-        "parroquia_hogar": st.column_config.TextColumn("Parroquia", disabled=(rol_usuario == "Secretario (a)")),
-        "ciudad_hogar": st.column_config.TextColumn("Ciudad", disabled=(rol_usuario == "Secretario (a)")),
-        "direccion": st.column_config.TextColumn("Dirección", disabled=True),
+        "idx_ingreso": st.column_config.TextColumn(
+            "IDX de ingreso", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "idx_defuncion": st.column_config.TextColumn(
+            "IDX de defunción", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "semanas_gestacion": st.column_config.NumberColumn(
+            "Semanas de gestación", min_value=0, step=1,
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "peso": st.column_config.NumberColumn(
+            "Peso (kg)", min_value=0.0, step=0.1, format="%.1f",
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "talla": st.column_config.NumberColumn(
+            "Talla (cm)", min_value=0.0, step=0.1, format="%.1f",
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "pais_hogar": st.column_config.TextColumn(
+            "País", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "estado_hogar": st.column_config.TextColumn(
+            "Estado", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "municipio_hogar": st.column_config.TextColumn(
+            "Municipio", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "parroquia_hogar": st.column_config.TextColumn(
+            "Parroquia", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "ciudad_hogar": st.column_config.TextColumn(
+            "Ciudad", disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "direccion": st.column_config.TextColumn(
+            "Dirección", disabled=True
+        ),
         "id": st.column_config.TextColumn("ID", disabled=True),
-        "registrado_por": st.column_config.TextColumn("Registrado por", disabled=True),
+        "registrado_por": st.column_config.TextColumn(
+            "Registrado por", disabled=True
+        ),
     }
 
+    # Cualquier otra columna → solo lectura
     for col in columns_to_show:
         if col not in column_config and col != " ":
             column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
     edited_df = st.data_editor(
-        df_filtrado,
+        df,
         hide_index=True,
         column_config=column_config,
         key="editor_infantil"
     )
+
     return edited_df
+
 
 @st.fragment
 def formulario_infantil(db=DB_PATH):
@@ -540,16 +648,20 @@ def formulario_infantil(db=DB_PATH):
                         st.success("Registro guardado.", icon=":material/check_circle:")
                         st.rerun()
 
-#MATERNA
 def data_editor_materna(df, rol_usuario):
+
     if " " not in df.columns:
         df.insert(0, " ", False)
 
-    columns_to_display = [col for col in df.columns if col not in [" ", "id"]]
+    # Columnas a mostrar (excepto check)
+    columns_to_display = [col for col in df.columns if col not in [" "]]
 
-    # Mostrar solo la columna de check + las columnas permitidas
+    # Mover 'id' al final
+    if "id" in columns_to_display:
+        columns_to_display.remove("id")
+        columns_to_display.append("id")
+
     columns_to_show = [" "] + columns_to_display
-
     df = df[columns_to_show]
 
     column_config = {
@@ -560,7 +672,7 @@ def data_editor_materna(df, rol_usuario):
         "fecha_nacimiento": st.column_config.TextColumn("Fecha de nacimiento", disabled=True),
         "fecha_ingreso": st.column_config.TextColumn("Fecha de ingreso", disabled=True),
         "hora_ingreso": st.column_config.TextColumn("Hora de ingreso", disabled=True),
-        "fecha_defuncion": st.column_config.DateColumn("Fecha de defunción",format="DD/MM/YYYY", disabled=True),
+        "fecha_defuncion": st.column_config.DateColumn("Fecha de defunción", format="DD/MM/YYYY", disabled=True),
         "hora_defuncion": st.column_config.TextColumn("Hora de defunción", disabled=True),
         "edad": st.column_config.TextColumn("Edad", disabled=True),
         "tiempo": st.column_config.TextColumn("Tiempo de edad", disabled=True),
@@ -577,6 +689,7 @@ def data_editor_materna(df, rol_usuario):
         "registrado_por": st.column_config.TextColumn("Registrado por", disabled=True),
     }
 
+    # Cualquier otra columna → solo lectura
     for col in columns_to_show:
         if col not in column_config and col != " ":
             column_config[col] = st.column_config.TextColumn(col, disabled=True)
@@ -588,7 +701,6 @@ def data_editor_materna(df, rol_usuario):
         key="editor_materna"
     )
     return edited_df
-
 
 @st.fragment
 def formulario_materna(db=DB_PATH):
@@ -752,423 +864,6 @@ def formulario_materna(db=DB_PATH):
                         st.success("Registro guardado.", icon=":material/check_circle:")
                         st.rerun()
 
-def data_editor_mensual_infantil(df, rol_usuario):
-    if " " not in df.columns:
-        df.insert(0, " ", False)
-
-    columnas_excluir = ["fecha_hora", "hora"]
-    columns_to_display = [col for col in df.columns if col not in [" ", "id"] + columnas_excluir]
-
-    columns_to_show = [" "] + columns_to_display + (["id"] if "id" in df.columns else [])
-    df = df[columns_to_show]
-
-    column_config = {
-        " ": st.column_config.CheckboxColumn(" ", default=False, disabled=False),
-        "fecha_registro_formulario": st.column_config.DateColumn("Fecha registro", format="DD/MM/YYYY", disabled=True),
-        "total": st.column_config.NumberColumn("Total", disabled=True),
-        "tasa": st.column_config.TextColumn("Tasa", disabled=True),
-        "causas": st.column_config.TextColumn("Causas", disabled=True),
-        "n_casos": st.column_config.NumberColumn("Número de casos", min_value=0, step=1, disabled=True),
-        "id": st.column_config.TextColumn("ID", disabled=True),
-    }
-
-    for col in columns_to_show:
-        if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=True)
-
-    edited_df = st.data_editor(
-        df,
-        hide_index=True,
-        column_config=column_config,
-        key="editor_mensual_infantil"
-    )
-    return edited_df
-
-@st.fragment
-def formulario_mensual_infantil(db=DB_PATH):
-    if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
-        return
-    nombre_usuario = st.session_state["autenticado_usuario"]
-    info_usuario = obtener_info_usuario(nombre_usuario)
-    if not info_usuario:
-        st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
-        return
-    rol_usuario = info_usuario["rol"]
-    id_doctor = info_usuario["id_doctor"]
-    id_administrador = info_usuario["id_administrador"]
-
-    st.subheader(":material/table: Datos de Mortalidad Mensual Infantil", anchor=False)
-    df = operaciones_sql_mensual_infantil("cargar")
-    if df is None:
-        return
-
-    if rol_usuario == "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-            st.markdown("# ")
-    elif rol_usuario != "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-        else:
-            mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_im")
-
-            if mostrar_editor:
-                df_filtrado = filtrar_por_fechas(df, 'fecha_registro_formulario')
-                edited_df = data_editor_mensual_infantil(df_filtrado, rol_usuario)
-                col1, col3 = st.columns(2)
-                has_selection = edited_df[' '].any()
-                col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(4)
-                
-                if rol_usuario == "Secretario (a)":
-                    with col1:
-                        descargar_pdf(edited_df, "mortalidad_mensual_infatil", label="Descargar PDF")
-                    with col3:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_mensual_infatil")
-                        descargar_pdf(df_sel, "mortalidad_mensual_infatil_seleccionado", label="Descarga selección", disabled=not has_selection)
-                else:
-                    with col_guardar:
-                        guadar_btn(procesar_guardado_cambios_mensual_neonatal, edited_df, key_1="btn_guardar_morta_infantil_mensual") # completar_boton_aqui
-                    with col_descargar:
-                            descargar_pdf(edited_df, "mortalidad_mensual_infatil")               
-                    with col_descargar_seleccionado:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_mensual_infatil")
-                        descargar_pdf(df_sel, "mortalidad_mensual_infatil_seleccionado", label="Descarga selección", disabled=not has_selection)
-                    with col_eliminar:
-                        btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="delete_mortalidad_mensual_infatil", 
-                                                disabled=not has_selection, width="stretch",
-                                                help="Eliminar registros seleccionados.")
-                        if btn_eliminar:
-                            confirmar_eliminar(eliminar_registros_mensual_infantil, edited_df)
-                        #  eliminar_registros_mensual_infantil(edited_df)
-
-    if rol_usuario != "Secretario (a)":
-        col_izq, col_der = st.columns(2)
-        with col_der:
-            st.subheader(":material/percent: Tasa", anchor=False)
-
-            # Obtener los años que tienen registros
-            if not df.empty:
-                df['anio'] = pd.to_datetime(df['fecha_registro_formulario']).dt.year
-                years = sorted(df['anio'].unique())
-            else:
-                years = []
-
-            if years:
-                year_seleccionado = st.selectbox(
-                    "Seleccionar año para tasa", 
-                    options=years, 
-                    index=len(years)-1, 
-                    key="year_tasa_infantil"
-                )
-                tasa = calcular_tasa_por_ano_infantil(db, year_seleccionado)
-                st.metric(label="Tasa de Registros", value=f"{tasa}%", delta=None)
-            else:
-                st.info("No hay años con registros para calcular tasas.", icon=":material/info:")      
-
-        with col_izq:
-            st.subheader(":material/new_label: Registrar Mortalidad Mensual Infantil", anchor=False)
-            with st.form("form_mensual_infantil", width=531):
-                causas = st.text_area("Causas", max_chars=150, key="causas_mensual_infantil", placeholder="Descripción de la causa")
-                n_casos = st.number_input("Número de casos", min_value=0, step=1, key="n_casos_mensual_infantil")
-                col_reg, col_limp = st.columns([14.5, 1])
-                with col_reg:
-                    registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
-                with col_limp:
-                    limpiar = st.form_submit_button("", icon=":material/cleaning_services:", 
-                                                    on_click=limpiar_campos_mensual_infantil, type="tertiary",
-                                                    help="Limpia todos los campos del formulario.")
-                if registrar:
-                    if not val_notas(causas, "La", "causa"):
-                        return
-                    elif n_casos == 0:
-                        st.error("El número de casos debe ser mayor que cero.", icon=":material/error:")
-                        return
-                    else:
-                        datos_registro = (causas, n_casos, id_doctor, id_administrador, rol_usuario)
-                        if operaciones_sql_mensual_infantil("registrar", datos_registro=datos_registro):
-                            st.success("Registro guardado.", icon=":material/check_circle:")
-                            st.rerun()
-
-
-def data_editor_mensual_neonatal(df, rol_usuario):
-    if " " not in df.columns:
-        df.insert(0, " ", False)
-
-    columns_to_display = [col for col in df.columns if col not in [" ", "id"]]
-
-    columns_to_show = [" "] + columns_to_display + (["id"] if "id" in df.columns else [])
-    df = df[columns_to_show]
-
-    column_config = {
-        " ": st.column_config.CheckboxColumn(" ", default=False, disabled=False),
-        "fecha_hora": st.column_config.DateColumn("Fecha registro", format="DD/MM/YYYY", disabled=True),
-        "total": st.column_config.NumberColumn("Total", disabled=True),
-        "tasa": st.column_config.TextColumn("Tasa", disabled=True),
-        "causas": st.column_config.TextColumn("Causas", disabled=True),
-        "n_casos": st.column_config.NumberColumn("Número de casos", min_value=0, step=1, disabled=True),
-        "id": st.column_config.TextColumn("ID", disabled=True),
-    }
-
-    for col in columns_to_show:
-        if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=True)
-
-    edited_df = st.data_editor(
-        df,
-        hide_index=True,
-        column_config=column_config,
-        key="editor_neonatal_mensual"
-    )
-    return edited_df
-
-@st.fragment
-def formulario_mensual_neonatal(db=DB_PATH):
-    if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
-        return
-    nombre_usuario = st.session_state["autenticado_usuario"]
-    info_usuario = obtener_info_usuario(nombre_usuario)
-    if not info_usuario:
-        st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
-        return
-    rol_usuario = info_usuario["rol"]
-    id_doctor = info_usuario["id_doctor"]
-    id_administrador = info_usuario["id_administrador"]
-
-    st.subheader(":material/table: Datos de Mortalidad Mensual Neonatal", anchor=False)
-    df = operaciones_sql_mensual_neonatal("cargar")
-    if df is None:
-        return
-
-    if rol_usuario == "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-            st.markdown("# ")
-    elif rol_usuario != "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-        else:
-            mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_mn")
-
-            if mostrar_editor:
-                df_filtrado = filtrar_por_fechas(df, 'fecha_registro_formulario')
-                edited_df = data_editor_mensual_neonatal(df_filtrado, rol_usuario)
-                col1, col3 = st.columns(2)
-                has_selection = edited_df[' '].any()
-                col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(4)
-                if rol_usuario == "Secretario (a)":
-                    with col1:
-                        descargar_pdf(edited_df, "mortalidad_mensual_neonatal", label="Descargar PDF")
-                    with col3:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_mensual_neonatal")
-                        descargar_pdf(df_sel, "mortalidad_mensual_neonatal_seleccionado", label="Descarga selección", disabled=not has_selection)
-                else:
-                    with col_guardar:
-                        guadar_btn(procesar_guardado_cambios_mensual_infantil, edited_df, key_1="btn_guardar_morta_neo_mensual") # completar_boton_aqui
-                    with col_descargar:
-                            descargar_pdf(edited_df, "mortalidad_mensual_neonatal")                
-                    with col_descargar_seleccionado:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_mensual_neonatal")
-                        descargar_pdf(df_sel, "mortalidad_mensual_neonatal_seleccionado", label="Descarga selección", disabled=not has_selection)
-                    with col_eliminar:
-                        btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="mortalidad_mensual_neonatal", 
-                                                disabled=not has_selection, width="stretch",
-                                                help="Eliminar registros seleccionados.")
-                        if btn_eliminar:
-                            confirmar_eliminar(eliminar_registros_mensual_infantil, edited_df)
-                        # eliminar_registros_mensual_infantil(edited_df)
-
-    if rol_usuario != "Secretario (a)":
-        col_izq, col_der = st.columns(2)
-        with col_der:
-            st.subheader(":material/percent: Tasa", anchor=False)
-
-            # Obtener los años que realmente tienen registros
-            if not df.empty:
-                df['anio'] = pd.to_datetime(df['fecha_hora']).dt.year
-                years = sorted(df['anio'].unique())
-            else:
-                years = []
-
-            if years:
-                year_seleccionado = st.selectbox(
-                    "Seleccionar año para tasa",
-                    options=years,
-                    index=len(years)-1,
-                    key="year_tasa_neonatal"
-                )
-                tasa = calcular_tasa_por_ano_neonatal(db, year_seleccionado)
-                st.metric(label="Tasa de Registros", value=f"{tasa}%", delta=None)
-            else:
-                st.info("No hay años con registros para calcular tasas.", icon=":material/info:")
-        
-        with col_izq:
-            st.subheader(":material/new_label: Registrar Mortalidad Mensual Neonatal", anchor=False)
-            with st.form("form_mensual_neonatal", width=531):
-                causas = st.text_area("Causas", max_chars=150, key="causas_mensual_neonatal", placeholder="Descripción de la causa")
-                n_casos = st.number_input("Número de casos", min_value=0, step=1, key="n_casos_mensual_neonatal")
-                col_reg, col_limp = st.columns([14.5, 1])
-                with col_reg:
-                    registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
-                with col_limp:
-                    limpiar = st.form_submit_button("", icon=":material/cleaning_services:", 
-                                                    on_click=limpiar_campos_mensual_neonatal, type="tertiary",
-                                                    help="Limpia todos los campos del formulario.")
-                if registrar:
-                    if not val_notas(causas, "La", "causa"):
-                        return
-                    elif n_casos == 0:
-                        st.error("El número de casos debe ser mayor que cero.", icon=":material/error:")
-                        return
-                    else:
-                        datos_registro = (causas, n_casos, id_doctor, id_administrador, rol_usuario)
-                        if operaciones_sql_mensual_neonatal("registrar", datos_registro=datos_registro):
-                            st.success("Registro guardado.", icon=":material/check_circle:")
-                            st.rerun()
-
-def data_editor_mensual_general(df, rol_usuario):
-    if " " not in df.columns:
-        df.insert(0, " ", False)
-
-    columns_to_display = [col for col in df.columns if col not in [" ", "id"]]
-
-    columns_to_show = [" "] + columns_to_display + (["id"] if "id" in df.columns else [])
-    df = df[columns_to_show]
-
-    column_config = {
-        " ": st.column_config.CheckboxColumn(" ", default=False, disabled=False),
-        "fecha_hora": st.column_config.DateColumn("Fecha registro", format="DD/MM/YYYY", disabled=True),
-        "total": st.column_config.NumberColumn("Total", disabled=True),
-        "tasa": st.column_config.TextColumn("Tasa", disabled=True),
-        "causas": st.column_config.TextColumn("Causas", disabled=True),
-        "n_casos": st.column_config.NumberColumn("Número de casos", min_value=0, step=1, disabled=True),
-        "id": st.column_config.TextColumn("ID", disabled=True),
-    }
-
-    for col in columns_to_show:
-        if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=True)
-
-    edited_df = st.data_editor(
-        df,
-        hide_index=True,
-        column_config=column_config,
-        key="editor_general_mensual"
-    )
-    return edited_df
-
-@st.fragment
-def formulario_mensual_general(db=DB_PATH):
-    if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
-        return
-    nombre_usuario = st.session_state["autenticado_usuario"]
-    info_usuario = obtener_info_usuario(nombre_usuario)
-    if not info_usuario:
-        st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
-        return
-    rol_usuario = info_usuario["rol"]
-    id_doctor = info_usuario["id_doctor"]
-    id_administrador = info_usuario["id_administrador"]
-
-    st.subheader(":material/table: Datos de Mortalidad Mensual General", anchor=False)
-    df = operaciones_sql_mensual_general("cargar")
-    if df is None:
-        return
-
-    if rol_usuario == "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-            st.markdown("# ")
-    elif rol_usuario != "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-        else:
-            mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_mg")
-
-            if mostrar_editor:
-                df_filtrado = filtrar_por_fechas(df, 'fecha_hora' )
-                edited_df = data_editor_mensual_general(df_filtrado, rol_usuario)
-                col1, col3 = st.columns(2)
-                has_selection = edited_df[' '].any()
-                col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(4)
-                if rol_usuario == "Secretario (a)":
-                    with col1:
-                        descargar_pdf(edited_df, "mortalidad_mensual_general", label="Descargar PDF")
-                    with col3:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_mensual_general")
-                        descargar_pdf(df_sel, "mortalidad_mensual_general_seleccionado", label="Descarga selección", disabled=not has_selection)
-                else:
-                    with col_guardar:
-                        guadar_btn(procesar_guardado_cambios_mensual_general, edited_df,key_1="btn_guardar_morta_gen_mensual") # completar_boton_aqui
-                    with col_descargar:
-                        descargar_pdf(edited_df, "mortalidad_mensual_general")                
-                    with col_descargar_seleccionado:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_mensual_general")
-                        descargar_pdf(df_sel, "mortalidad_mensual_general_seleccionado", label="Descarga selección", disabled=not has_selection)
-                    with col_eliminar:
-                        btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="mortalidad_mensual_general", 
-                                                disabled=not has_selection, width="stretch",
-                                                help="Eliminar registros seleccionados.")
-                        if btn_eliminar:
-                            confirmar_eliminar(eliminar_registros_mensual_general, edited_df)
-                            #eliminar_registros_mensual_general(edited_df)
-
-    if rol_usuario != "Secretario (a)":
-        col_izq, col_der = st.columns(2)
-        with col_der:
-            st.subheader(":material/percent: Tasa", anchor=False)
-
-            if not df.empty:
-                df['anio'] = pd.to_datetime(df['fecha_hora']).dt.year
-                years = sorted(df['anio'].unique())
-            else:
-                years = []
-
-            if years:
-                year_seleccionado = st.selectbox(
-                    "Seleccionar año para tasa",
-                    options=years,
-                    index=len(years) - 1,
-                    key="year_tasa_neonatal"
-                )
-                tasa = calcular_tasa_por_ano_neonatal(db, year_seleccionado)
-                st.metric(label="Tasa de Registros", value=f"{tasa}%", delta=None)
-            else:
-                st.info("No hay años con registros para calcular tasas.", icon=":material/info:")
-
-        with col_izq:
-            st.subheader(":material/new_label: Registrar Mortalidad Mensual General", anchor=False)
-            with st.form("form_mensual_general", width=531):
-                causas = st.text_area("Causas", max_chars=150, key="causas_mensual_general", placeholder="Descripción de la causa")
-                n_casos = st.number_input("Número de casos", min_value=0, step=1, key="n_casos_mensual_general")
-                col_reg, col_limp = st.columns([14.5, 1])
-                with col_reg:
-                    registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
-                with col_limp:
-                    limpiar = st.form_submit_button("", icon=":material/cleaning_services:", 
-                                                    on_click=limpiar_campos_mensual_general, type="tertiary",
-                                                    help="Limpia todos los campos del formulario.")
-                if registrar:
-                    if not val_notas(causas, "La", "causa"):
-                        return
-                    elif n_casos == 0:
-                        st.error("El número de casos debe ser mayor que cero.", icon=":material/error:")
-                        return
-                    else:
-                        datos_registro = (causas, n_casos, id_doctor, id_administrador, rol_usuario)
-                        if operaciones_sql_mensual_general("registrar", datos_registro=datos_registro):
-                            st.success("Registro guardado.", icon=":material/check_circle:")
-                            st.rerun()
-            
-
 def mostrar_morta():
     logo_bandera = ASSETS_DIR / "imagebanderanueva2.png"
     logo_base64 = img_a_base64(logo_bandera)
@@ -1195,32 +890,14 @@ def mostrar_morta():
         func_normal = formularios_normales.get(tipo_muerte)
         if func_normal:
             func_normal()
-    #with tab2: # deprecado
-    #    tipo_muerte_mensual = st.selectbox(
-    #        ":material/gesture_select: Selecciona el tipo de registro:",
-    #        options=["Mortalidad Mensual Infantil", "Mortalidad Mensual Neonatal", "Mortalidad Mensual General"],
-    #        key="tipo_muerte_mensual"
-    #    )
-    #    formularios_mensuales = {
-    #        "Mortalidad Mensual Infantil": formulario_mensual_infantil,
-    #        "Mortalidad Mensual Neonatal": formulario_mensual_neonatal,
-    #        "Mortalidad Mensual General": formulario_mensual_general
-    #    }
-    #    func_mensual = formularios_mensuales.get(tipo_muerte_mensual)
-    #    if func_mensual:
-    #        func_mensual()
+
     with tab2:
         st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
         col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
-        #with col_izq:
-            #formulario_reporte_mensual_combinado()
-        #st.markdown("---")
+
         with col_centro:
             formulario_reporte_general()
-            
-        #st.markdown("---")
-        #with col_der:
-            #formulario_reporte_mensual_general()
+
         st.markdown("")
     copyright_footer_dos("Equipo Investigador", bottom="-200px")
         

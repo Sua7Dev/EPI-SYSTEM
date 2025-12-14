@@ -58,15 +58,6 @@ def menu():
         morbilidadicon, morbilidadbtn = st.sidebar.columns((0.1, 1))
         morbilidad_Logo = morbilidadicon.button("", type="tertiary", width="stretch", icon=":material/personal_injury:", key="morbilidad_logo")
         morbilidad_boton = morbilidadbtn.button("Morbilidad", type="primary", width="stretch")
-        # caducado epi y reg diario
-        # Botones de epi14
-        #epi14icon, epi14btn = st.sidebar.columns((0.1, 1))
-        #epi14_Logo = epi14icon.button("", type="tertiary", width="stretch", icon=":material/coronavirus:", key="epi14_logo")
-        #epi14_boton = epi14btn.button("Epi 14 Semanal", type="primary", width="stretch")
-        ## Botones de registro diario 
-        #registrodiicon, registrodibtn = st.sidebar.columns((0.1, 1))
-        #registrodi_Logo = registrodiicon.button("", type="tertiary", width="stretch", icon=":material/calendar_add_on:", key="registrodi_Logo")
-        #registrodi_boton = registrodibtn.button("Registro Diario", type="primary", width="stretch")
         # Botones de estadísticas
         estadisticaicon, estadisticabtn = st.sidebar.columns((0.1, 1))
         estadistica_Logo = estadisticaicon.button("", type="tertiary", width="stretch", icon=":material/bar_chart_4_bars:", key="estadistica_Logo")
@@ -97,12 +88,6 @@ def menu():
         if morbilidad_Logo or morbilidad_boton:
             st.switch_page("pages/morbilidad.py")
             st.rerun()
-        #if epi14_Logo or epi14_boton:
-        #    st.switch_page("pages/epi14.py")
-        #    st.rerun()
-        #if registrodi_Logo or registrodi_boton:
-        #    st.switch_page("pages/registro_diario.py")
-        #    st.rerun()
         if estadistica_Logo or estadistica_boton:
             st.switch_page("pages/estadisticas.py")
             st.rerun()

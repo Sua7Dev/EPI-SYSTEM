@@ -31,31 +31,69 @@ ASSETS_DIR = PROJECT_ROOT / "static" / "assets" / "imagenes"
 menu()
 
 def data_editor_natalidad(df, rol_usuario):
+
     if " " not in df.columns:
         df.insert(0, " ", False)
 
-    columns_to_display = [col for col in df.columns if col not in [" ", "id", "id_doctor", "fecha_registro_formulario"]]
+    # Mostrar todo excepto ids internos, pero dejar ID al final
+    columns_to_display = [
+        col for col in df.columns
+        if col not in [" ", "id_doctor", "fecha_registro_formulario"]
+    ]
+
+    # Mover id al final
+    if "id" in columns_to_display:
+        columns_to_display.remove("id")
+        columns_to_display.append("id")
+
     columns_to_show = [" "] + columns_to_display
     df = df[columns_to_show]
-    
 
     column_config = {
         " ": st.column_config.CheckboxColumn(" ", default=False, disabled=False),
-        "fecha_registro_formulario": st.column_config.DateColumn("Fecha registro formulario", format='DD/MM/YYYY', disabled=True),
-        "fecha": st.column_config.DateColumn("Fechas",format='DD/MM/YYYY', disabled=(rol_usuario == "Secretario (a)")),
-        "partos": st.column_config.NumberColumn("Partos", min_value=0, step=1, disabled=(rol_usuario == "Secretario (a)")),
-        "cesareas": st.column_config.NumberColumn("Cesáreas", min_value=0, step=1, disabled=(rol_usuario == "Secretario (a)")),
-        "varones": st.column_config.NumberColumn("Varones", min_value=0, step=1, disabled=(rol_usuario == "Secretario (a)")),
-        "hembras": st.column_config.NumberColumn("Hembras", min_value=0, step=1, disabled=(rol_usuario == "Secretario (a)")),
-        "gemelar": st.column_config.NumberColumn("Gemelar", min_value=0, step=1, disabled=True),
-        "mto": st.column_config.NumberColumn("Muertos (MTO)", min_value=0, step=1, disabled=(rol_usuario == "Secretario (a)")),
-        "partos_extrahospitalarios": st.column_config.NumberColumn("Partos extrahospitalarios", min_value=0, step=1, disabled=(rol_usuario == "Secretario (a)")),
-        "sexo_gemelar": st.column_config.SelectboxColumn("Sexo de los gemelos", options=["No aplica", "Varones", "Hembras", "Mixto"], disabled=(rol_usuario == "Secretario (a)")),
+        "fecha_registro_formulario": st.column_config.DateColumn(
+            "Fecha registro formulario", format="DD/MM/YYYY", disabled=True
+        ),
+        "fecha": st.column_config.DateColumn(
+            "Fechas", format="DD/MM/YYYY",
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "partos": st.column_config.NumberColumn(
+            "Partos", min_value=0, step=1,
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "cesareas": st.column_config.NumberColumn(
+            "Cesáreas", min_value=0, step=1,
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "varones": st.column_config.NumberColumn(
+            "Varones", min_value=0, step=1,
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "hembras": st.column_config.NumberColumn(
+            "Hembras", min_value=0, step=1,
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "gemelar": st.column_config.NumberColumn(
+            "Gemelar", min_value=0, step=1, disabled=True
+        ),
+        "mto": st.column_config.NumberColumn(
+            "Muertos (MTO)", min_value=0, step=1,
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "partos_extrahospitalarios": st.column_config.NumberColumn(
+            "Partos extrahospitalarios", min_value=0, step=1,
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "sexo_gemelar": st.column_config.SelectboxColumn(
+            "Sexo de los gemelos",
+            options=["No aplica", "Varones", "Hembras", "Mixto"],
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "id_doctor": st.column_config.TextColumn("ID_Doctor", disabled=True),
         "registrado_por": st.column_config.TextColumn("Registrado por", disabled=True),
     }
-
 
     for col in columns_to_show:
         if col not in column_config and col != " ":
@@ -67,6 +105,7 @@ def data_editor_natalidad(df, rol_usuario):
         column_config=column_config,
         key="editor_natalidad"
     )
+
     return edited_df
 
 

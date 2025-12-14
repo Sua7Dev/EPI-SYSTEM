@@ -168,335 +168,134 @@ def eliminar_registros_natalidad(edited_df):
             st.rerun()
     except sqlite3.Error as e:
         st.error(f"Error al eliminar: {e}", icon=":material/error:")
-        
-#operaciones de epi14
-def operaciones_sql_epi14(accion, datos_registro=None, db=DB_PATH):
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            conn.execute("PRAGMA foreign_keys = ON;")
-            cursor = conn.cursor()
-            if accion == "cargar":
-                query = """
-                    SELECT es.id_semanal,
-                           es.semana || '-' || strftime('%Y', es.fecha_registro_formulario) AS semana,
-                           es.causa,
-                           es.numero,
-                           es.sexo_edad,
-                           SUM(es.numero) OVER (PARTITION BY es.semana) AS total,
-                           es.fecha_registro_formulario,
-                           COALESCE(p.nombre_apellido, 'No asignado') AS Registrado_por
-                    FROM epi14_semanal es
-                    LEFT JOIN doctor d ON es.id_doctor = d.id_doctor
-                    LEFT JOIN usuario u ON d.id_usuario = u.id_usuario
-                    LEFT JOIN persona p ON u.CI = p.CI
-                """
-                return pd.read_sql_query(query, conn)
-            elif accion == "registrar" and datos_registro:
-                semana, causa, numero, sexo_edad, id_doctor, id_secretaria, id_administrador, rol_usuario = datos_registro
-                semana_str = f"Semana {semana}"
-                id_doctor_to_insert = id_doctor
 
-                if rol_usuario == "Administrador (a)" and id_administrador:
-                    cursor.execute("SELECT id_doctor FROM administrador WHERE id_administrador = ?", (id_administrador,))
-                    result = cursor.fetchone()
-                    if result:
-                        id_doctor_to_insert = result[0]
-                elif rol_usuario == "Secretario (a)" and id_secretaria:
-                    id_doctor_to_insert = None  
-
-                # Calcular el total acumulado de esa semana (antes de insertar el nuevo registro)
-                cursor.execute("""
-                    SELECT COALESCE(SUM(numero), 0) 
-                    FROM epi14_semanal 
-                    WHERE semana = ?
-                """, (semana_str,))
-                total_actual = cursor.fetchone()[0]
-                nuevo_total = total_actual + numero
-
-                # Insertar el registro con el total
-                cursor.execute("""
-                    INSERT INTO epi14_semanal 
-                    (semana, causa, numero, sexo_edad, id_doctor, fecha_registro_formulario, total)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (semana_str, causa, numero, sexo_edad, id_doctor_to_insert, datetime.date.today(), nuevo_total))
-
-                conn.commit()
-                return True
-    except sqlite3.Error as e:
-        st.error(f"Error en operación SQL: {e}", icon=":material/error:")
-        return None
-
-def eliminar_registros_epi14(edited_df):
-    ids_a_eliminar = edited_df.loc[edited_df[' '], 'id_semanal'].tolist()
-    if not ids_a_eliminar:
-        st.warning("Selecciona al menos un registro.", icon=":material/info:")
-        return
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            conn.execute("PRAGMA foreign_keys = ON;")
-            cursor = conn.cursor()
-            for id_semanal in ids_a_eliminar:
-                cursor.execute("DELETE FROM epi14_semanal WHERE id_semanal = ?", (id_semanal,))
-            conn.commit()
-            st.success(f"{len(ids_a_eliminar)} registros eliminados.", icon=":material/check_circle:")
-            st.rerun()
-    except sqlite3.Error as e:
-        st.error(f"Error al eliminar: {e}", icon=":material/error:")
-        
-#operaciones de registro diario 
-def operaciones_sql_registro_diario(accion, datos_registro=None, db=DB_PATH):
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
-            if accion == "cargar":
-                query = """
-                    SELECT id_registro AS id, 
-                           semana || '-' || strftime('%Y', fecha_registro_formulario) AS semana, 
-                           fd, edad_sexo, mr, mo, so, cb, cd, gett, nc, peso, talla, autopsia,
-                           d.id_doctor, fecha_registro_formulario
-                    FROM registro_diario
-                    LEFT JOIN doctor d ON registro_diario.id_doctor = d.id_doctor
-                """
-                df = pd.read_sql_query(query, conn)
-                return df
-            elif accion == "registrar" and datos_registro:
-                semana, fd, edad_sexo, mr, mo, so, cb, cd, gett, nc, peso, talla, autopsia, id_doctor, id_administrador, rol_usuario = datos_registro
-                semana_str = f"Semana {semana} "
-                id_doctor_atendi = None
-                if rol_usuario == "Doctor (a)" and id_doctor:
-                    id_doctor_atendi = id_doctor
-                elif rol_usuario == "Administrador (a)" and id_administrador:
-                    cursor.execute("SELECT id_doctor FROM administrador WHERE id_administrador = ?", (id_administrador,))
-                    result = cursor.fetchone()
-                    if result:
-                        id_doctor_atendi = result[0]
-                cursor.execute("""
-                    INSERT INTO registro_diario (
-                        semana, fd, edad_sexo, mr, mo, so, cb, cd, gett, nc, peso, talla, autopsia, id_doctor, fecha_registro_formulario
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    semana_str, fd, edad_sexo, mr, mo, so, cb, cd, gett, nc, peso, talla, autopsia, id_doctor_atendi, datetime.date.today()
-                ))
-                conn.commit()
-                return True
-    except sqlite3.Error as e:
-        st.error(f"Error en operación SQL: {e}", icon=":material/error:")
-        return None
-
-def eliminar_registros_diario(edited_df):
-    # Buscar la columna de id de manera flexible
-    id_col = None
-    for col in ['id', 'id_registro']:
-        if col in edited_df.columns:
-            id_col = col
-            break
-    if id_col is None:
-        st.error("No se encontró la columna de ID en los registros.", icon=":material/error:")
-        return
-
-    ids_a_eliminar = edited_df.loc[edited_df[' '], id_col].tolist()
-    if not ids_a_eliminar:
-        st.warning("No se seleccionaron registros para eliminar.", icon=":material/warning:")
-        return
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                f"DELETE FROM registro_diario WHERE id_registro IN ({','.join('?' * len(ids_a_eliminar))})",
-                ids_a_eliminar
-            )
-            conn.commit()
-            st.success(f"Se eliminaron {len(ids_a_eliminar)} registros.", icon=":material/check_circle:")
-            time.sleep(1)
-            st.rerun()
-    except sqlite3.Error as e:
-        st.error(f"Error al eliminar: {e}", icon=":material/error:")
-        
-#operaciones de morbilidad 
-
-def operaciones_sql_morb_extenso(accion, datos_registro=None, DB_PATH=DB_PATH):
+def operaciones_sql_morb_extenso(accion, datos_registro=None, db=DB_PATH):
     try:
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
 
             if accion == "cargar":
                 query = """
-                SELECT 
-                    m.id_morb AS id,
-                    m.id_paciente,
-                    m.id_direccion_hogar,
-                    m.nombres_apellidos,
-                    pp.edad,
-                    m.diagnostico,
-                    m.fecha_registro_formulario,
-                    TRIM(
-                        REPLACE(
-                            (
-                                CASE WHEN p.nombre IS NOT NULL AND p.nombre <> 'No disponible' THEN p.nombre || ', ' ELSE '' END ||
-                                CASE WHEN e.nombre IS NOT NULL AND e.nombre <> 'No disponible' THEN e.nombre || ', ' ELSE '' END ||
-                                CASE WHEN c.nombre IS NOT NULL AND c.nombre <> 'No disponible' THEN c.nombre || ', ' ELSE '' END ||
-                                CASE WHEN mu.nombre IS NOT NULL AND mu.nombre <> 'No disponible' THEN mu.nombre || ', ' ELSE '' END ||
-                                CASE WHEN par.nombre IS NOT NULL AND par.nombre <> 'No disponible' THEN par.nombre || ', ' ELSE '' END ||
-                                CASE WHEN d.descripcion IS NOT NULL AND d.descripcion <> 'No disponible' THEN d.descripcion ELSE '' END
-                            ),
-                            ', ,', ',' 
-                        )
-                    ) AS direccion_hogar
-                FROM morbilidad m
-                LEFT JOIN direccion d ON m.id_direccion_hogar = d.id_direccion
-                LEFT JOIN parroquia par ON d.id_parroquia = par.id_parroquia
-                LEFT JOIN municipio mu ON par.id_municipio = mu.id_municipio
-                LEFT JOIN ciudad c ON mu.id_ciudad = c.id_ciudad
-                LEFT JOIN estado e ON c.id_estado = e.id_estado
-                LEFT JOIN pais p ON e.id_pais = p.id_pais
-                LEFT JOIN persona_paciente pp ON m.id_paciente = pp.id_paciente
-                ORDER BY m.fecha_registro_formulario DESC, m.id_morb DESC
+                    SELECT 
+                        m.id_morb AS id,
+                        m.nombres_apellidos,
+                        pp.edad,
+                        m.diagnostico,
+                        m.fecha_registro_formulario,
+                        TRIM(
+                            REPLACE(
+                                (
+                                    CASE WHEN p.nombre IS NOT NULL AND p.nombre <> 'No disponible' THEN p.nombre || ', ' ELSE '' END ||
+                                    CASE WHEN e.nombre IS NOT NULL AND e.nombre <> 'No disponible' THEN e.nombre || ', ' ELSE '' END ||
+                                    CASE WHEN c.nombre IS NOT NULL AND c.nombre <> 'No disponible' THEN c.nombre || ', ' ELSE '' END ||
+                                    CASE WHEN mu.nombre IS NOT NULL AND mu.nombre <> 'No disponible' THEN mu.nombre || ', ' ELSE '' END ||
+                                    CASE WHEN par.nombre IS NOT NULL AND par.nombre <> 'No disponible' THEN par.nombre || ', ' ELSE '' END ||
+                                    CASE WHEN d.descripcion IS NOT NULL AND d.descripcion <> 'No disponible' THEN d.descripcion ELSE '' END
+                                ),
+                                ', ,', ','
+                            )
+                        ) AS direccion
+                    FROM morbilidad m
+                    JOIN persona_paciente pp ON m.id_paciente = pp.id_paciente
+                    LEFT JOIN direccion d ON m.id_direccion_hogar = d.id_direccion
+                    LEFT JOIN parroquia par ON d.id_parroquia = par.id_parroquia
+                    LEFT JOIN municipio mu ON par.id_municipio = mu.id_municipio
+                    LEFT JOIN ciudad c ON mu.id_ciudad = c.id_ciudad
+                    LEFT JOIN estado e ON c.id_estado = e.id_estado
+                    LEFT JOIN pais p ON e.id_pais = p.id_pais
+                    ORDER BY m.id_morb DESC
                 """
                 return pd.read_sql_query(query, conn)
 
             elif accion == "registrar" and datos_registro:
-                rol_usuario = datos_registro.get("rol_usuario")
+
+                rol_usuario = datos_registro["rol_usuario"]
+                nombres_apellidos = datos_registro["nombres_apellidos"]
+                edad = datos_registro["edad"]
+                diagnostico = datos_registro["diagnostico"]
+
+                dir_data = datos_registro["direccion"]
+
+                pais = dir_data.get("pais") or "No disponible"
+                estado = dir_data.get("estado") or "No disponible"
+                ciudad = dir_data.get("ciudad") or "No disponible"
+                municipio = dir_data.get("municipio") or "No disponible"
+                parroquia = dir_data.get("parroquia") or "No disponible"
+                direccion_exacta = dir_data.get("direccion_exacta") or "No disponible"
+
                 id_doctor = datos_registro.get("id_doctor")
                 id_secretaria = datos_registro.get("id_secretaria")
                 id_administrador = datos_registro.get("id_administrador")
 
-                nombres_apellidos = datos_registro.get("nombres_apellidos")
-                edad = datos_registro.get("edad")
-                diagnostico = datos_registro.get("diagnostico")
+                # === DIRECCIÓN (MISMO PATRÓN NEONATAL) ===
+                cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", (pais,))
+                cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", (pais,))
+                id_pais = cursor.fetchone()[0]
 
-                dir_data = datos_registro.get("direccion", {})
-                pais = dir_data.get("pais")
-                estado = dir_data.get("estado") or "No disponible"
-                municipio = dir_data.get("municipio") or "No disponible"
-                parroquia = dir_data.get("parroquia") or "No disponible"
-                ciudad = dir_data.get("ciudad") or "No disponible"
-                direccion_exacta = dir_data.get("direccion_exacta") or "No disponible"
+                cursor.execute("INSERT OR IGNORE INTO estado (nombre, id_pais) VALUES (?, ?)", (estado, id_pais))
+                cursor.execute("SELECT id_estado FROM estado WHERE nombre = ? AND id_pais = ?", (estado, id_pais))
+                id_estado = cursor.fetchone()[0]
 
-                if pais:
-                    cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", (pais,))
-                    cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", (pais,))
-                    id_pais = cursor.fetchone()[0]
-                else:
-                    id_pais = None
+                cursor.execute("INSERT OR IGNORE INTO ciudad (nombre, id_estado) VALUES (?, ?)", (ciudad, id_estado))
+                cursor.execute("SELECT id_ciudad FROM ciudad WHERE nombre = ? AND id_estado = ?", (ciudad, id_estado))
+                id_ciudad = cursor.fetchone()[0]
 
-                if estado:
-                    cursor.execute("INSERT OR IGNORE INTO estado (nombre, id_pais) VALUES (?, ?)", (estado, id_pais))
-                    cursor.execute("SELECT id_estado FROM estado WHERE nombre = ? AND id_pais = ?", (estado, id_pais))
-                    id_estado = cursor.fetchone()[0]
-                else:
-                    id_estado = None
+                cursor.execute("INSERT OR IGNORE INTO municipio (nombre, id_ciudad) VALUES (?, ?)", (municipio, id_ciudad))
+                cursor.execute("SELECT id_municipio FROM municipio WHERE nombre = ? AND id_ciudad = ?", (municipio, id_ciudad))
+                id_municipio = cursor.fetchone()[0]
 
-                if ciudad:
-                    cursor.execute("INSERT OR IGNORE INTO ciudad (nombre, id_estado) VALUES (?, ?)", (ciudad, id_estado))
-                    cursor.execute("SELECT id_ciudad FROM ciudad WHERE nombre = ? AND id_estado = ?", (ciudad, id_estado))
-                    id_ciudad = cursor.fetchone()[0]
-                else:
-                    id_ciudad = None
-
-                if municipio:
-                    cursor.execute("INSERT OR IGNORE INTO municipio (nombre, id_ciudad) VALUES (?, ?)", (municipio, id_ciudad))
-                    cursor.execute("SELECT id_municipio FROM municipio WHERE nombre = ? AND id_ciudad = ?", (municipio, id_ciudad))
-                    id_municipio = cursor.fetchone()[0]
-                else:
-                    id_municipio = None
-
-                if parroquia:
-                    cursor.execute("INSERT OR IGNORE INTO parroquia (nombre, id_municipio) VALUES (?, ?)", (parroquia, id_municipio))
-                    cursor.execute("SELECT id_parroquia FROM parroquia WHERE nombre = ? AND id_municipio = ?", (parroquia, id_municipio))
-                    id_parroquia = cursor.fetchone()[0]
-                else:
-                    id_parroquia = None
+                cursor.execute("INSERT OR IGNORE INTO parroquia (nombre, id_municipio) VALUES (?, ?)", (parroquia, id_municipio))
+                cursor.execute("SELECT id_parroquia FROM parroquia WHERE nombre = ? AND id_municipio = ?", (parroquia, id_municipio))
+                id_parroquia = cursor.fetchone()[0]
 
                 cursor.execute("INSERT OR IGNORE INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_exacta, id_parroquia))
                 cursor.execute("SELECT id_direccion FROM direccion WHERE descripcion = ? AND id_parroquia = ?", (direccion_exacta, id_parroquia))
-                id_direccion_hogar = cursor.fetchone()[0]
+                id_direccion = cursor.fetchone()[0]
 
+                # === PACIENTE ===
                 cursor.execute("INSERT INTO persona_paciente (edad) VALUES (?)", (edad,))
                 id_paciente = cursor.lastrowid
 
                 cursor.execute("""
                     INSERT INTO morbilidad (
-                        id_paciente, 
+                        id_paciente,
                         id_direccion_hogar,
-                        nombres_apellidos, 
-                        diagnostico, 
+                        nombres_apellidos,
+                        diagnostico,
                         fecha_registro_formulario
                     ) VALUES (?, ?, ?, ?, ?)
                 """, (
                     id_paciente,
-                    id_direccion_hogar,
+                    id_direccion,
                     nombres_apellidos,
                     diagnostico,
                     datetime.date.today().strftime("%d/%m/%Y")
                 ))
 
+                # === RELACIÓN USUARIO ===
                 if rol_usuario == "Doctor (a)" and id_doctor:
-                    cursor.execute(
-                        "INSERT OR IGNORE INTO doctor_paciente (id_doctor, id_paciente) VALUES (?, ?)",
-                        (id_doctor, id_paciente)
-                    )
+                    cursor.execute("INSERT OR IGNORE INTO doctor_paciente VALUES (?, ?)", (id_doctor, id_paciente))
+
                 elif rol_usuario == "Secretario (a)" and id_secretaria:
-                    cursor.execute(
-                        "INSERT OR IGNORE INTO secretaria_paciente (id_secretaria, id_paciente) VALUES (?, ?)",
-                        (id_secretaria, id_paciente)
-                    )
-                elif rol_usuario == "Administrador (a)" and id_administrador:
-                    cursor.execute("SELECT id_doctor FROM administrador WHERE id_administrador = ?", (id_administrador,))
-                    result = cursor.fetchone()
-                    if result and result[0]:
-                        cursor.execute(
-                            "INSERT OR IGNORE INTO doctor_paciente (id_doctor, id_paciente) VALUES (?, ?)",
-                            (result[0], id_paciente)
-                        )
+                    cursor.execute("INSERT OR IGNORE INTO secretaria_paciente VALUES (?, ?)", (id_secretaria, id_paciente))
 
-                conn.commit()
-                return True
-    except sqlite3.IntegrityError:
-        st.error("La Historia clinica ya existe.", icon=":material/error:")
-        return
-    except sqlite3.Error as e:
-        st.error(f"Error en operación SQL: {e}", icon=":material/error:")
-        return None
-
-
-def operaciones_sql_morb_simplifica(accion, datos_registro=None, db=DB_PATH):
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
-            if accion == "cargar":
-                query = """
-                    SELECT ms.id_morbsim AS id, m.diagnostico, pp.edad, m.sexo, m.fecha_registro_formulario
-                    FROM morb_simplifica ms
-                    JOIN morbilidad m ON ms.id_morb = m.id_morb
-                    LEFT JOIN persona_paciente pp ON m.id_paciente = pp.id_paciente
-                """
-                return pd.read_sql_query(query, conn)
-            elif accion == "registrar" and datos_registro:
-                diagnostico, edad, sexo, id_doctor, id_administrador, id_secretaria, rol_usuario = datos_registro
-                cursor.execute("INSERT INTO persona_paciente (edad) VALUES (?)", (edad,))
-                id_paciente = cursor.lastrowid
-                cursor.execute("""
-                    INSERT INTO morbilidad (id_paciente, sexo, diagnostico, fecha_registro_formulario)
-                    VALUES (?, ?, ?, ?)
-                """, (id_paciente, sexo, diagnostico, datetime.date.today()))
-                id_morb = cursor.lastrowid
-                cursor.execute("INSERT INTO morb_simplifica (id_morb) VALUES (?)", (id_morb,))
-                if rol_usuario == "Doctor (a)" and id_doctor:
-                    cursor.execute("INSERT OR IGNORE INTO doctor_paciente (id_doctor, id_paciente) VALUES (?, ?)", (id_doctor, id_paciente))
-                elif rol_usuario == "Secretario (a)" and id_secretaria:
-                    cursor.execute("INSERT OR IGNORE INTO secretaria_paciente (id_secretaria, id_paciente) VALUES (?, ?)", (id_secretaria, id_paciente))
                 elif rol_usuario == "Administrador (a)" and id_administrador:
                     cursor.execute("SELECT id_doctor FROM administrador WHERE id_administrador = ?", (id_administrador,))
                     result = cursor.fetchone()
                     if result:
-                        id_doctor_admin = result[0]
-                        cursor.execute("INSERT OR IGNORE INTO doctor_paciente (id_doctor, id_paciente) VALUES (?, ?)", (id_doctor_admin, id_paciente))
+                        cursor.execute("INSERT OR IGNORE INTO doctor_paciente VALUES (?, ?)", (result[0], id_paciente))
+
                 conn.commit()
                 return True
+
+    except sqlite3.IntegrityError:
+        st.error("El registro ya existe.", icon=":material/error:")
+        return
+
     except sqlite3.Error as e:
         st.error(f"Error en operación SQL: {e}", icon=":material/error:")
         return None
-    
+
 def eliminar_registros_morb_extenso(edited_df):
     # Asegúrate de que la columna con el ID exista
     id_col = 'id'  # Ajusta al nombre de la columna en tu edited_df
@@ -590,43 +389,11 @@ def eliminar_registros_morb_extenso(edited_df):
                                     cursor.execute("DELETE FROM pais WHERE id_pais = ?", (id_pais,))
 
             conn.commit()
-            st.success(f"{len(ids_a_eliminar)} registros y datos asociados eliminados.", icon=":material/check_circle:")
-            st.rerun()
-
-    except sqlite3.Error as e:
-        st.error(f"Error al eliminar: {e}", icon=":material/error:")
-
-
-
-def eliminar_registros_morb_simplifica(edited_df):
-    ids_a_eliminar = edited_df.loc[edited_df[' '], 'id'].tolist()
-    if not ids_a_eliminar:
-        st.warning("Selecciona al menos un registro.", icon=":material/info:")
-        return
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
-            for id_morbsim in ids_a_eliminar:
-                cursor.execute("""
-                    SELECT ms.id_morb, m.id_paciente
-                    FROM morb_simplifica ms
-                    JOIN morbilidad m ON ms.id_morb = m.id_morb
-                    WHERE ms.id_morbsim = ?
-                """, (id_morbsim,))
-                datos = cursor.fetchone()
-                if not datos:
-                    continue
-                id_morb, id_paciente = datos
-                cursor.execute("DELETE FROM morb_simplifica WHERE id_morbsim = ?", (id_morbsim,))
-                cursor.execute("DELETE FROM morbilidad WHERE id_morb = ?", (id_morb,))
-                cursor.execute("DELETE FROM doctor_paciente WHERE id_paciente = ?", (id_paciente,))
-                cursor.execute("DELETE FROM secretaria_paciente WHERE id_paciente = ?", (id_paciente,))
-                cursor.execute("DELETE FROM persona_paciente WHERE id_paciente = ?", (id_paciente,))
-            conn.commit()
-            st.success(f"{len(ids_a_eliminar)} registros y datos asociados eliminados.", icon=":material/check_circle:")
+            st.success(f"Se eliminaron{len(ids_a_eliminar)} registro(s).", icon=":material/check_circle:")
             st.rerun()
     except sqlite3.Error as e:
         st.error(f"Error al eliminar: {e}", icon=":material/error:")
+
         
 #operaciones de mortalidad neonatal 
 
@@ -823,7 +590,7 @@ def eliminar_registros_neonatal(edited_df):
                             if cursor.fetchone()[0] == 0:
                                 cursor.execute("DELETE FROM pais WHERE id_pais = ?", (id_pais,))
             conn.commit()
-            st.success(f"{len(ids_a_eliminar)} registros y datos asociados eliminados.", icon=":material/check_circle:")
+            st.success(f"Se eliminaron{len(ids_a_eliminar)} registro(s).", icon=":material/check_circle:")
             st.rerun()
     except sqlite3.Error as e:
         st.error(f"Error al eliminar: {e}", icon=":material/error:")
@@ -1003,7 +770,7 @@ def eliminar_registros_infantil(edited_df):
                             if cursor.fetchone()[0] == 0:
                                 cursor.execute("DELETE FROM pais WHERE id_pais = ?", (id_pais,))
             conn.commit()
-            st.success(f"{len(ids_a_eliminar)} registros y datos asociados eliminados.", icon=":material/check_circle:")
+            st.success(f"Se eliminaron{len(ids_a_eliminar)} registro(s).", icon=":material/check_circle:")
             st.rerun()
     except sqlite3.Error as e:
         st.error(f"Error al eliminar: {e}", icon=":material/error:")
@@ -1182,415 +949,7 @@ def eliminar_registros_materna(edited_df):
                             if cursor.fetchone()[0] == 0:
                                 cursor.execute("DELETE FROM pais WHERE id_pais = ?", (id_pais,))
             conn.commit()
-            st.success(f"{len(ids_a_eliminar)} registros y datos asociados eliminados.", icon=":material/check_circle:")
-            st.rerun()
-    except sqlite3.Error as e:
-        st.error(f"Error al eliminar: {e}", icon=":material/error:")
-        
-#operacion mensual infantil
-
-def calcular_tasa_por_ano_infantil(db, year):
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            # Contar registros para el año seleccionado
-            query_ano = """
-                SELECT COUNT(*) as registros_ano
-                FROM mortalidad_mensual_infantil t
-                JOIN mortalidad_mensual m ON t.id_mortaM = m.id_mortaM
-                WHERE strftime('%Y', m.fecha_registro_formulario) = ?
-            """
-            df_ano = pd.read_sql_query(query_ano, conn, params=(str(year),))
-            registros_ano = df_ano['registros_ano'].iloc[0] if not df_ano.empty else 0
-            # Contar total de registros
-            query_total = """
-                SELECT COUNT(*) as total_registros
-                FROM mortalidad_mensual_infantil t
-                JOIN mortalidad_mensual m ON t.id_mortaM = m.id_mortaM
-            """
-            df_total = pd.read_sql_query(query_total, conn)
-            total_registros = df_total['total_registros'].iloc[0] if not df_total.empty else 0
-            # Calcular tasa como porcentaje
-            tasa = (registros_ano / total_registros) * 100 if total_registros > 0 else 0
-            return round(tasa, 2)
-    except sqlite3.Error:
-        return 0
-
-def operaciones_sql_mensual_infantil(accion, datos_registro=None, db=DB_PATH):
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            conn.execute("PRAGMA foreign_keys = ON;")
-            cursor = conn.cursor()
-            if accion == "cargar":
-                query = """
-                    SELECT m.id_mortaM AS id, m.causas, m.n_casos, m.tasa, m.total, m.fecha_hora, m.fecha_registro_formulario
-                    FROM mortalidad_mensual_infantil t
-                    JOIN mortalidad_mensual m ON t.id_mortaM = m.id_mortaM
-                """
-                return pd.read_sql_query(query, conn)
-            elif accion == "registrar" and datos_registro:
-                causas, n_casos, id_doctor, id_administrador, rol_usuario = datos_registro
-                id_doctor_atendi = None
-                if rol_usuario == "Doctor (a)" and id_doctor:
-                    id_doctor_atendi = id_doctor
-                elif rol_usuario == "Administrador (a)" and id_administrador:
-                    cursor.execute("SELECT id_doctor FROM administrador WHERE id_administrador = ?", (id_administrador,))
-                    result = cursor.fetchone()
-                    if result:
-                        id_doctor_atendi = result[0]
-                
-                today = datetime.date.today()
-                mes_actual = today.strftime('%Y-%m')
-                
-                cursor.execute("""
-                    INSERT INTO mortalidad_mensual (
-                        id_doctor_atendi, causas, n_casos, total, tasa, fecha_hora, fecha_registro_formulario
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    id_doctor_atendi, causas, n_casos, 0, "0.0%", datetime.datetime.now(), today
-                ))
-                id_mortaM = cursor.lastrowid
-                cursor.execute("""
-                    INSERT INTO mortalidad_mensual_infantil (
-                        id_mortaM
-                    ) VALUES (?)
-                """, (id_mortaM,))
-                
-                cursor.execute("""
-                    SELECT SUM(m.n_casos)
-                    FROM mortalidad_mensual m
-                    JOIN mortalidad_mensual_infantil t ON m.id_mortaM = t.id_mortaM
-                    WHERE strftime('%Y-%m', m.fecha_registro_formulario) = ?
-                """, (mes_actual,))
-                type_total = cursor.fetchone()[0] or 0
-                
-                if type_total > 0:
-                    cursor.execute("""
-                        UPDATE mortalidad_mensual
-                        SET total = ?
-                        WHERE strftime('%Y-%m', fecha_registro_formulario) = ?
-                        AND id_mortaM IN (
-                            SELECT id_mortaM FROM mortalidad_mensual_infantil
-                        )
-                    """, (type_total, mes_actual))
-                
-                if type_total > 0:
-                    cursor.execute("""
-                        SELECT m.causas, SUM(m.n_casos) as causa_total
-                        FROM mortalidad_mensual m
-                        JOIN mortalidad_mensual_infantil t ON m.id_mortaM = t.id_mortaM
-                        WHERE strftime('%Y-%m', m.fecha_registro_formulario) = ?
-                        GROUP BY LOWER(m.causas)
-                    """, (mes_actual,))
-                    for causas_row, causa_total in cursor.fetchall():
-                        tasa = f"{(causa_total / type_total) * 100:.1f}%"
-                        cursor.execute("""
-                            UPDATE mortalidad_mensual
-                            SET tasa = ?
-                            WHERE strftime('%Y-%m', fecha_registro_formulario) = ?
-                            AND LOWER(causas) = LOWER(?)
-                            AND id_mortaM IN (
-                                SELECT id_mortaM FROM mortalidad_mensual_infantil
-                            )
-                        """, (tasa, mes_actual, causas_row))
-                
-                conn.commit()
-                return True
-    except sqlite3.Error as e:
-        st.error(f"Error en operación SQL: {e}", icon=":material/error:")
-        return None
-
-
-def eliminar_registros_mensual_infantil(edited_df):
-    ids_a_eliminar = edited_df.loc[edited_df[' '], 'id'].tolist()
-    if not ids_a_eliminar:
-        st.warning("Selecciona al menos un registro.", icon=":material/info:")
-        return
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
-            for id_mortaM in ids_a_eliminar:
-                cursor.execute("DELETE FROM mortalidad_mensual_infantil WHERE id_mortaM = ?", (id_mortaM,))
-                cursor.execute("DELETE FROM mortalidad_mensual WHERE id_mortaM = ?", (id_mortaM,))
-            conn.commit()
-            st.success(f"{len(ids_a_eliminar)} registros eliminados.", icon=":material/check_circle:")
-            st.rerun()
-    except sqlite3.Error as e:
-        st.error(f"Error al eliminar: {e}", icon=":material/error:")
-        
-#operaciones mensual neonatal
-
-def calcular_tasa_por_ano_neonatal(db, year):
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            # Contar registros para el año seleccionado
-            query_ano = """
-                SELECT COUNT(*) as registros_ano
-                FROM mortalidad_mensual_neonatal t
-                JOIN mortalidad_mensual m ON t.id_mortaM = m.id_mortaM
-                WHERE strftime('%Y', m.fecha_registro_formulario) = ?
-            """
-            df_ano = pd.read_sql_query(query_ano, conn, params=(str(year),))
-            registros_ano = df_ano['registros_ano'].iloc[0] if not df_ano.empty else 0
-            # Contar total de registros
-            query_total = """
-                SELECT COUNT(*) as total_registros
-                FROM mortalidad_mensual_neonatal t
-                JOIN mortalidad_mensual m ON t.id_mortaM = m.id_mortaM
-            """
-            df_total = pd.read_sql_query(query_total, conn)
-            total_registros = df_total['total_registros'].iloc[0] if not df_total.empty else 0
-            # Calcular tasa como porcentaje
-            tasa = (registros_ano / total_registros) * 100 if total_registros > 0 else 0
-            return round(tasa, 2)
-    except sqlite3.Error:
-        return 0
-
-def operaciones_sql_mensual_neonatal(accion, datos_registro=None, db=DB_PATH):
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            conn.execute("PRAGMA foreign_keys = ON;")
-            cursor = conn.cursor()
-            if accion == "cargar":
-                query = """
-                    SELECT m.id_mortaM AS id, m.causas, m.n_casos, m.tasa, m.total, m.fecha_hora
-                    FROM mortalidad_mensual_neonatal t
-                    JOIN mortalidad_mensual m ON t.id_mortaM = m.id_mortaM
-                """
-                return pd.read_sql_query(query, conn)
-            elif accion == "registrar" and datos_registro:
-                causas, n_casos, id_doctor, id_administrador, rol_usuario = datos_registro
-                id_doctor_atendi = None
-                if rol_usuario == "Doctor (a)" and id_doctor:
-                    id_doctor_atendi = id_doctor
-                elif rol_usuario == "Administrador (a)" and id_administrador:
-                    cursor.execute("SELECT id_doctor FROM administrador WHERE id_administrador = ?", (id_administrador,))
-                    result = cursor.fetchone()
-                    if result:
-                        id_doctor_atendi = result[0]
-                
-                today = datetime.date.today()
-                mes_actual = today.strftime('%Y-%m')
-                
-                cursor.execute("""
-                    INSERT INTO mortalidad_mensual (
-                        id_doctor_atendi, causas, n_casos, total, tasa, fecha_hora, fecha_registro_formulario
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    id_doctor_atendi, causas, n_casos, 0, "0.0%", datetime.datetime.now(), today
-                ))
-                id_mortaM = cursor.lastrowid
-                cursor.execute("""
-                    INSERT INTO mortalidad_mensual_neonatal (
-                        id_mortaM
-                    ) VALUES (?)
-                """, (id_mortaM,))
-                
-                cursor.execute("""
-                    SELECT SUM(m.n_casos)
-                    FROM mortalidad_mensual m
-                    JOIN mortalidad_mensual_neonatal t ON m.id_mortaM = t.id_mortaM
-                    WHERE strftime('%Y-%m', m.fecha_registro_formulario) = ?
-                """, (mes_actual,))
-                type_total = cursor.fetchone()[0] or 0
-                
-                if type_total > 0:
-                    cursor.execute("""
-                        UPDATE mortalidad_mensual
-                        SET total = ?
-                        WHERE strftime('%Y-%m', fecha_registro_formulario) = ?
-                        AND id_mortaM IN (
-                            SELECT id_mortaM FROM mortalidad_mensual_neonatal
-                        )
-                    """, (type_total, mes_actual))
-                
-                if type_total > 0:
-                    cursor.execute("""
-                        SELECT m.causas, SUM(m.n_casos) as causa_total
-                        FROM mortalidad_mensual m
-                        JOIN mortalidad_mensual_neonatal t ON m.id_mortaM = t.id_mortaM
-                        WHERE strftime('%Y-%m', m.fecha_registro_formulario) = ?
-                        GROUP BY LOWER(m.causas)
-                   
-                    """, (mes_actual,))
-                    for causas_row, causa_total in cursor.fetchall():
-                        tasa = f"{(causa_total / type_total) * 100:.1f}%"
-                        cursor.execute("""
-                            UPDATE mortalidad_mensual
-                            SET tasa = ?
-                            WHERE strftime('%Y-%m', fecha_registro_formulario) = ?
-                            AND LOWER(causas) = LOWER(?)
-                            AND id_mortaM IN (
-                                SELECT id_mortaM FROM mortalidad_mensual_neonatal
-                            )
-                        """, (tasa, mes_actual, causas_row))
-                
-                conn.commit()
-                return True
-    except sqlite3.Error as e:
-        st.error(f"Error en operación SQL: {e}", icon=":material/error:")
-        return None
-    
-def eliminar_registros_mensual_neonatal(edited_df):
-    ids_a_eliminar = edited_df.loc[edited_df[' '], 'id'].tolist()
-    if not ids_a_eliminar:
-        st.warning("Selecciona al menos un registro.", icon=":material/info:")
-        return
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
-            for id_mortaM in ids_a_eliminar:
-                cursor.execute("DELETE FROM mortalidad_mensual_neonatal WHERE id_mortaM = ?", (id_mortaM,))
-                cursor.execute("DELETE FROM mortalidad_mensual WHERE id_mortaM = ?", (id_mortaM,))
-            conn.commit()
-            st.success(f"{len(ids_a_eliminar)} registros eliminados.", icon=":material/check_circle:")
-            st.rerun()
-    except sqlite3.Error as e:
-        st.error(f"Error al eliminar: {e}", icon=":material/error:")
-
-#operacion de mensual general
-def calcular_tasa_por_ano(db, year):
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-
-            query_ano = """
-                SELECT COUNT(*) as registros_ano
-                FROM mortalidad_mensual_general t
-                JOIN mortalidad_mensual m ON t.id_mortaM = m.id_mortaM
-                WHERE strftime('%Y', m.fecha_registro_formulario) = ?
-            """
-            df_ano = pd.read_sql_query(query_ano, conn, params=(str(year),))
-            registros_ano = df_ano['registros_ano'].iloc[0] if not df_ano.empty else 0
-
-            query_total = """
-                SELECT COUNT(*) as total_registros
-                FROM mortalidad_mensual_general t
-                JOIN mortalidad_mensual m ON t.id_mortaM = m.id_mortaM
-            """
-            df_total = pd.read_sql_query(query_total, conn)
-            total_registros = df_total['total_registros'].iloc[0] if not df_total.empty else 0
-
-            tasa = (registros_ano / total_registros) * 100 if total_registros > 0 else 0
-            return round(tasa, 2)
-    except sqlite3.Error:
-        return 0
-
-def operaciones_sql_mensual_general(accion, datos_registro=None, db=DB_PATH):
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            conn.execute("PRAGMA foreign_keys = ON;")
-            cursor = conn.cursor()
-
-            if accion == "cargar":
-                query = """
-                    SELECT m.id_mortaM AS id, m.causas, m.n_casos, m.tasa, m.total, m.fecha_hora
-                    FROM mortalidad_mensual m
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM mortalidad_mensual_infantil t1 WHERE t1.id_mortaM = m.id_mortaM
-                        UNION
-                        SELECT 1 FROM mortalidad_mensual_neonatal t2 WHERE t2.id_mortaM = m.id_mortaM
-                    )
-                """
-                return pd.read_sql_query(query, conn)
-
-            elif accion == "registrar" and datos_registro:
-                causas, n_casos, id_doctor, id_administrador, rol_usuario = datos_registro
-                id_doctor_atendi = None
-
-                if rol_usuario == "Doctor (a)" and id_doctor:
-                    id_doctor_atendi = id_doctor
-                elif rol_usuario == "Administrador (a)" and id_administrador:
-                    cursor.execute("SELECT id_doctor FROM administrador WHERE id_administrador = ?", (id_administrador,))
-                    result = cursor.fetchone()
-                    if result:
-                        id_doctor_atendi = result[0]
-
-                today = datetime.date.today()
-                mes_actual = today.strftime('%Y-%m')
-
-                cursor.execute("""
-                    INSERT INTO mortalidad_mensual (
-                        id_doctor_atendi, causas, n_casos, total, tasa, fecha_hora, fecha_registro_formulario
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    id_doctor_atendi, causas, n_casos, 0, "0.0%", datetime.datetime.now(), today
-                ))
-                id_mortaM = cursor.lastrowid
-
-                cursor.execute("""
-                    INSERT INTO mortalidad_mensual_general (id_mortaM)
-                    VALUES (?)
-                """, (id_mortaM,))
-
-                cursor.execute("""
-                    SELECT SUM(m.n_casos)
-                    FROM mortalidad_mensual m
-                    WHERE strftime('%Y-%m', m.fecha_registro_formulario) = ?
-                    AND NOT EXISTS (
-                        SELECT 1 FROM mortalidad_mensual_infantil t1 WHERE t1.id_mortaM = m.id_mortaM
-                        UNION
-                        SELECT 1 FROM mortalidad_mensual_neonatal t2 WHERE t2.id_mortaM = m.id_mortaM
-                    )
-                """, (mes_actual,))
-                type_total = cursor.fetchone()[0] or 0
-
-                if type_total > 0:
-                    cursor.execute("""
-                        UPDATE mortalidad_mensual
-                        SET total = ?
-                        WHERE strftime('%Y-%m', fecha_registro_formulario) = ?
-                        AND NOT EXISTS (
-                            SELECT 1 FROM mortalidad_mensual_infantil t1 WHERE t1.id_mortaM = mortalidad_mensual.id_mortaM
-                            UNION
-                            SELECT 1 FROM mortalidad_mensual_neonatal t2 WHERE t2.id_mortaM = mortalidad_mensual.id_mortaM
-                        )
-                    """, (type_total, mes_actual))
-
-                if type_total > 0:
-                    cursor.execute("""
-                        SELECT m.causas, SUM(m.n_casos) as causa_total
-                        FROM mortalidad_mensual m
-                        WHERE strftime('%Y-%m', m.fecha_registro_formulario) = ?
-                        AND NOT EXISTS (
-                            SELECT 1 FROM mortalidad_mensual_infantil t1 WHERE t1.id_mortaM = m.id_mortaM
-                            UNION
-                            SELECT 1 FROM mortalidad_mensual_neonatal t2 WHERE t2.id_mortaM = m.id_mortaM
-                        )
-                        GROUP BY LOWER(m.causas)
-                    """, (mes_actual,))
-                    for causas_row, causa_total in cursor.fetchall():
-                        tasa = f"{(causa_total / type_total) * 100:.1f}%"
-                        cursor.execute("""
-                            UPDATE mortalidad_mensual
-                            SET tasa = ?
-                            WHERE strftime('%Y-%m', fecha_registro_formulario) = ?
-                            AND LOWER(causas) = LOWER(?)
-                            AND NOT EXISTS (
-                                SELECT 1 FROM mortalidad_mensual_infantil t1 WHERE t1.id_mortaM = mortalidad_mensual.id_mortaM
-                                UNION
-                                SELECT 1 FROM mortalidad_mensual_neonatal t2 WHERE t2.id_mortaM = mortalidad_mensual.id_mortaM
-                            )
-                        """, (tasa, mes_actual, causas_row))
-
-                conn.commit()
-                return True
-
-    except sqlite3.Error as e:
-        st.error(f"Error en operación SQL: {e}", icon=":material/error:")
-        return None
-
-def eliminar_registros_mensual_general(edited_df):
-    ids_a_eliminar = edited_df.loc[edited_df[' '], 'id'].tolist()
-    if not ids_a_eliminar:
-        st.warning("Selecciona al menos un registro.", icon=":material/info:")
-        return
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
-            for id_mortaM in ids_a_eliminar:
-                cursor.execute("DELETE FROM mortalidad_mensual_general WHERE id_mortaM = ?", (id_mortaM,))
-                cursor.execute("DELETE FROM mortalidad_mensual WHERE id_mortaM = ?", (id_mortaM,))
-            conn.commit()
-            st.success(f"{len(ids_a_eliminar)} registros eliminados.", icon=":material/check_circle:")
+            st.success(f"Se eliminaron{len(ids_a_eliminar)} registro(s).", icon=":material/check_circle:")
             st.rerun()
     except sqlite3.Error as e:
         st.error(f"Error al eliminar: {e}", icon=":material/error:")

@@ -368,64 +368,6 @@ def create_table_mortalidad_materna(conn):
         conn.rollback()
         st.error(f"Error en la base de datos: {e}", icon=":material/error:")
 
-def create_table_mortalidad_mensual(conn):
-    try:
-        conn.execute('''
-        CREATE TABLE IF NOT EXISTS mortalidad_mensual (
-            id_mortaM INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_doctor_atendi,
-            causas TEXT NOT NULL,
-            n_casos INTEGER,
-            tasa TEXT,
-            total INTEGER,
-            fecha_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            fecha_registro_formulario DATE,
-            FOREIGN KEY (id_doctor_atendi) REFERENCES doctor(id_doctor) ON DELETE CASCADE
-        );
-        ''')
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
-
-def create_table_mortalidad_mensual_infantil(conn):
-    try:
-        conn.execute('''
-        CREATE TABLE IF NOT EXISTS mortalidad_mensual_infantil (
-            id_mortaMI INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_mortaM INTEGER NOT NULL,
-            FOREIGN KEY (id_mortaM) REFERENCES mortalidad_mensual(id_mortaM) ON DELETE CASCADE
-        );
-        ''')
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
-
-def create_table_mortalidad_mensual_neonatal(conn):
-    try:
-        conn.execute('''
-        CREATE TABLE IF NOT EXISTS mortalidad_mensual_neonatal (
-            id_mortaMN INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_mortaM INTEGER NOT NULL,
-            FOREIGN KEY (id_mortaM) REFERENCES mortalidad_mensual(id_mortaM) ON DELETE CASCADE
-        );
-        ''')
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
-
-def create_table_mortalidad_mensual_general(conn):
-    try:
-        conn.execute('''
-        CREATE TABLE IF NOT EXISTS mortalidad_mensual_general (
-            id_mortaMNG INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_mortaM INTEGER NOT NULL,
-            FOREIGN KEY (id_mortaM) REFERENCES mortalidad_mensual(id_mortaM) ON DELETE CASCADE
-        );
-        ''')
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
-
 def create_table_morbilidad(conn):
     try:
         conn.execute('''
@@ -438,41 +380,6 @@ def create_table_morbilidad(conn):
             fecha_registro_formulario DATE,
             FOREIGN KEY (id_paciente) REFERENCES persona_paciente(id_paciente) ON DELETE CASCADE,
             FOREIGN KEY (id_direccion_hogar) REFERENCES direccion(id_direccion) ON DELETE CASCADE
-        );
-        ''')
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
-
-def create_table_morb_extenso(conn):
-    try:
-        conn.execute('''
-        CREATE TABLE IF NOT EXISTS morb_extenso (
-            HC INTEGER PRIMARY KEY UNIQUE,
-            id_morb INTEGER NOT NULL,
-            nombres_apellidos TEXT,
-            id_direccion_hogar INTEGER,
-            id_direccion_nacimiento INTEGER,
-            fecha_nacimiento DATE,
-            estado_civil TEXT,
-            cedula TEXT UNIQUE,
-            telefono TEXT,
-            FOREIGN KEY (id_morb) REFERENCES morbilidad(id_morb) ON DELETE CASCADE,
-            FOREIGN KEY (id_direccion_hogar) REFERENCES direccion(id_direccion) ON DELETE CASCADE,
-            FOREIGN KEY (id_direccion_nacimiento) REFERENCES direccion(id_direccion) ON DELETE CASCADE
-        );
-        ''')
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
-
-def create_table_morb_simplifica(conn):
-    try:
-        conn.execute('''
-        CREATE TABLE IF NOT EXISTS morb_simplifica (
-            id_morbsim INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_morb INTEGER NOT NULL,
-            FOREIGN KEY (id_morb) REFERENCES morbilidad(id_morb) ON DELETE CASCADE
         );
         ''')
     except sqlite3.Error as e:
@@ -501,51 +408,6 @@ def create_table_natalidad(conn):
         conn.rollback()
         st.error(f"Error en la base de datos: {e}", icon=":material/error:")
 
-def create_table_epi14_semanal(conn):
-    try:
-        conn.execute('''
-        CREATE TABLE IF NOT EXISTS epi14_semanal (
-            id_semanal INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_doctor,
-            semana TEXT NOT NULL, 
-            causa TEXT NOT NULL,
-            numero INTEGER,
-            sexo_edad TEXT,
-            total INTEGER,
-            fecha_registro_formulario DATE,
-            FOREIGN KEY (id_doctor) REFERENCES doctor(id_doctor) ON DELETE CASCADE
-        );
-        ''')
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
-
-def create_table_registro_diario(conn):
-    try:
-        conn.execute('''
-        CREATE TABLE IF NOT EXISTS registro_diario (
-            id_registro INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_doctor INTEGER,
-            semana TEXT NOT NULL,
-            fd DATE, 
-            edad_sexo TEXT,
-            mr TEXT,
-            mo TEXT,
-            so TEXT,
-            cb TEXT,
-            cd TEXT,
-            gett TEXT,
-            nc TEXT,
-            peso REAL,
-            talla REAL,
-            autopsia TEXT,
-            fecha_registro_formulario DATE,
-            FOREIGN KEY (id_doctor) REFERENCES doctor(id_doctor) ON DELETE CASCADE
-        );
-        ''')
-    except sqlite3.Error as e:
-        conn.rollback()
-        st.error(f"Error en la base de datos: {e}", icon=":material/error:")
 
 def create_all_tables(db='hospital.db'):#
     try:
@@ -575,16 +437,8 @@ def create_all_tables(db='hospital.db'):#
         create_table_mortalidad_infantil(conn)
         create_table_mortalidad_neonatal(conn)
         create_table_mortalidad_materna(conn)
-        #create_table_mortalidad_mensual(conn)
-        #create_table_mortalidad_mensual_infantil(conn)
-        #create_table_mortalidad_mensual_neonatal(conn)
-        #create_table_mortalidad_mensual_general(conn)
         create_table_morbilidad(conn)
-        #create_table_morb_extenso(conn)
-        #create_table_morb_simplifica(conn)
         create_table_natalidad(conn)
-        #create_table_epi14_semanal(conn)
-        #create_table_registro_diario(conn)
         conn.commit()
         conn.close()
     except sqlite3.Error as e:

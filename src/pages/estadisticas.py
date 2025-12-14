@@ -2,12 +2,9 @@ import streamlit as st
 from pages.menu import menu
 from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 from utils.base_64 import img_a_base64
-from stats.global_stats import global_stats
 from stats.mortalidad_stats import mortalidad_stats
 from stats.natalidad_stats import natalidad_stats
 from stats.morbilidad_stats import morbilidad_stats
-from stats.epi14_stats import epi14_stats
-from stats.reg_diario_stats import reg_diario_stats
 from utils.verificaciones import obtener_info_usuario
 from pathlib import Path
 configurar_pagina_espanol()

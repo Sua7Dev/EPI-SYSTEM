@@ -3,10 +3,8 @@ import pandas as pd
 import datetime
 import os
 from descargas.descarga_natalidad import _exportar_pdf_natalidad
-from descargas.descarga_epi14 import _exportar_pdf_epi14
-from descargas.descarga_morbilidad import exportar_pdf_morbilidad_extensa, exportar_pdf_morbilidad_simp
-from descargas.descarga_mortalidad import _exportar_pdf_mortalidad, _exportar_pdf_mortalidad_mensual
-from descargas.descarga_reg_diario import _exportar_pdf
+from descargas.descarga_morbilidad import exportar_pdf_morbilidad_extensa
+from descargas.descarga_mortalidad import _exportar_pdf_mortalidad
 
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
@@ -69,21 +67,12 @@ def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False
     area_descargada = None
 
     if not df.empty:
-        if nombre_base.lower() in ["epi14_semanal", "epi14_semanal_seleccionado"]:
-            output = _exportar_pdf_epi14(df, nombre_base)
-            area_descargada = "Epi14_Semanal"
-        elif nombre_base.lower() in ["natalidad", "natalidad_seleccionado"]:
+        if nombre_base.lower() in ["natalidad", "natalidad_seleccionado"]:
             output = _exportar_pdf_natalidad(df, nombre_base)
             area_descargada = "Natalidad"
-        elif nombre_base.lower() in ["registro_diario", "registro_diario_seleccionado"]:
-            output = _exportar_pdf(df, nombre_base)
-            area_descargada = "Registro_Diario"
         elif nombre_base.lower() in ["morbilidad_extensa", "morbilidad_extensa_seleccionado"]:
             output = exportar_pdf_morbilidad_extensa(df, "denuncias obligatorias")
             area_descargada = "denuncias_obligatorias"
-        elif nombre_base.lower() in ["morbilidad_simplificada", "morbilidad_simplificada_seleccionado"]:
-            output = exportar_pdf_morbilidad_simp(df, nombre_base)
-            area_descargada = "Morbilidad_Simplificada"
         elif nombre_base.lower() in ["mortalidad_neonatal", "mortalidad_neonatal_seleccionado"]:
             output = _exportar_pdf_mortalidad(df, nombre_base)
             area_descargada = "Mortalidad_Neonatal"
@@ -93,11 +82,6 @@ def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False
         elif nombre_base.lower() in ["mortalidad_materna", "mortalidad_materna_seleccionado"]:
             output = _exportar_pdf_mortalidad(df, nombre_base)
             area_descargada = "Mortalidad_Materna"
-        elif nombre_base.lower() in ["mortalidad_mensual_infatil", "mortalidad_mensual_infatil_seleccionado",
-                                     "mortalidad_mensual_neonatal", "mortalidad_mensual_neonatal_seleccionado",
-                                     "mortalidad_mensual_general", "mortalidad_mensual_general_seleccionado"]:
-            output = _exportar_pdf_mortalidad_mensual(df, nombre_base)
-            area_descargada = "Mortalidad_Mensual"
 
     if not area_descargada:
         area_descargada = nombre_base.capitalize()

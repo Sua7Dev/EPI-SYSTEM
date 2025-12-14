@@ -3,32 +3,6 @@ import datetime
 from dateutil.relativedelta import relativedelta
 # funciones de limpiar casillas de todos los formularios
 
-def limpiar_campos_registro_diario():
-    fecha_maxima_hoy = datetime.date.today()
-    fecha_minima = datetime.datetime.now().date() - relativedelta(months=1)
-    min_value = 0.0
-    st.session_state.fd_registro_diario = fecha_maxima_hoy
-    st.session_state.nombre_registro_diario = ""
-    st.session_state.edad_sexo_registro_diario = ""
-    st.session_state.mr_registro_diario = ""
-    st.session_state.mo_registro_diario = ""
-    st.session_state.so_registro_diario = ""
-    st.session_state.cd_registro_diario = ""
-    st.session_state.cb_registro_diario = ""
-    st.session_state.gett_registro_diario = ""
-    st.session_state.nc_registro_diario = ""
-    st.session_state.talla_registro_diario = min_value
-    st.session_state.peso_registro_diario = min_value
-    st.session_state.autopsia_registro_diario = ""
-
-def limpiar_campos_epi14():
-    min_value = 0
-
-    st.session_state.causa_epi14 = ""
-    st.session_state.n_casos_epi14 = min_value
-    st.session_state.pop("num_casos_epi14", None)
-    st.session_state.pop("sexo_edad_list", None)
-
 
 def limpiar_campos_registro_usuario():
     st.session_state.nombre = ""
@@ -57,24 +31,6 @@ def limpiar_campos_natalidad():
     st.session_state.partos_extra_natalidad = min_value
 
 # ----------------------------------------------------------------------------------- #
-
-# liempieza de los mensuales
-def limpiar_campos_mensual_general():
-    min_value=0
-    st.session_state.causas_mensual_general = ""
-    st.session_state.n_casos_mensual_general = min_value
-
-
-def limpiar_campos_mensual_neonatal():
-    min_value=0
-    st.session_state.causas_mensual_neonatal = ""
-    st.session_state.n_casos_mensual_neonatal = min_value
-
-def limpiar_campos_mensual_infantil():
-    min_value=0
-    st.session_state.causas_mensual_infantil = ""
-    st.session_state.n_casos_mensual_infantil = min_value
-
 # limpieza de los normales
 def limpiar_campos_materna():
     fecha_minima = datetime.datetime.now().date() - relativedelta(months=1)
@@ -181,32 +137,14 @@ def limpiar_campos_morb_extenso():
     fecha_maxima_hoy = datetime.date.today()
     fecha_minima = datetime.datetime.now().date() - relativedelta(months=1)
     min_value = 0
-    #st.session_state.hc_morb_extenso = ""
     st.session_state.nombres_apellidos_morb_extenso = ""
-    #st.session_state.cedula_morb_extenso = "" 
-    #st.session_state.telefono_morb_extenso = "" 
     st.session_state.edad_morb_extenso = min_value
     st.session_state.diagnostico_morb_extenso = ""
-    #st.session_state.sexo_morb_extenso = "Masculino"
-    #st.session_state.fecha_nacimiento_morb_extenso = fecha_maxima_hoy
-    #st.session_state.estado_civil_morb_extenso = "Soltero/a" 
     st.session_state.pais_hogar_morb_extenso = ""
     st.session_state.estado_hogar_morb_extenso = ""
     st.session_state.municipio_hogar_morb_extenso = ""
     st.session_state.parroquia_hogar_morb_extenso = ""
     st.session_state.cuidad_hogar_morb_extenso = ""
     st.session_state.direccion_exacta_hogar_morb_extenso = ""
-    #st.session_state.pais_nacimiento_morb_extenso = ""
-    #st.session_state.estado_nacimiento_morb_extenso = ""
-    #st.session_state.municipio_nacimiento_morb_extenso = ""
-    #st.session_state.parroquia_nacimiento_morb_extenso = ""
-    #st.session_state.cuidad_nacimiento_morb_extenso = ""
-    #st.session_state.direccion_exacta_nacimiento_morb_extenso = ""
 
-def limpiar_campos_morb_simplificado():
-    fecha_minima = datetime.datetime.now().date() - relativedelta(months=1)
-    min_value = 0
-    st.session_state.diagnostico_morb_simplifica = ""
-    st.session_state.fecha_registro_morb_simplifica = fecha_minima
-    st.session_state.edad_morb_simplifica = min_value
-    st.session_state.sexo_morb_simplifica = "Masculino"
+

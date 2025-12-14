@@ -1,0 +1,92 @@
+enfermedades_comunes = ["Abdomen agudo", "Alzheimer", "Anemia", "Apendicitis",
+    "Ansiedad", "Artritis", "Asma", "Bronquitis", "Cáncer de colon", "Cáncer de mama",
+    "Cáncer de próstata", "Cefalea tensional", "Cirrosis hepática", "Cistitis", "Colecistitis",
+    "Colesterol alto", "Colitis ulcerosa", "COVID-19", "Demencia", "Depresión",
+    "Diabetes tipo 1", "Diabetes tipo 2", "Diarrea", "Difteria", "Dispepsia funcional",
+    "Endometriosis", "Enfermedad de Crohn", "Enfermedad de Graves", "Enfermedad de Ménière",
+    "Enfermedad de Parkinson", "Epilepsia", "EPOC (Enfermedad Pulmonar Obstructiva Crónica)",
+    "Esclerosis múltiple", "Esófago de Barrett", "Esquizofrenia", "Estreñimiento",
+    "Escabiosis (sarna)", "Faringitis", "Fiebre amarilla", "Fiebre tifoidea",
+    "Fibromialgia", "Gastritis", "Gripe (influenza)", "Guillain-Barré (síndrome de)",
+    "Hepatitis A", "Hepatitis B", "Hepatitis C", "Hernia discal", "Insuficiencia respiratoria baja",
+    "Hipertiroidismo", "Hipertensión arterial", "Hipotiroidismo", "Hipercolesterolemia",
+    "Infarto agudo al miocardio", "Infección urinaria", "Insomnio", "Intolerancia a la lactosa",
+    "Leucemia", "Lumbalgia", "Lupus", "Malaria", "Meningitis", "Migraña",
+    "Miomatosis uterina", "Miopía", "Mononucleosis infecciosa", "Neumonía", "Obesidad",
+    "Obstrucción intestinal", "Osteoartritis", "Osteoporosis", "Otitis", "Pancreatitis",
+    "Pielonefritis", "Psoriasis", "Rabia", "Reflujo gastroesofágico (ERGE)",
+    "Resfriado común", "Retinopatía diabética", "Rinitis alérgica", "Rubéola",
+    "Sarampión", "Síncope", "Sordera", "TDAH (Trastorno por Déficit de Atención e Hiperactividad)",
+    "TDAH en adultos", "Tétanos", "Toxoplasmosis", "Trastorno bipolar",
+    "Trastorno de ansiedad generalizada", "Trombosis", "Tuberculosis", "Úlcera gástrica",
+    "Urticaria", "Varicela", "Vértigo", "VIH/SIDA", "Virus del Papiloma Humano (VPH)",
+    "Zoster (culebrilla)", "Dengue", "Lues connatal",
+]
+
+# Lista de 100 nombres de hombre comunes en Venezuela
+nombres_hombre = [
+    "José", "Juan", "Carlos", "Luis", "Miguel", "Alejandro", "Daniel", "Manuel", 
+    "Jesús", "Antonio", "Francisco", "David", "Ángel", "Pedro", "Jorge", "Andrés", 
+    "Fernando", "Rafael", "Gabriel", "Diego", "Roberto", "Javier", "Mario", "Ricardo", 
+    "Eduardo", "Alberto", "Victor", "Mauricio", "Héctor", "Raúl", "Oscar", "Pablo", 
+    "Santiago", "Gustavo", "Felipe", "Ronaldo", "Samuel", "Guillermo", "Emilio", 
+    "Hugo", "Iván", "Rubén", "Julio", "César", "Marco", "Esteban", "Enrique", 
+    "Ramón", "Simón", "Tomás", "Nicolás", "Adrián", "Víctor", "Leonardo", "Óscar", 
+    "Walter", "Rodrigo", "Salvador", "Ramiro", "Armando", "René", "Gerardo", 
+    "Rigoberto", "Martín", "Saúl", "Alonso", "Isaac", "Erick", "Gregorio", "Ismael", 
+    "Fidel", "Fausto", "Ulises", "Bernardo", "Teodoro", "Aarón", "Damián", "Jacobo", 
+    "Noé", "Cristian", "Patricio", "Baltazar", "Mateo", "Elias", "Emanuel", 
+    "Cristóbal", "Joaquín", "Gonzalo", "Julian", "Eugenio", "Lorenzo", "Ignacio", 
+    "Fermín", "Lucas", "Maximiliano", "Agustín", "Valentín", "Benjamín", "Sebastián"
+]
+
+# Lista de 100 nombres de mujer comunes en Venezuela
+nombres_mujer = [
+    "María", "Ana", "Carmen", "Isabel", "Rosa", "Luisa", "Teresa", "Andrea", 
+    "Carolina", "Patricia", "Laura", "Gabriela", "Camila", "Valentina", "Sofía", 
+    "Daniela", "Mariana", "Victoria", "Fernanda", "Natalia", "Adriana", "Alejandra", 
+    "Génesis", "Valeria", "Gabriela", "Antonieta", "Xiomara", "Yosmary", "Yulimar", 
+    "Yusmary", "Mariángel", "Luisana", "Mayerling", "Lismar", "Oriana", "Ninoska", 
+    "Lilian", "Yolanda", "Mercedes", "Diana", "Clara", "Elena", "Beatriz", "Rocío", 
+    "Silvia", "Alicia", "Irma", "Margarita", "Gladys", "Marta", "Susana", "Julia", 
+    "Esther", "Ruth", "Raquel", "Verónica", "Olivia", "Noelia", "Jimena", "Paula", 
+    "Eva", "Inés", "Claudia", "Nora", "Elisa", "Miriam", "Lidia", "Cecilia", 
+    "Rosa María", "Ángela", "Consuelo", "Dolores", "Catalina", "Bernarda", "Gloria", 
+    "Milagros", "Esperanza", "Pilar", "Concepción", "Juana", "Petra", "Manuela", 
+    "Francisca", "Josefina", "Lourdes", "Soledad", "Amparo", "Lucía", "Rita", 
+    "Edith", "Matilde", "Emma", "Alba", "Berta", "Elvira", "Irene", "Olga", 
+    "Nelly", "Wilmer", "Yajaira", "Yusbely", "Zulay", "Zulimar"
+]
+
+# Lista de 200 apellidos comunes en Venezuela
+apellidos = [
+    "González", "Rodríguez", "Pérez", "García", "Martínez", "López", "Hernández", 
+    "Gómez", "Díaz", "Vásquez", "Rojas", "Morales", "Castillo", "Ramírez", "Ramos", 
+    "Suárez", "Romero", "Torres", "Flores", "Rivera", "Álvarez", "Mendoza", "Vargas", 
+    "Medina", "Guerrero", "Reyes", "Castro", "Ortiz", "Silva", "Núñez", "Jiménez", 
+    "Molina", "Delgado", "Peña", "Cruz", "Acosta", "Herrera", "Fernández", "Vega", 
+    "Chávez", "Cabrera", "Briceño", "Barrios", "Aguilar", "Paredes", "Salazar", 
+    "Mejía", "Quintana", "Contreras", "Arias", "Parra", "Sandoval", "Bravo", "Miranda", 
+    "Zambrano", "Montes", "Escobar", "Cárdenas", "Campos", "León", "Fuentes", "Márquez", 
+    "Valera", "Figueroa", "Rivas", "Padilla", "Calderón", "Bermúdez", "Sánchez", 
+    "Méndez", "Rangel", "Duarte", "Brito", "Cordero", "Moreno", "Pinto", "Urdaneta", 
+    "Marín", "Villalobos", "Peraza", "Quintero", "Velásquez", "Navarro", "Rincón", 
+    "Marcano", "Barreto", "Salas", "Lara", "Zambrano", "Arroyo", "Carrillo", "Carvajal", 
+    "Guerra", "Ibarra", "Serrano", "Valdez", "Galindo", "Véliz", "Yánez", "Zapata", 
+    "Arévalo", "Bautista", "Bernal", "Blanco", "Bustamante", "Cano", "Cantillo", 
+    "Caraballo", "Cedeno", "Colina", "Correa", "Cortez", "Del Castillo", "Estrada", 
+    "Fajardo", "Gallegos", "Gil", "Granados", "Guevara", "Gutiérrez", "Henríquez", 
+    "Izquierdo", "Jaimes", "Lozano", "Lucena", "Maldonado", "Marques", "Mora", 
+    "Murillo", "Naranjo", "Navia", "Olivo", "Ortega", "Ospina", "Palma", "Palacios", 
+    "Paz", "Pereira", "Prieto", "Pulido", "Quiñones", "Quiroz", "Redondo", "Restrepo", 
+    "Roldán", "Rosales", "Ruiz", "Salcedo", "Salinas", "Santana", "Sierra", "Soto", 
+    "Téllez", "Toro", "Trejo", "Trujillo", "Uribe", "Valencia", "Valenzuela", 
+    "Varela", "Vera", "Vidal", "Villegas", "Yépez", "Zabala", "Zambrano", "Zambrano", 
+    "Abreu", "Alvarado", "Amaya", "Aranda", "Arcila", "Arguello", "Arismendi", 
+    "Arjona", "Arrate", "Arteaga", "Asuaje", "Aular", "Avila", "Azocar", "Báez", 
+    "Bandres", "Barboza", "Baron", "Barros", "Bello", "Benitez", "Betancourt", 
+    "Bohorquez", "Bolivar", "Borjas", "Briceño", "Burgos", "Caballero", "Cadenas", 
+    "Calles", "Campo", "Cardona", "Carreño", "Carvajal", "Casas", "Castañeda", 
+    "Causado", "Celis", "Cerrada", "Cicero", "Cisneros", "Colmenares", "Consalvi"
+]
+
