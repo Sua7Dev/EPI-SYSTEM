@@ -151,62 +151,78 @@ def formulario_neonatal(db=DB_PATH):
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
         return
+
     nombre_usuario = st.session_state["autenticado_usuario"]
     info_usuario = obtener_info_usuario(nombre_usuario)
     if not info_usuario:
         st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
         return
+
     rol_usuario = info_usuario["rol"]
     id_doctor = info_usuario["id_doctor"]
-    id_secretaria = info_usuario["id_secretaria"]
     id_administrador = info_usuario["id_administrador"]
 
     st.subheader(":material/table: Datos de Muerte Neonatal", anchor=False)
+
     df = operaciones_sql_neonatal("cargar")
     if df is None:
         return
-    if rol_usuario == "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-            st.markdown("# ")
-    elif rol_usuario != "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-        else:
-            mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_neonatal")
 
-            if mostrar_editor:
-                df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
-                edited_df = data_editor_neonatal(df_filtrado, rol_usuario)
-                col1, col3 = st.columns(2)
-                has_selection = edited_df[' '].any()
-                col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(4)
-                
-                if rol_usuario == "Secretario (a)":
-                    with col1:
-                        descargar_pdf(edited_df, "mortalidad_neonatal", label="Descargar PDF")
-                    with col3:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_neonatal")
-                        descargar_pdf(df_sel, "mortalidad_neonatal_seleccionado", label="Descarga selección", disabled=not has_selection)
-                else:
-                    with col_guardar:
-                        guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")   
-                        #guadar_btn(procesar_guardado_cambios_mortalidad_neonatal, edited_df) 
-                    with col_descargar:
-                        descargar_pdf(edited_df, "mortalidad_neonatal")                
-                    with col_descargar_seleccionado:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_neonatal")
-                        descargar_pdf(df_sel, "mortalidad_neonatal_seleccionado", label="Descarga selección", disabled=not has_selection)
-                    with col_eliminar:
-                        btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="delete_mortalidad_neonatal", 
-                                                disabled=not has_selection, width="stretch",
-                                                help="Eliminar registros seleccionados.")
-                        if btn_eliminar:
-                            confirmar_eliminar(eliminar_registros_neonatal, edited_df)
-                    if guardar:
-                        procesar_guardado_cambios_mortalidad_neonatal(edited_df)
+    if df.empty:
+        st.info("No hay datos para mostrar.", icon=":material/info:")
+    else:
+        df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
+        edited_df = data_editor_neonatal(df_filtrado, rol_usuario)
+        has_selection = edited_df[' '].any()
+
+        if rol_usuario == "Secretario (a)":
+            col1, col2 = st.columns(2)
+            with col1:
+                descargar_pdf(edited_df, "mortalidad_neonatal")
+            with col2:
+                df_sel = edited_df[edited_df[' '] == True]
+                descargar_registros_seleccionados(edited_df, "mortalidad_neonatal")
+                descargar_pdf(
+                    df_sel,
+                    "mortalidad_neonatal_seleccionado",
+                    disabled=not has_selection
+                )
+        else:
+            col_guardar, col_desc, col_desc_sel, col_eliminar = st.columns(4)
+
+            with col_guardar:
+                guardar = st.button(
+                    "Guardar cambios",
+                    icon=":material/save:",
+                    type="primary",
+                    width="stretch"
+                )
+
+            with col_desc:
+                descargar_pdf(edited_df, "mortalidad_neonatal")
+
+            with col_desc_sel:
+                df_sel = edited_df[edited_df[' '] == True]
+                descargar_registros_seleccionados(edited_df, "mortalidad_neonatal")
+                descargar_pdf(
+                    df_sel,
+                    "mortalidad_neonatal_seleccionado",
+                    disabled=not has_selection
+                )
+
+            with col_eliminar:
+                btn_eliminar = st.button(
+                    "Eliminar",
+                    icon=":material/delete:",
+                    disabled=not has_selection,
+                    width="stretch"
+                )
+                if btn_eliminar:
+                    confirmar_eliminar(eliminar_registros_neonatal, edited_df)
+
+            if guardar:
+                procesar_guardado_cambios_mortalidad_neonatal(edited_df)
+
 
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Neonatal", anchor=False)
@@ -473,62 +489,104 @@ def formulario_infantil(db=DB_PATH):
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
         return
+
     nombre_usuario = st.session_state["autenticado_usuario"]
     info_usuario = obtener_info_usuario(nombre_usuario)
     if not info_usuario:
         st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
         return
+
     rol_usuario = info_usuario["rol"]
     id_doctor = info_usuario["id_doctor"]
     id_administrador = info_usuario["id_administrador"]
 
     st.subheader(":material/table: Datos de Muerte Infantil", anchor=False)
+
     df = operaciones_sql_infantil("cargar")
     if df is None:
         return
 
-    if rol_usuario == "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-            st.markdown("# ")
-    elif rol_usuario != "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-        else:
-            mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_infantil")
+    # =========================
+    # MOSTRAR REGISTROS
+    # =========================
+    if df.empty:
+        st.info("No hay datos para mostrar.", icon=":material/info:")
+    else:
+        df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
+        edited_df = data_editor_infantil(df_filtrado, rol_usuario)
+        has_selection = edited_df[' '].any()
 
-            if mostrar_editor:
-                df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
-                edited_df = data_editor_infantil(df_filtrado, rol_usuario)
-                col1, col3 = st.columns(2)
-                has_selection = edited_df[' '].any()
-                col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(4)
-                
-                if rol_usuario == "Secretario (a)":
-                    with col1:
-                        descargar_pdf(edited_df, "mortalidad_infantil", label="Descargar PDF")
-                    with col3:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_infantil")
-                        descargar_pdf(df_sel, "mortalidad_infantil_seleccionado", label="Descarga selección", disabled=not has_selection)
-                else:
-                    with col_guardar:
-                        guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")  
-                        #guadar_btn(procesar_guardado_cambios_mortalidad_infantil, edited_df) 
-                    with col_descargar:
-                        descargar_pdf(edited_df, "mortalidad_infantil")            
-                    with col_descargar_seleccionado:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_infantil")
-                        descargar_pdf(df_sel, "mortalidad_infantil_seleccionado", label="Descarga selección", disabled=not has_selection)
-                    with col_eliminar:
-                        btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="delete_mortalidad_infantil", 
-                                                disabled=not has_selection, width="stretch",
-                                                help="Eliminar registros seleccionados.")
-                        if btn_eliminar:
-                            confirmar_eliminar(eliminar_registros_infantil, edited_df)
-                    if guardar:
-                        procesar_guardado_cambios_mortalidad_infantil(edited_df) 
+        # -------- ACCIONES ----------
+        if rol_usuario == "Secretario (a)":
+            col1, col2 = st.columns(2)
+
+            with col1:
+                descargar_pdf(
+                    edited_df,
+                    "mortalidad_infantil",
+                    label="Descargar PDF"
+                )
+
+            with col2:
+                df_sel = edited_df[edited_df[' '] == True]
+                descargar_registros_seleccionados(
+                    edited_df,
+                    "mortalidad_infantil"
+                )
+                descargar_pdf(
+                    df_sel,
+                    "mortalidad_infantil_seleccionado",
+                    label="Descarga selección",
+                    disabled=not has_selection
+                )
+        else:
+            col_guardar, col_descargar, col_desc_sel, col_eliminar = st.columns(4)
+
+            with col_guardar:
+                guardar = st.button(
+                    "Guardar cambios",
+                    icon=":material/save:",
+                    width="stretch",
+                    type="primary"
+                )
+
+            with col_descargar:
+                descargar_pdf(
+                    edited_df,
+                    "mortalidad_infantil"
+                )
+
+            with col_desc_sel:
+                df_sel = edited_df[edited_df[' '] == True]
+                descargar_registros_seleccionados(
+                    edited_df,
+                    "mortalidad_infantil"
+                )
+                descargar_pdf(
+                    df_sel,
+                    "mortalidad_infantil_seleccionado",
+                    label="Descarga selección",
+                    disabled=not has_selection
+                )
+
+            with col_eliminar:
+                btn_eliminar = st.button(
+                    "Eliminar",
+                    icon=":material/delete:",
+                    key="delete_mortalidad_infantil",
+                    disabled=not has_selection,
+                    width="stretch",
+                    help="Eliminar registros seleccionados."
+                )
+                if btn_eliminar:
+                    confirmar_eliminar(
+                        eliminar_registros_infantil,
+                        edited_df
+                    )
+
+            if guardar:
+                procesar_guardado_cambios_mortalidad_infantil(edited_df)
+
 
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Infantil", anchor=False)
@@ -707,61 +765,104 @@ def formulario_materna(db=DB_PATH):
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
         return
+
     nombre_usuario = st.session_state["autenticado_usuario"]
     info_usuario = obtener_info_usuario(nombre_usuario)
     if not info_usuario:
         st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
         return
+
     rol_usuario = info_usuario["rol"]
     id_doctor = info_usuario["id_doctor"]
     id_administrador = info_usuario["id_administrador"]
 
     st.subheader(":material/table: Datos de Muerte Materna", anchor=False)
+
     df = operaciones_sql_materna("cargar")
     if df is None:
         return
 
-    if rol_usuario == "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-            st.markdown("# ")
-    elif rol_usuario != "Secretario (a)":
-        if df.empty:
-            st.info("No hay datos para mostrar.", icon=":material/info:")
-        else:
-            mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_materna")
+    # =========================
+    # MOSTRAR REGISTROS
+    # =========================
+    if df.empty:
+        st.info("No hay datos para mostrar.", icon=":material/info:")
+    else:
+        df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
+        edited_df = data_editor_materna(df_filtrado, rol_usuario)
+        has_selection = edited_df[' '].any()
 
-            if mostrar_editor:
-                df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
-                edited_df = data_editor_materna(df_filtrado, rol_usuario)
-                col1, col3 = st.columns(2)
-                has_selection = edited_df[' '].any()
-                col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(4)
-                if rol_usuario == "Secretario (a)":
-                    with col1:
-                        descargar_pdf(edited_df, "mortalidad_materna", label="Descargar PDF")
-                    with col3:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_materna")
-                        descargar_pdf(df_sel, "mortalidad_materna_seleccionado", label="Descarga selección", disabled=not has_selection)
-                else:
-                    with col_guardar:
-                        guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")  
-                        #guadar_btn(procesar_guardado_cambios_mortalidad_materna, edited_df) 
-                    with col_descargar:
-                        descargar_pdf(edited_df, "mortalidad_materna")                
-                    with col_descargar_seleccionado:
-                        df_sel = edited_df[edited_df[' '] == True]
-                        descargar_registros_seleccionados(edited_df, "mortalidad_materna")
-                        descargar_pdf(df_sel, "mortalidad_materna_seleccionado", label="Descarga selección", disabled=not has_selection)
-                    with col_eliminar:
-                        btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="delete_mortalidad_materna", 
-                                                disabled=not has_selection, width="stretch",
-                                                help="Eliminar registros seleccionados.")
-                        if btn_eliminar:
-                            confirmar_eliminar(eliminar_registros_materna, edited_df)
-                    if guardar:
-                        procesar_guardado_cambios_mortalidad_materna(edited_df) 
+        # -------- ACCIONES ----------
+        if rol_usuario == "Secretario (a)":
+            col1, col2 = st.columns(2)
+
+            with col1:
+                descargar_pdf(
+                    edited_df,
+                    "mortalidad_materna",
+                    label="Descargar PDF"
+                )
+
+            with col2:
+                df_sel = edited_df[edited_df[' '] == True]
+                descargar_registros_seleccionados(
+                    edited_df,
+                    "mortalidad_materna"
+                )
+                descargar_pdf(
+                    df_sel,
+                    "mortalidad_materna_seleccionado",
+                    label="Descarga selección",
+                    disabled=not has_selection
+                )
+        else:
+            col_guardar, col_descargar, col_desc_sel, col_eliminar = st.columns(4)
+
+            with col_guardar:
+                guardar = st.button(
+                    "Guardar cambios",
+                    icon=":material/save:",
+                    width="stretch",
+                    type="primary"
+                )
+
+            with col_descargar:
+                descargar_pdf(
+                    edited_df,
+                    "mortalidad_materna"
+                )
+
+            with col_desc_sel:
+                df_sel = edited_df[edited_df[' '] == True]
+                descargar_registros_seleccionados(
+                    edited_df,
+                    "mortalidad_materna"
+                )
+                descargar_pdf(
+                    df_sel,
+                    "mortalidad_materna_seleccionado",
+                    label="Descarga selección",
+                    disabled=not has_selection
+                )
+
+            with col_eliminar:
+                btn_eliminar = st.button(
+                    "Eliminar",
+                    icon=":material/delete:",
+                    key="delete_mortalidad_materna",
+                    disabled=not has_selection,
+                    width="stretch",
+                    help="Eliminar registros seleccionados."
+                )
+                if btn_eliminar:
+                    confirmar_eliminar(
+                        eliminar_registros_materna,
+                        edited_df
+                    )
+
+            if guardar:
+                procesar_guardado_cambios_mortalidad_materna(edited_df)
+
 
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Materna", anchor=False)

@@ -1,4 +1,5 @@
 import streamlit as st
+from pages.historial import mostrar_historial_actividades
 from utils.edicion_super import mostrar_modo_edicion, mostrar_modo_normal
 from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 from pages.menu import menu
@@ -27,6 +28,8 @@ def elementos():
     st.header(":material/admin_panel_settings: Configuración y extras del sistema", divider="gray", anchor=False)
     if 'edit_mode' not in st.session_state or not st.session_state['edit_mode']:
         mostrar_modo_normal()
+        st.markdown("---")
+        mostrar_historial_actividades()
     else:#aqui este bloque iria lo de las pag extras o capas de seguridad con su pedida de info o contrasenas para el super user
         mostrar_modo_edicion()
 

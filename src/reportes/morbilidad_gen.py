@@ -5,6 +5,7 @@ import os
 import pandas as pd
 from io import BytesIO
 from descargas.descarga_morbilidad import exportar_pdf_morbilidad_extensa
+from pages.historial import registrar_actividad_duradera
 
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 
@@ -74,13 +75,19 @@ def _consultar_morbilidad(year=None, specific_date=None, start_date=None, end_da
 
 
 def exportar_pdf_morbilidad_general(year=None, specific_date=None, start_date=None, end_date=None):
-    df = _consultar_morbilidad(year=year, specific_date=specific_date, start_date=start_date, end_date=end_date)
+    df = _consultar_morbilidad(
+        year=year,
+        specific_date=specific_date,
+        start_date=start_date,
+        end_date=end_date
+    )
     nombre_archivo = "Morbilidad"
     return exportar_pdf_morbilidad_extensa(df, nombre_archivo)
 
 
 def formulario_reporte_general_morbilidad():
     st.subheader(":material/description: General de Morbilidad", anchor=False)
+
     with st.container():
         try:
             timeframe_key = "timeframe_general_reporte"
@@ -91,22 +98,30 @@ def formulario_reporte_general_morbilidad():
                 "Seleccionar período",
                 ["Año", "Fecha Específica", "Rango de Fechas"],
                 key="mortag",
-                on_change=lambda: st.session_state.update({timeframe_key: st.session_state[timeframe_key]})
+                on_change=lambda: st.session_state.update(
+                    {timeframe_key: st.session_state[timeframe_key]}
+                )
             )
 
-            year, specific_date, start_date, end_date = None, None, None, None
+            year = None
+            specific_date = None
+            start_date = None
+            end_date = None
             pdf_buffer = None
 
+            # ------------------ AÑO ------------------
             if timeframe == "Año":
                 try:
                     with sqlite3.connect(DB_PATH) as conn:
-
                         cur = conn.cursor()
                         cur.execute("""
                             SELECT DISTINCT strftime('%Y', date(
                                 CASE
-                                    WHEN instr(fecha_registro_formulario, '/') > 0 AND length(fecha_registro_formulario) >= 8
-                                        THEN substr(fecha_registro_formulario, 7, 4) || '-' || substr(fecha_registro_formulario, 4, 2) || '-' || substr(fecha_registro_formulario, 1, 2)
+                                    WHEN instr(fecha_registro_formulario, '/') > 0
+                                         AND length(fecha_registro_formulario) >= 8
+                                    THEN substr(fecha_registro_formulario, 7, 4)
+                                         || '-' || substr(fecha_registro_formulario, 4, 2)
+                                         || '-' || substr(fecha_registro_formulario, 1, 2)
                                     ELSE fecha_registro_formulario
                                 END
                             )) AS yr
@@ -134,13 +149,10 @@ def formulario_reporte_general_morbilidad():
                     max_value=datetime.date(2050, 12, 31),
                     key="specific_date_general_reporte"
                 )
-                pdf_buffer = exportar_pdf_morbilidad_general(specific_date=specific_date)
-
-            # ----------------------------
-# RANGO DE FECHAS
-# ----------------------------
+                pdf_buffer = exportar_pdf_morbilidad_general(
+                    specific_date=specific_date
+                )
             else:
-                # Obtener fecha mínima y máxima de registros
                 try:
                     with sqlite3.connect(DB_PATH) as conn:
                         df_fechas = pd.read_sql_query("""
@@ -148,8 +160,13 @@ def formulario_reporte_general_morbilidad():
                             FROM morbilidad
                             WHERE fecha_registro_formulario IS NOT NULL
                         """, conn)
+
                     if not df_fechas.empty:
-                        df_fechas["fecha_iso"] = pd.to_datetime(df_fechas["fecha_registro_formulario"], dayfirst=True, errors='coerce')
+                        df_fechas["fecha_iso"] = pd.to_datetime(
+                            df_fechas["fecha_registro_formulario"],
+                            dayfirst=True,
+                            errors="coerce"
+                        )
                         min_fecha = df_fechas["fecha_iso"].min().date()
                         max_fecha = df_fechas["fecha_iso"].max().date()
                     else:
@@ -176,10 +193,17 @@ def formulario_reporte_general_morbilidad():
                     )
 
                 if end_date < start_date:
-                    st.error("La fecha fin debe ser igual o posterior a la fecha inicio.", icon=":material/error:")
+                    st.error(
+                        "La fecha fin debe ser igual o posterior a la fecha inicio.",
+                        icon=":material/error:"
+                    )
                     return
 
-                pdf_buffer = exportar_pdf_morbilidad_general(start_date=start_date, end_date=end_date)
+                pdf_buffer = exportar_pdf_morbilidad_general(
+                    start_date=start_date,
+                    end_date=end_date
+                )
+
 
             if pdf_buffer:
                 fecha_actual = datetime.datetime.now()
@@ -188,18 +212,29 @@ def formulario_reporte_general_morbilidad():
                 meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
                 fecha_hora_str = f"{fecha_str}_{hora_str}_{meridiano}"
 
-                content = pdf_buffer.getvalue() if hasattr(pdf_buffer, "getvalue") else pdf_buffer
+                content = (
+                    pdf_buffer.getvalue()
+                    if hasattr(pdf_buffer, "getvalue")
+                    else pdf_buffer
+                )
+
                 st.download_button(
                     label="Descargar Reporte",
                     data=content,
                     file_name=f"Reporte_Morbilidad_General_{fecha_hora_str}.pdf",
                     mime="application/pdf",
                     icon=":material/download:",
-                    key=f"download_general_{fecha_hora_str}_reporte",
                     use_container_width=True,
-                    type="primary" 
+                    type="primary",
+                    on_click=registrar_actividad_duradera,
+                    args=("DESCARGA PDF", "Reportes Denuncias Obligatorias")
                 )
+
             else:
-                st.error("No hay datos para el período seleccionado.", icon=":material/error:")
+                st.error(
+                    "No hay datos para el período seleccionado.",
+                    icon=":material/error:"
+                )
+
         except Exception as e:
             st.error(f"Error al generar el reporte: {e}")

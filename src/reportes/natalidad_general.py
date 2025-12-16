@@ -5,7 +5,7 @@ import os
 import pandas as pd
 from io import BytesIO
 from descargas.descarga_natalidad import _exportar_pdf_natalidad
-
+from pages.historial import registrar_actividad_duradera
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = "DD/MM/YYYY"
 
@@ -163,11 +163,21 @@ def formulario_reporte_general_natalidad():
 
                 semanas = obtener_semanas_por_anio(year)
                 if not semanas:
-                    st.error("No existen semanas con registros para este año.", icon=":material/error:")
+                    st.error(
+                        "No existen semanas con registros para este año.",
+                        icon=":material/error:"
+                    )
                     return
 
-                iso_week = st.selectbox("Semana disponible", semanas, key="semana_iso")
-                pdf_buffer = exportar_pdf_natalidad_general(year=year, iso_week=iso_week)
+                iso_week = st.selectbox(
+                    "Semana disponible",
+                    semanas,
+                    key="semana_iso"
+                )
+                pdf_buffer = exportar_pdf_natalidad_general(
+                    year=year,
+                    iso_week=iso_week
+                )
 
             # ----------------------------
             # FECHA ESPECÍFICA
@@ -178,13 +188,14 @@ def formulario_reporte_general_natalidad():
                     value=datetime.date.today(),
                     format=DATE_FORMAT
                 )
-                pdf_buffer = exportar_pdf_natalidad_general(specific_date=specific_date)
+                pdf_buffer = exportar_pdf_natalidad_general(
+                    specific_date=specific_date
+                )
 
             # ----------------------------
             # RANGO DE FECHAS
             # ----------------------------
             else:
-                # Obtener fecha mínima y máxima de registros
                 try:
                     with sqlite3.connect(DB_PATH) as conn:
                         df_fechas = pd.read_sql_query("""
@@ -192,8 +203,13 @@ def formulario_reporte_general_natalidad():
                             FROM natalidad
                             WHERE fecha IS NOT NULL
                         """, conn)
+
                     if not df_fechas.empty:
-                        df_fechas["fecha_iso"] = pd.to_datetime(df_fechas["fecha"], dayfirst=True, errors="coerce")
+                        df_fechas["fecha_iso"] = pd.to_datetime(
+                            df_fechas["fecha"],
+                            dayfirst=True,
+                            errors="coerce"
+                        )
                         min_fecha = df_fechas["fecha_iso"].min().date()
                         max_fecha = df_fechas["fecha_iso"].max().date()
                     else:
@@ -218,11 +234,16 @@ def formulario_reporte_general_natalidad():
                     )
 
                 if end_date < start_date:
-                    st.error("La fecha fin debe ser igual o posterior a la fecha inicio.", icon=":material/error:")
+                    st.error(
+                        "La fecha fin debe ser igual o posterior a la fecha inicio.",
+                        icon=":material/error:"
+                    )
                     return
 
-                pdf_buffer = exportar_pdf_natalidad_general(start_date=start_date, end_date=end_date)
-
+                pdf_buffer = exportar_pdf_natalidad_general(
+                    start_date=start_date,
+                    end_date=end_date
+                )
 
             # ----------------------------
             # BOTÓN DESCARGA PDF
@@ -234,7 +255,11 @@ def formulario_reporte_general_natalidad():
                 meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
                 fecha_hora_str = f"{fecha_str}_{hora_str}_{meridiano}"
 
-                content = pdf_buffer.getvalue() if hasattr(pdf_buffer, "getvalue") else pdf_buffer
+                content = (
+                    pdf_buffer.getvalue()
+                    if hasattr(pdf_buffer, "getvalue")
+                    else pdf_buffer
+                )
 
                 st.download_button(
                     label="Descargar Reporte",
@@ -243,11 +268,16 @@ def formulario_reporte_general_natalidad():
                     mime="application/pdf",
                     icon=":material/download:",
                     use_container_width=True,
-                    type="primary"
+                    type="primary",
+                    on_click=registrar_actividad_duradera,
+                    args=("DESCARGA PDF", "Reportes Natalidad")
                 )
 
             else:
-                st.error("No hay datos para el período seleccionado.", icon=":material/error:")
+                st.error(
+                    "No hay datos para el período seleccionado.",
+                    icon=":material/error:"
+                )
 
         except Exception as e:
             st.error(f"Error al generar el reporte: {e}")

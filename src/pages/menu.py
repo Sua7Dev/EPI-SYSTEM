@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.informaciones import usuario_activo_fixed
-
+from pages.historial import registrar_actividad_duradera
 
 def menu():
     usuario_activo_fixed()
@@ -105,6 +105,7 @@ def menu():
                 if no:
                     st.rerun()               
                 if si:
+                    registrar_actividad_duradera("LOGOUT", "Sistema")
                     st.session_state['edit_mode'] = False
                     #    del st.session_state['edit_mode'] # da error
                     st.success("Cerrando sesión", icon=":material/favorite:")

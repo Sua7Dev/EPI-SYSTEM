@@ -4,6 +4,7 @@ import sqlite3
 import os
 from reportes.morta_general import exportar_pdf_mortalidad_general
 DB_PATH = os.getenv("hospital.db", "hospital.db")
+from pages.historial import registrar_actividad_duradera
 
 def formulario_reporte_general():
     st.subheader(":material/description: General de Mortalidad", anchor=False)
@@ -16,7 +17,9 @@ def formulario_reporte_general():
             "Seleccionar período",
             ["Año", "Fecha Específica", "Rango de Fechas"], 
             key="mortag", 
-            on_change=lambda: st.session_state.update({timeframe_key: st.session_state[timeframe_key]})
+            on_change=lambda: st.session_state.update(
+                {timeframe_key: st.session_state[timeframe_key]}
+            )
         )
 
         year, specific_date, start_date, end_date = None, None, None, None
@@ -26,19 +29,36 @@ def formulario_reporte_general():
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT MIN(fecha_registro_formulario), MAX(fecha_registro_formulario) FROM mortalidad WHERE fecha_registro_formulario IS NOT NULL"
+            """
+            SELECT MIN(fecha_registro_formulario),
+                   MAX(fecha_registro_formulario)
+            FROM mortalidad
+            WHERE fecha_registro_formulario IS NOT NULL
+            """
         )
         result = cursor.fetchone()
         conn.close()
 
-        min_fecha = datetime.datetime.strptime(result[0], "%Y-%m-%d").date() if result[0] else datetime.date.today()
-        max_fecha = datetime.datetime.strptime(result[1], "%Y-%m-%d").date() if result[1] else datetime.date.today()
+        min_fecha = (
+            datetime.datetime.strptime(result[0], "%Y-%m-%d").date()
+            if result and result[0]
+            else datetime.date.today()
+        )
+        max_fecha = (
+            datetime.datetime.strptime(result[1], "%Y-%m-%d").date()
+            if result and result[1]
+            else datetime.date.today()
+        )
 
         if timeframe == "Año":
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT DISTINCT strftime('%Y', fecha_registro_formulario) FROM mortalidad ORDER BY 1 DESC"
+                """
+                SELECT DISTINCT strftime('%Y', fecha_registro_formulario)
+                FROM mortalidad
+                ORDER BY 1 DESC
+                """
             )
             available_years = [int(row[0]) for row in cursor.fetchall() if row[0]]
             conn.close()
@@ -65,7 +85,9 @@ def formulario_reporte_general():
                 format="DD/MM/YYYY",
                 key="specific_date_general_reporte"
             )
-            pdf_buffer = exportar_pdf_mortalidad_general(specific_date=specific_date)
+            pdf_buffer = exportar_pdf_mortalidad_general(
+                specific_date=specific_date
+            )
 
         else:  # Rango de Fechas
             col_start, col_end = st.columns(2)
@@ -87,9 +109,20 @@ def formulario_reporte_general():
                     format="DD/MM/YYYY",
                     key="end_date_general_reporte"
                 )
-            if end_date >= start_date:
-                pdf_buffer = exportar_pdf_mortalidad_general(start_date=start_date, end_date=end_date)
 
+            if end_date < start_date:
+                st.error(
+                    "La fecha fin debe ser igual o posterior a la fecha inicio.",
+                    icon=":material/error:"
+                )
+                return
+
+            pdf_buffer = exportar_pdf_mortalidad_general(
+                start_date=start_date,
+                end_date=end_date
+            )
+
+        # ------------------ DESCARGA PDF ------------------
         if pdf_buffer:
             fecha_actual = datetime.datetime.now()
             fecha_str = fecha_actual.strftime("%d-%m-%Y")
@@ -105,7 +138,13 @@ def formulario_reporte_general():
                 icon=":material/download:",
                 key=f"download_general_{fecha_hora_str}_reporte",
                 use_container_width=True,
-                type="primary"
+                type="primary",
+                on_click=registrar_actividad_duradera,
+                args=("DESCARGA PDF", "Reportes Mortalidad")
             )
+
         else:
-            st.error("No hay datos para el período seleccionado.", icon=":material/error:")
+            st.error(
+                "No hay datos para el período seleccionado.",
+                icon=":material/error:"
+            )
