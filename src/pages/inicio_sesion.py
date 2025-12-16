@@ -10,7 +10,7 @@ from utils.verificaciones import verificar_usuario, obtener_info_usuario, guarda
 from utils.contra import borro_cassette
 from utils.bienvenida import bienvenida
 from utils.verificaciones import obtener_info_usuario, verificar_preguntas_guardadas, verificar_correo_cedula, obtener_nombre_usuario
-
+from pages.historial import registrar_actividad_duradera
 
 configurar_pagina_espanol()
 
@@ -121,7 +121,8 @@ def iniciar_sesion():
                         info_usuario = obtener_info_usuario(nombre_usuario, DB_PATH=DB_PATH)
                         if not info_usuario:
                             st.error("No se pudo obtener la información del usuario.", icon=":material/error:")
-                            return            
+                            return          
+                        registrar_actividad_duradera("LOGIN", "Sistema")  
                         if verificar_preguntas_guardadas(nombre_usuario, DB_PATH=DB_PATH):
                             st.switch_page("pages/inicio.py")
                         else:

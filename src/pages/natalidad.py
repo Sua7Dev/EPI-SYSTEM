@@ -110,15 +110,18 @@ def data_editor_natalidad(df, rol_usuario):
 
 
 @st.fragment
+@st.fragment
 def formulario_natalidad():
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
         return
+
     nombre_usuario = st.session_state["autenticado_usuario"]
     info_usuario = obtener_info_usuario(nombre_usuario)
     if not info_usuario:
         st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
         return
+
     rol_usuario = info_usuario["rol"]
     id_doctor = info_usuario["id_doctor"]
     id_administrador = info_usuario["id_administrador"]
@@ -129,112 +132,176 @@ def formulario_natalidad():
     if df is None:
         return
 
+    # =========================
+    # SECRETARIO (A)
+    # =========================
     if rol_usuario == "Secretario (a)":
         if df.empty:
             st.info("No hay registros disponibles.", icon=":material/info:")
-            st.markdown("# ")
-            st.markdown("# ")
-            st.markdown("### ")
-    elif rol_usuario != "Secretario (a)":
-        if df.empty:
-            st.info("No hay registros disponibles.", icon=":material/info:")
-        else:
-            mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_natalidad")
+            return
 
-            if mostrar_editor:
-                df[' '] = False
-                df_filtrado = filtrar_por_fechas(df, 'fecha')
-                edited_df = data_editor_natalidad(df_filtrado, rol_usuario)
+        # 👉 MOSTRAR DIRECTAMENTE EL DATAEDITOR
+        df[' '] = False
+        df_filtrado = filtrar_por_fechas(df, 'fecha')
+        edited_df = data_editor_natalidad(df_filtrado, rol_usuario)
 
-                if not df_filtrado.empty:
-                    col1, col3 = st.columns(2)
-                    has_selection = edited_df[' '].any()
-                    col_guadar, col_descargar_todo, col_des_seleccionado, col_eliminar = st.columns(4)
+        if not df_filtrado.empty:
+            has_selection = edited_df[' '].any()
+            col1, col2 = st.columns(2)
 
-                    if rol_usuario == "Secretario (a)":
-                        with col1:
-                            descargar_pdf(edited_df, "natalidad", label="Descargar PDF")
-                        with col3:
-                            df_sel = edited_df[edited_df[' '] == True]
-                            descargar_registros_seleccionados(edited_df, "natalidad")
-                            descargar_pdf(df_sel, "natalidad_seleccionado", label="Descarga selección", disabled=not has_selection)
-                    else:
-                        with col_guadar:
-                            guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")  
-                            #guadar_btn(procesar_guardado_cambios_natalidad, edited_df)                
-                        with col_descargar_todo:
-                                descargar_pdf(edited_df, "natalidad")                
-                        with col_des_seleccionado:
-                            df_sel = edited_df[edited_df[' '] == True]
-                            descargar_registros_seleccionados(edited_df, "natalidad")
-                            descargar_pdf(df_sel, "natalidad_seleccionado", label="Descarga selección", disabled=not has_selection)
-                        with col_eliminar:
-                            btn_eliminar = st.button("Eliminar", icon=":material/delete:", key="delete_natalidad", 
-                                                    disabled=not has_selection, width="stretch",
-                                                    help="Eliminar registros seleccionados.")
-                            if btn_eliminar:
-                                confirmar_eliminar(eliminar_registros_natalidad, edited_df)
-                        if guardar:
-                            procesar_guardado_cambios_natalidad(edited_df)
-                    
+            with col1:
+                descargar_pdf(edited_df, "natalidad", label="Descargar PDF")
+
+            with col2:
+                df_sel = edited_df[edited_df[' '] == True]
+                descargar_registros_seleccionados(edited_df, "natalidad")
+                descargar_pdf(
+                    df_sel,
+                    "natalidad_seleccionado",
+                    label="Descarga selección",
+                    disabled=not has_selection
+                )
+
+        return  # ⛔ IMPORTANTE: evita que siga al resto del código
+
+    # =========================
+    # OTROS ROLES (NO TOCADO)
+    # =========================
+    if df.empty:
+        st.info("No hay registros disponibles.", icon=":material/info:")
+    else:
+        mostrar_editor = st.toggle(
+            "Mostrar datos de registros",
+            value=False,
+            key="toggle_editor_natalidad"
+        )
+
+        if mostrar_editor:
+            df[' '] = False
+            df_filtrado = filtrar_por_fechas(df, 'fecha')
+            edited_df = data_editor_natalidad(df_filtrado, rol_usuario)
+
+            if not df_filtrado.empty:
+                has_selection = edited_df[' '].any()
+                col_guardar, col_descargar, col_sel, col_eliminar = st.columns(4)
+
+                with col_guardar:
+                    guardar = st.button(
+                        "Guardar cambios",
+                        icon=":material/save:",
+                        width="stretch",
+                        type="primary"
+                    )
+
+                with col_descargar:
+                    descargar_pdf(edited_df, "natalidad")
+
+                with col_sel:
+                    df_sel = edited_df[edited_df[' '] == True]
+                    descargar_registros_seleccionados(edited_df, "natalidad")
+                    descargar_pdf(
+                        df_sel,
+                        "natalidad_seleccionado",
+                        label="Descarga selección",
+                        disabled=not has_selection
+                    )
+
+                with col_eliminar:
+                    btn_eliminar = st.button(
+                        "Eliminar",
+                        icon=":material/delete:",
+                        disabled=not has_selection,
+                        width="stretch"
+                    )
+                    if btn_eliminar:
+                        confirmar_eliminar(eliminar_registros_natalidad, edited_df)
+
+                if guardar:
+                    procesar_guardado_cambios_natalidad(edited_df)
+
+    # =========================
+    # FORMULARIO REGISTRO (NO SECRETARIO)
+    # =========================
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Natalidad", anchor=False)
         with st.form("form_natalidad"):
             col_fecha, col_partos, col_hembras, col_varones = st.columns(4)
+
             with col_fecha:
                 fecha_minima = datetime.datetime.now().date() - relativedelta(months=1)
                 fecha_maxima = datetime.date.today() + relativedelta(months=1)
-                fecha = st.date_input("Fecha", format="DD/MM/YYYY",
-                                    min_value=fecha_minima,
-                                    max_value=fecha_maxima, key="fecha_natalidad")
+                fecha = st.date_input(
+                    "Fecha",
+                    format="DD/MM/YYYY",
+                    min_value=fecha_minima,
+                    max_value=fecha_maxima
+                )
+
             with col_partos:
-                partos = st.number_input("Partos", min_value=0, step=1, key="partos_natalidad")
+                partos = st.number_input("Partos", min_value=0, step=1)
+
             with col_hembras:
-                hembras = st.number_input("Hembras", min_value=0, step=1, key="hembras_natalidad")
+                hembras = st.number_input("Hembras", min_value=0, step=1)
+
             with col_varones:
-                varones = st.number_input("Varones", min_value=0, step=1, key="varones_natalidad")
+                varones = st.number_input("Varones", min_value=0, step=1)
 
             col_sexo_gem, col_gemelar = st.columns(2)
             with col_sexo_gem:
-                sexo_gemelar = st.selectbox("Sexo de los gemelos", options=["No aplica", "Varones", "Hembras", "Mixto"], key="sexo_gemelar_natalidad")
+                sexo_gemelar = st.selectbox(
+                    "Sexo de los gemelos",
+                    ["No aplica", "Varones", "Hembras", "Mixto"]
+                )
+
             with col_gemelar:
-                gemelar = st.number_input("Gemelar", min_value=0, step=1, key="gemelar_natalidad")
+                gemelar = st.number_input("Gemelar", min_value=0, step=1)
 
             col_cesareas, col_mto = st.columns(2)
             with col_cesareas:
-                cesareas = st.number_input("Cesáreas", min_value=0, step=1, key="cesareas_natalidad")
-            with col_mto:
-                mto = st.number_input("Muertos (MTO)", min_value=0, step=1, key="mto_natalidad")
+                cesareas = st.number_input("Cesáreas", min_value=0, step=1)
 
-            partos_extrahospitalarios = st.number_input("Partos extrahospitalarios", min_value=0, step=1, key="partos_extra_natalidad")
+            with col_mto:
+                mto = st.number_input("Muertos (MTO)", min_value=0, step=1)
+
+            partos_extrahospitalarios = st.number_input(
+                "Partos extrahospitalarios", min_value=0, step=1
+            )
 
             col_reg, col_limp = st.columns([30, 1])
             with col_reg:
-                registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
+                registrar = st.form_submit_button("Registrar", type="primary")
             with col_limp:
-                limpiar = st.form_submit_button("", icon=":material/cleaning_services:",
-                                                on_click=limpiar_campos_natalidad, type="tertiary",
-                                                help="Limpia todos los campos del formulario.")      
-            if registrar:
-                fecha_formateada_nacimiento = fecha.strftime("%d/%m/%Y")
+                st.form_submit_button(
+                    "",
+                    icon=":material/cleaning_services:",
+                    on_click=limpiar_campos_natalidad
+                )
 
-                varones_ajustado = varones
-                hembras_ajustado = hembras
+            if registrar:
+                fecha_formateada = fecha.strftime("%d/%m/%Y")
+
+                varones_aj = varones
+                hembras_aj = hembras
                 if sexo_gemelar == "Varones":
-                    varones_ajustado += gemelar * 2
+                    varones_aj += gemelar * 2
                 elif sexo_gemelar == "Hembras":
-                    hembras_ajustado += gemelar * 2
+                    hembras_aj += gemelar * 2
                 elif sexo_gemelar == "Mixto":
-                    varones_ajustado += gemelar
-                    hembras_ajustado += gemelar
+                    varones_aj += gemelar
+                    hembras_aj += gemelar
 
                 datos_registro = (
-                    fecha_formateada_nacimiento, partos, cesareas, varones_ajustado, hembras_ajustado,
-                    gemelar, mto, partos_extrahospitalarios, id_doctor, id_administrador, rol_usuario
+                    fecha_formateada, partos, cesareas,
+                    varones_aj, hembras_aj,
+                    gemelar, mto,
+                    partos_extrahospitalarios,
+                    id_doctor, id_administrador, rol_usuario
                 )
+
                 if operaciones_sql_natalidad("registrar", datos_registro=datos_registro):
                     st.success("Registro guardado correctamente.", icon=":material/check_circle:")
                     st.rerun()
+
 
 def mostrar_nata():
     logo_bandera = ASSETS_DIR / "imagebanderanueva2.png"

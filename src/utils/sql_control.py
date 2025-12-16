@@ -7,6 +7,7 @@ import datetime
 import secrets
 import string
 from utils.contra import borro_cassette
+from pages.historial import registrar_actividad_duradera
 
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 
@@ -108,6 +109,8 @@ def insertar_hospital_info():
         if conn:
             conn.close()
 #operaciones de natalidad
+from pathlib import Path
+
 def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
     try:
         with sqlite3.connect(DB_PATH) as conn:
@@ -119,11 +122,16 @@ def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
                     FROM natalidad
                 """
                 return pd.read_sql_query(query, conn)
+
             elif accion == "registrar" and datos_registro:
                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='natalidad'")
                 if not cursor.fetchone():
                     raise sqlite3.Error("La tabla 'natalidad' no existe en la base de datos.")
+
+                # Desempaquetar datos
                 fecha, partos, cesareas, varones, hembras, gemelar, mto, partos_extrahospitalarios, id_doctor, id_administrador, rol_usuario = datos_registro
+
+                # Determinar id_doctor que registra
                 id_doctor_atendi = None
                 if rol_usuario == "Doctor (a)" and id_doctor:
                     id_doctor_atendi = id_doctor
@@ -133,11 +141,13 @@ def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
                     if result:
                         id_doctor_atendi = result[0]
 
+                # Formatear fecha
                 if isinstance(fecha, (datetime.date, datetime.datetime, pd.Timestamp)):
                     fecha_formateada_nacimiento = fecha.strftime("%d/%m/%Y")
                 else:
                     fecha_formateada_nacimiento = str(fecha)
-                #fecha_formateada_nacimiento = fecha.strftime("%d/%m/%Y")
+
+                # === INSERTAR EL REGISTRO ===
                 cursor.execute("""
                     INSERT INTO natalidad (
                         fecha, partos, cesareas, varones, hembras, gemelar, 
@@ -147,8 +157,16 @@ def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
                     fecha_formateada_nacimiento, partos, cesareas, varones, hembras, gemelar, 
                     mto, partos_extrahospitalarios, id_doctor_atendi, datetime.date.today()
                 ))
+
+                # Obtener el ID del nuevo registro
+                nuevo_id = cursor.lastrowid
+                usuario = st.session_state.get("autenticado_usuario", "Desconocido")
+                if nuevo_id:
+                    registrar_actividad_duradera("CREADO", "Natalidad", nuevo_id, usuario)
+
                 conn.commit()
                 return True
+
     except sqlite3.Error as e:
         st.error(f"Error en operación SQL: {e}", icon=":material/error:")
         return None
@@ -156,18 +174,25 @@ def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
 def eliminar_registros_natalidad(edited_df):
     seleccionados = edited_df.loc[edited_df[" "], "id"].tolist()
     if not seleccionados:
-        st.warning("No has seleccionado ningún registro para eliminar.", icon=":material/warning:")
         return
-    
+    usuario = st.session_state["autenticado_usuario"]
+
+    # === REGISTRAR ELIMINACIONES ANTES DE BORRAR ===
+    for id_elim in seleccionados:
+        registrar_actividad_duradera("ELIMINADO", "Natalidad", id_elim, usuario)
+
+    st.success(
+        f"Se eliminaron {len(seleccionados)} registro(s) de natalidad por {usuario}.",
+        icon=":material/check_circle:"
+    )
     try:
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
             cursor.executemany("DELETE FROM natalidad WHERE id_nata = ?", [(id_,) for id_ in seleccionados])
             conn.commit()
-            st.success(f"Se eliminaron {len(seleccionados)} registro(s).", icon=":material/check_circle:")
-            st.rerun()
+        st.rerun()
     except sqlite3.Error as e:
-        st.error(f"Error al eliminar: {e}", icon=":material/error:")
+        st.error(f"Error al eliminar registros en la base de datos: {e}", icon=":material/error:")
 
 def operaciones_sql_morb_extenso(accion, datos_registro=None, db=DB_PATH):
     try:
@@ -272,6 +297,8 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, db=DB_PATH):
                     datetime.date.today().strftime("%d/%m/%Y")
                 ))
 
+                id_morb = cursor.lastrowid  # ← ID del nuevo registro en morbilidad
+
                 # === RELACIÓN USUARIO ===
                 if rol_usuario == "Doctor (a)" and id_doctor:
                     cursor.execute("INSERT OR IGNORE INTO doctor_paciente VALUES (?, ?)", (id_doctor, id_paciente))
@@ -286,6 +313,12 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, db=DB_PATH):
                         cursor.execute("INSERT OR IGNORE INTO doctor_paciente VALUES (?, ?)", (result[0], id_paciente))
 
                 conn.commit()
+
+                # === REGISTRAR LA CREACIÓN DURADERA EN EL LOG ===
+                usuario = st.session_state.get("autenticado_usuario", "Desconocido")
+                if id_morb:
+                    registrar_actividad_duradera("CREADO", "Morbilidad", id_morb, usuario)
+
                 return True
 
     except sqlite3.IntegrityError:
@@ -389,6 +422,10 @@ def eliminar_registros_morb_extenso(edited_df):
                                     cursor.execute("DELETE FROM pais WHERE id_pais = ?", (id_pais,))
 
             conn.commit()
+            usuario = st.session_state["autenticado_usuario"]
+
+            for id_elim in ids_a_eliminar:
+                registrar_actividad_duradera("ELIMINADO", "Morbilidad" , id_elim, usuario)
             st.success(f"Se eliminaron{len(ids_a_eliminar)} registro(s).", icon=":material/check_circle:")
             st.rerun()
     except sqlite3.Error as e:
@@ -523,7 +560,12 @@ def operaciones_sql_neonatal(accion, datos_registro=None, db=DB_PATH):
                         cursor.execute("INSERT OR IGNORE INTO doctor_paciente (id_doctor, id_paciente) VALUES (?, ?)", (id_doctor_admin, id_paciente))
                 
                 conn.commit()
+                usuario = st.session_state.get("autenticado_usuario", "Desconocido")
+                if id_m:
+                    registrar_actividad_duradera("CREADO", "Mortalidad Neonatal", id_m, usuario)
+
                 return True
+                
     except sqlite3.IntegrityError:
         st.error("La Historia clinica ya existe.", icon=":material/error:")
         return
@@ -590,6 +632,11 @@ def eliminar_registros_neonatal(edited_df):
                             if cursor.fetchone()[0] == 0:
                                 cursor.execute("DELETE FROM pais WHERE id_pais = ?", (id_pais,))
             conn.commit()
+            
+            usuario = st.session_state["autenticado_usuario"]
+
+            for id_elim in ids_a_eliminar:
+                registrar_actividad_duradera("ELIMINADO", "Mortalidad Neonatal" , id_elim, usuario)
             st.success(f"Se eliminaron{len(ids_a_eliminar)} registro(s).", icon=":material/check_circle:")
             st.rerun()
     except sqlite3.Error as e:
@@ -703,7 +750,12 @@ def operaciones_sql_infantil(accion, datos_registro=None, db=DB_PATH):
                         id_doctor_admin = result[0]
                         cursor.execute("INSERT OR IGNORE INTO doctor_paciente (id_doctor, id_paciente) VALUES (?, ?)", (id_doctor_admin, id_paciente))
                 conn.commit()
+                usuario = st.session_state.get("autenticado_usuario", "Desconocido")
+                if id_m:
+                    registrar_actividad_duradera("CREADO", "Mortalidad Infantil", id_m, usuario)
+
                 return True
+                
     except sqlite3.IntegrityError:
         st.error("La Historia clinica ya existe.", icon=":material/error:")
         return
@@ -770,6 +822,10 @@ def eliminar_registros_infantil(edited_df):
                             if cursor.fetchone()[0] == 0:
                                 cursor.execute("DELETE FROM pais WHERE id_pais = ?", (id_pais,))
             conn.commit()
+            usuario = st.session_state["autenticado_usuario"]
+
+            for id_elim in ids_a_eliminar:
+                registrar_actividad_duradera("ELIMINADO", "Mortalidad Infantil" , id_elim, usuario)
             st.success(f"Se eliminaron{len(ids_a_eliminar)} registro(s).", icon=":material/check_circle:")
             st.rerun()
     except sqlite3.Error as e:
@@ -882,6 +938,10 @@ def operaciones_sql_materna(accion, datos_registro=None, db=DB_PATH):
                         id_doctor_admin = result[0]
                         cursor.execute("INSERT OR IGNORE INTO doctor_paciente (id_doctor, id_paciente) VALUES (?, ?)", (id_doctor_admin, id_paciente))
                 conn.commit()
+                usuario = st.session_state.get("autenticado_usuario", "Desconocido")
+                if id_m:
+                    registrar_actividad_duradera("CREADO", "Mortalidad Materna", id_m, usuario)
+
                 return True
     except sqlite3.IntegrityError:
         st.error("La Historia clinica ya existe.", icon=":material/error:")
@@ -949,6 +1009,10 @@ def eliminar_registros_materna(edited_df):
                             if cursor.fetchone()[0] == 0:
                                 cursor.execute("DELETE FROM pais WHERE id_pais = ?", (id_pais,))
             conn.commit()
+            usuario = st.session_state["autenticado_usuario"]
+
+            for id_elim in ids_a_eliminar:
+                registrar_actividad_duradera("ELIMINADO", "Mortalidad Materna" , id_elim, usuario)
             st.success(f"Se eliminaron{len(ids_a_eliminar)} registro(s).", icon=":material/check_circle:")
             st.rerun()
     except sqlite3.Error as e:
@@ -1076,3 +1140,4 @@ def mostrar_descripcion_hospital():
                 st.warning("No se encontró la descripción del hospital.", icon=":material/warning:")
     except sqlite3.Error as e:
         st.error(f"Error al cargar la descripción del hospital: {e}", icon=":material/error:")
+

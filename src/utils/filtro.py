@@ -5,6 +5,7 @@ import os
 from descargas.descarga_natalidad import _exportar_pdf_natalidad
 from descargas.descarga_morbilidad import exportar_pdf_morbilidad_extensa
 from descargas.descarga_mortalidad import _exportar_pdf_mortalidad
+from pages.historial import registrar_actividad_duradera
 
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
@@ -59,7 +60,7 @@ def filtrar_por_fechas(df, columna_fecha='fecha_registro_formulario'):
 def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False):
     fecha_actual = datetime.datetime.now()
     fecha_str = fecha_actual.strftime("%d-%m-%Y")
-    hora_str = fecha_actual.strftime("%I-%M-%S")  
+    hora_str = fecha_actual.strftime("%I-%M-%S")
     meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
     fecha_hora_str = f"{fecha_str}_{hora_str}_{meridiano}"
 
@@ -72,16 +73,16 @@ def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False
             area_descargada = "Natalidad"
         elif nombre_base.lower() in ["morbilidad_extensa", "morbilidad_extensa_seleccionado"]:
             output = exportar_pdf_morbilidad_extensa(df, "denuncias obligatorias")
-            area_descargada = "denuncias_obligatorias"
+            area_descargada = "Denuncias Obligatorias"
         elif nombre_base.lower() in ["mortalidad_neonatal", "mortalidad_neonatal_seleccionado"]:
             output = _exportar_pdf_mortalidad(df, nombre_base)
-            area_descargada = "Mortalidad_Neonatal"
+            area_descargada = "Mortalidad Neonatal"
         elif nombre_base.lower() in ["mortalidad_infantil", "mortalidad_infantil_seleccionado"]:
             output = _exportar_pdf_mortalidad(df, nombre_base)
-            area_descargada = "Mortalidad_Infantil"
+            area_descargada = "Mortalidad Infantil"
         elif nombre_base.lower() in ["mortalidad_materna", "mortalidad_materna_seleccionado"]:
             output = _exportar_pdf_mortalidad(df, nombre_base)
-            area_descargada = "Mortalidad_Materna"
+            area_descargada = "Mortalidad Materna"
 
     if not area_descargada:
         area_descargada = nombre_base.capitalize()
@@ -94,11 +95,11 @@ def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False
         file_name=nombre_archivo,
         mime="application/pdf",
         icon=":material/download:",
-        key=f"download{nombre_base}_{fecha_hora_str}",
-        disabled=disabled,
-        use_container_width=True
+        disabled=disabled or df.empty,
+        use_container_width=True,
+        on_click=registrar_actividad_duradera,
+        args=("DESCARGA PDF", f"Reportes {area_descargada}")
     )
-
 
 def detectar_columna_id(df):
     posibles = [col for col in df.columns if (col.lower().startswith("id") or col.lower().endswith("_id") or col.lower() == "hc") and col != " "]
