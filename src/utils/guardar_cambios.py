@@ -4,7 +4,7 @@ import sqlite3
 import datetime
 import os
 from utils.visuales import notificacion_cambios
-from utils.validaciones import (validar_texto, val_texynum, val_notas, val_num_espacios, 
+from utils.validaciones import (val_diagnostico, validar_texto, val_texynum, val_notas, val_num_espacios, 
                                 val_solo_numeros, validar_cinco_espacios)
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 from pages.historial import registrar_actividad_duradera
@@ -61,8 +61,8 @@ def procesar_guardado_cambios_mortalidad_neonatal(edited_df, DB_PATH=DB_PATH):
             if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
             if not validar_texto(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
             if not validar_cinco_espacios(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
-            if not val_texynum(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
-            if not val_texynum(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
+            if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
+            if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
 
             updates = {
                 'mortalidad': {'fields': [], 'values': []},
@@ -152,8 +152,8 @@ def procesar_guardado_cambios_mortalidad_infantil(edited_df, DB_PATH=DB_PATH):
             if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
             if not validar_texto(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
             if not validar_cinco_espacios(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
-            if not val_texynum(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
-            if not val_texynum(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
+            if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
+            if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
 
             updates = {
                 'mortalidad': {'fields': [], 'values': []},
@@ -240,8 +240,8 @@ def procesar_guardado_cambios_mortalidad_materna(edited_df, DB_PATH=DB_PATH):
             if not val_num_espacios(str(row.get("historia_clinica", "")), "La", "historia clinica"): return
             if not validar_texto(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
             if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
-            if not val_texynum(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
-            if not val_texynum(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
+            if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
+            if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
 
             updates = {
                 'mortalidad': {'fields': [], 'values': []},
@@ -379,7 +379,7 @@ def procesar_guardado_morb_extenso(edited_df, DB_PATH=DB_PATH):
 
             if not validar_texto(nombres, "Los", "Nombres y apellidos"): return
             if not validar_cinco_espacios(nombres, "Los", "nombres y apellidos"): return
-            if not val_texynum(diagnostico, "El", "diagnóstico"): return
+            if not val_diagnostico(diagnostico, "El", "diagnóstico"): return
 
             cursor.execute(
                 "UPDATE morbilidad SET nombres_apellidos = ? WHERE id_morb = ?",
