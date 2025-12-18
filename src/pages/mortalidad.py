@@ -249,7 +249,7 @@ def formulario_neonatal(db=DB_PATH):
             
             col_fecha_nacimiento, col_hora_nacimiento, col_fecha_ingreso, col_hora_ingreso = st.columns(4)
             with col_fecha_nacimiento:
-                fecha_nacimiento = st.date_input("Fecha de nacimiento", format=DATE_FORMAT, min_value=fecha_minimi_1935, 
+                fecha_nacimiento = st.date_input("Fecha de nacimiento", format=DATE_FORMAT, min_value=fecha_minima, 
                                                 max_value=fecha_maxima_hoy, key="fecha_nacimiento_neonatal")
             with col_hora_nacimiento:
                 hora_nacimiento = st.time_input("Hora de nacimiento", key="hora_nacimiento_neonatal", value="now")
@@ -629,6 +629,7 @@ def formulario_infantil(db=DB_PATH):
         st.subheader(":material/new_label: Registrar Muerte Infantil", anchor=False)
         with st.form("form_infantil"):
             fecha_minima = datetime.date.today() - relativedelta(months=1)
+            fecha_minima_7_anos = datetime.date.today() - relativedelta(years=7)
             fecha_maxima = datetime.date.today() + relativedelta(months=1)
             fecha_maxima_hoy = datetime.date.today()
             fecha_minimi_1935 = datetime.date(1935, 1, 1)
@@ -641,7 +642,7 @@ def formulario_infantil(db=DB_PATH):
                 nombre_madre = st.text_input("Nombre de la madre", max_chars=40, key="nombre_madre_infantil", placeholder="Ej. Maria Jimenez")
             col_fecha_nacimiento, col_fecha_ingreso, col_hora_ingreso, col_fecha_defuncion = st.columns(4)
             with col_fecha_nacimiento:
-                fecha_nacimiento = st.date_input("Fecha de nacimiento", format=DATE_FORMAT, min_value=fecha_minimi_1935, 
+                fecha_nacimiento = st.date_input("Fecha de nacimiento", format=DATE_FORMAT, min_value=fecha_minima_7_anos, 
                                                 max_value=fecha_maxima_hoy, key="fecha_nacimiento_infantil")
             with col_fecha_ingreso:
                 fecha_ingreso = st.date_input("Fecha de ingreso", format=DATE_FORMAT, min_value=fecha_minima, 
@@ -649,7 +650,7 @@ def formulario_infantil(db=DB_PATH):
             with col_hora_ingreso:
                 hora_ingreso = st.time_input("Hora de ingreso", key="hora_ingreso_infantil", value=datetime.datetime.now().time())
             with col_fecha_defuncion:
-                fecha_defuncion = st.date_input("Fecha de defunción", format='DD/MM/YYYY', min_value=fecha_minimi_1935, 
+                fecha_defuncion = st.date_input("Fecha de defunción", format='DD/MM/YYYY', min_value=fecha_minima_7_anos, 
                                                 max_value=fecha_maxima_hoy, key="fecha_defuncion_infantil")
             col_hora_defuncion, col_edad, col_tiempo = st.columns(3)
             with col_hora_defuncion:
