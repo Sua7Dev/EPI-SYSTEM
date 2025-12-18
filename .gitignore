@@ -5,6 +5,7 @@ __pychache__
 .spec
 *.spec
 *.log
+*.json
 
 # Archivos y carpetas de Python
 *.pyc
