@@ -33,7 +33,7 @@ DB_PATH = os.getenv("hospital.db", "hospital.db")
 @st.dialog(":material/data_loss_prevention: Recupera tu usuario")
 def recuperar_usuario():
     with st.form(key='recuperar_usuario'):
-        correo = st.text_input("Ingresa tu correo electrónico", max_chars=50, icon=":material/email:",
+        correo = st.text_input("Ingresa tu correo electrónico", max_chars=35, icon=":material/email:",
                                help="Tiene que ser un correo registrado en el sistema.", placeholder='Ejemplo: Juan@gmail.com')
         ci = st.text_input("Primeros 4 dígitos de la cédula", max_chars=4, type="password", icon=":material/contact_mail:",
                            placeholder="Ejemplo: 1234", help="Tiene que ser de la cédula asociada al correo.")

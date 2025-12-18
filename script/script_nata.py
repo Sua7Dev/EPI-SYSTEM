@@ -10,7 +10,7 @@ sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 # 1. Configuración y Claves Foráneas
 # ------------------------------------
 ID_DOCTOR_INICIAL = 1 
-NUM_REGISTROS = 300
+NUM_REGISTROS = 100
 fake = Faker('es_ES')
 
 # Definición de la tabla y sus campos
@@ -103,3 +103,5 @@ for sql in sql_inserts:
     print(sql)
 
 print("COMMIT;")
+
+# python script_nata.py > natalidad_inserts.sql

@@ -67,8 +67,8 @@ def mostrar_historial_actividades():
     if "autenticado_usuario" not in st.session_state:
         return
 
-    with st.expander("Historial completo de actividades", expanded=False):
-        st.subheader("Registro de acciones del sistema", anchor=False)
+    with st.expander("Historial de actividades", expanded=False, icon=":material/history:"):
+        st.subheader(":material/chronic: Registro de acciones", anchor=False)
 
         if not os.path.exists(LOG_ACTIVIDADES):
             st.info("No hay actividades registradas aún.")
@@ -187,7 +187,7 @@ def mostrar_historial_actividades():
             if key_mod not in st.session_state:
                 st.session_state[key_mod] = ["Todos"]
             modulos_f = st.multiselect(
-                "Módulos",
+                ":material/view_module: Módulos",
                 options=["Todos"] + opciones_mod,
                 default=st.session_state[key_mod],
                 key=key_mod,
@@ -199,7 +199,7 @@ def mostrar_historial_actividades():
             if key_usr not in st.session_state:
                 st.session_state[key_usr] = ["Todos"]
             usuarios_f = st.multiselect(
-                "Usuarios",
+                ":material/patient_list: Usuarios",
                 options=["Todos"] + opciones_usr,
                 default=st.session_state[key_usr],
                 key=key_usr,
@@ -211,7 +211,7 @@ def mostrar_historial_actividades():
             if key_acc not in st.session_state:
                 st.session_state[key_acc] = ["Todos"]
             acciones_f = st.multiselect(
-                "Acciones",
+                ":material/action_key: Acciones",
                 options=["Todos"] + opciones_acc,
                 default=st.session_state[key_acc],
                 key=key_acc,
@@ -221,14 +221,14 @@ def mostrar_historial_actividades():
 
         with col4:
             fecha_desde = st.date_input(
-                "Desde",
+                ":material/calendar_clock: Desde",
                 fecha_min,
                 format="DD/MM/YYYY"
             )
 
         with col5:
             fecha_hasta = st.date_input(
-                "Hasta",
+                ":material/event_upcoming: Hasta",
                 fecha_max,
                 format="DD/MM/YYYY"
             )
@@ -253,7 +253,7 @@ def mostrar_historial_actividades():
 
         f = f.sort_values(by="fecha_dt", ascending=False)
 
-        st.markdown("**Filtros aplicados:**")
+        st.markdown("**:material/filter_alt: Filtros aplicados:**")
         filtros_texto = []
         if "Todos" not in modulos_f:
             filtros_texto.append("Módulos: " + ", ".join(modulos_f))

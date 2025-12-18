@@ -208,3 +208,24 @@ def mayor_de_edad(fecha_nacimiento):
         st.error("No puedes registrarte si no eres mayor de edad.", icon=":material/error:")
         return False
     return True
+
+def val_diagnostico(diagnostico, el_la, campo):
+    """
+    Valida un diagnóstico:
+    - No puede estar vacío.
+    - Permite letras, números, espacios, paréntesis '()' y los caracteres '- / ' . ,'
+    """
+    if diagnostico.strip() == "":
+        st.error(f"{el_la} {campo} no puede estar vacío.", icon=":material/error:")
+        return False
+
+    if "#" in diagnostico:
+        st.error(f"{el_la} {campo} no puede contener el carácter '#'.", icon=":material/error:")
+        return False
+
+    # Permitir letras, números, acentos, espacios, paréntesis y los símbolos - / ' . ,
+    if not re.fullmatch(r"[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s\-\(\)\/'.,]+", diagnostico):
+        st.error(f"{el_la} {campo} solo puede contener letras, números, espacios, paréntesis y los caracteres - / ' . ,", icon=":material/error:")
+        return False
+
+    return True

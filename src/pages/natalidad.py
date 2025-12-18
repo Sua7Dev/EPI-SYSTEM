@@ -108,8 +108,6 @@ def data_editor_natalidad(df, rol_usuario):
 
     return edited_df
 
-
-@st.fragment
 @st.fragment
 def formulario_natalidad():
     if "autenticado_usuario" not in st.session_state:
@@ -132,15 +130,11 @@ def formulario_natalidad():
     if df is None:
         return
 
-    # =========================
-    # SECRETARIO (A)
-    # =========================
     if rol_usuario == "Secretario (a)":
         if df.empty:
             st.info("No hay registros disponibles.", icon=":material/info:")
             return
 
-        # 👉 MOSTRAR DIRECTAMENTE EL DATAEDITOR
         df[' '] = False
         df_filtrado = filtrar_por_fechas(df, 'fecha')
         edited_df = data_editor_natalidad(df_filtrado, rol_usuario)
@@ -162,11 +156,8 @@ def formulario_natalidad():
                     disabled=not has_selection
                 )
 
-        return  # ⛔ IMPORTANTE: evita que siga al resto del código
+        return  
 
-    # =========================
-    # OTROS ROLES (NO TOCADO)
-    # =========================
     if df.empty:
         st.info("No hay registros disponibles.", icon=":material/info:")
     else:
@@ -218,10 +209,6 @@ def formulario_natalidad():
 
                 if guardar:
                     procesar_guardado_cambios_natalidad(edited_df)
-
-    # =========================
-    # FORMULARIO REGISTRO (NO SECRETARIO)
-    # =========================
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Natalidad", anchor=False)
         with st.form("form_natalidad"):
@@ -279,6 +266,12 @@ def formulario_natalidad():
 
             if registrar:
                 fecha_formateada = fecha.strftime("%d/%m/%Y")
+                if sexo_gemelar == "No aplica" and gemelar > 0:
+                    st.warning(
+                        "Al seleccionar 'No aplica', la cantidad de gemelares se ajusta automáticamente y se registra a 0.",
+                        icon=":material/info:"
+                    )
+                    gemelar = 0
 
                 varones_aj = varones
                 hembras_aj = hembras
@@ -289,6 +282,16 @@ def formulario_natalidad():
                 elif sexo_gemelar == "Mixto":
                     varones_aj += gemelar
                     hembras_aj += gemelar
+                    
+                total_nacidos = varones_aj + hembras_aj + mto
+                total_eventos = partos + cesareas
+
+                if total_nacidos != total_eventos:
+                    st.error(
+                        "La suma de Hembras, Varones y MTO debe coincidir con el total de Partos y Cesáreas.",
+                        icon=":material/error:"
+                    )
+                    st.stop()
 
                 datos_registro = (
                     fecha_formateada, partos, cesareas,

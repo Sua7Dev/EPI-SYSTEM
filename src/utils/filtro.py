@@ -57,7 +57,7 @@ def filtrar_por_fechas(df, columna_fecha='fecha_registro_formulario'):
         return df
 
 ### esta se queda aqui
-def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False):
+def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False):#, key_f=None
     fecha_actual = datetime.datetime.now()
     fecha_str = fecha_actual.strftime("%d-%m-%Y")
     hora_str = fecha_actual.strftime("%I-%M-%S")
@@ -98,7 +98,8 @@ def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False
         disabled=disabled or df.empty,
         use_container_width=True,
         on_click=registrar_actividad_duradera,
-        args=("DESCARGA PDF", f"Reportes {area_descargada}")
+        args=("DESCARGA PDF", f"Reportes {area_descargada}"),
+        key=f"key_f_{nombre_base}_pdf"
     )
 
 def detectar_columna_id(df):

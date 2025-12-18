@@ -10,7 +10,7 @@ from dateutil.relativedelta import relativedelta
 from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_morb_extenso
-from utils.validaciones import validar_texto, val_texynum, val_notas, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
+from utils.validaciones import val_diagnostico, validar_texto, val_texynum, val_notas, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
 from utils.botones import confirmar_eliminar, guadar_btn
 from utils.guardar_cambios import procesar_guardado_morb_extenso
 from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
@@ -197,7 +197,7 @@ def formulario_morb_extenso(db=DB_PATH):
                 return
             if not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"): return
             if not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"): return
-            if not val_texynum(diagnostico, "El", "diagnóstico"): return
+            if not val_diagnostico(diagnostico, "El", "diagnóstico"): return
 
             datos_registro = {
                 "rol_usuario": rol_usuario,

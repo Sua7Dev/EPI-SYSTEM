@@ -238,7 +238,9 @@ def mostrar_modo_edicion():
                     "Correo",
                     value=row['Correo'] if pd.notna(row['Correo']) else "",
                     key=f"correo_{row['id_usuario']}",
-                    icon=":material/mail:"
+                    icon=":material/mail:",
+                    max_chars=35,
+                    placeholder='Ejemplo: Juan@gmail.com'
                 )
                 # botones
                 col_guardar, col_reestablecer, col_eliminar = st.columns(3)
