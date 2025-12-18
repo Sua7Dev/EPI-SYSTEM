@@ -444,3 +444,27 @@ def eliminar_usuario_completo(nombre_usuario, DB_PATH=None):
     finally:
         if conn:
             conn.close()
+
+def obtener_preguntas_usuario(nombre_usuario, DB_PATH=None):
+    if DB_PATH is None:
+        DB_PATH = globals().get("DB_PATH")
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT pregunta_seguridad, pregunta_seguridad_dos, pregunta_seguridad_tres
+            FROM usuario
+            WHERE nombre_usuario = ?
+        """, (nombre_usuario,))
+        row = cursor.fetchone()
+        conn.close()
+        if not row:
+            return None
+        preg1, preg2, preg3 = row
+        # Requerimos las 3 preguntas (según tu requisito de "no tiene preguntas registradas")
+        if not (preg1 and preg2 and preg3):
+            return None
+        return (preg1, preg2, preg3)
+    except sqlite3.Error as e:
+        st.error(f"Error al recuperar preguntas: {e}", icon=":material/error:")
+        return None

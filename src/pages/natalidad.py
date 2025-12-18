@@ -152,7 +152,7 @@ def formulario_natalidad():
                 descargar_pdf(
                     df_sel,
                     "natalidad_seleccionado",
-                    label="Descarga selección",
+                    label="Descargar Selección",
                     disabled=not has_selection
                 )
 

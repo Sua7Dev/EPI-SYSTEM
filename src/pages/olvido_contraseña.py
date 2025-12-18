@@ -6,7 +6,8 @@ from utils.verificaciones import (
     verificar_usuario_cedula,
     obtener_contrasena_actual,
     cambiar_contrasena,
-    verificar_preg_res_seg
+    verificar_preg_res_seg,
+    obtener_preguntas_usuario
 )
 from utils.base_64 import img_a_base64
 from utils.validaciones import val_solo_numeros, validar_contraseña, validar_texto, validar_nombre_usuario
@@ -119,65 +120,54 @@ def nueva_contra():
 
 @st.fragment
 def P_Seguridad():
-    st.markdown("")
     st.header(":material/question_exchange: Verificación de Preguntas", anchor=False)
+    usuario = st.session_state.get("olvido_usuario_id")
+    preguntas = st.session_state.get("olvido_preguntas") or (obtener_preguntas_usuario(usuario, DB_PATH) if usuario else None)
+
+    if not preguntas:
+        st.error("Este usuario no tiene preguntas de seguridad registradas. Vuelve al inicio.", icon=":material/error:")
+        if st.button("Volver", key="btn_volver_sin_preg"):
+            st.session_state["pagina_actual"] = "verificacion"
+            st.session_state["olvido_usuario_id"] = None
+            st.rerun()
+        return
+
+    pregunta_uno, pregunta_dos, pregunta_tres = preguntas
 
     with st.form(key="form_P_Seguridad"):
-        col_preguntas, col_respuestas = st.columns(2)
-        preguntas_opciones = [
-            "¿Cuál es el segundo nombre de tu madre?",
-            "¿Cuál es tu pelicula favorita?",
-            "¿Cuál es el nombre de tu primer mejor amigo/a?",
-            "¿Cuál es tu comida favorita?",
-            "¿Cuál era el nombre de tu primera mascota?",
-            "¿Cuál es el segundo nombre de tu abuelo paterno?",
-            "¿En qué calle vivías cuando tenías 10 años?"
-        ]
-
-        with col_preguntas:
-            pregunta_uno = st.selectbox(":material/looks_one: Selecciona tu pregunta de seguridad", preguntas_opciones, key="pregunta_uno_contra")
-            pregunta_dos = st.selectbox(":material/looks_two: Selecciona tu pregunta de seguridad", preguntas_opciones, key="pregunta_dos_contra")
-            pregunta_tres = st.selectbox(":material/looks_3: Selecciona tu pregunta de seguridad", preguntas_opciones, key="pregunta_tres_contra")
-        
-        with col_respuestas:
-            respuesta_uno = st.text_input("Indica la respuesta:", type='password', icon=":material/health_and_safety:", max_chars=18, key="respuesta_uno")
-            respuesta_dos = st.text_input("Indica la respuesta:", type='password', icon=":material/health_and_safety:", max_chars=18, key="respuesta_dos")
-            respuesta_tres = st.text_input("Indica la respuesta:", type='password', icon=":material/health_and_safety:", max_chars=18, key="respuesta_tres")
+        #st.markdown()
+        respuesta_uno = st.text_input(f"**Pregunta 1:** {pregunta_uno}", type='password', key="respuesta_uno",
+                                      icon=":material/security:", max_chars=18,)
+        #st.markdown()
+        respuesta_dos = st.text_input(f"**Pregunta 2:** {pregunta_dos}", type='password', key="respuesta_dos",
+                                      icon=":material/security:", max_chars=18,)
+        #st.markdown()
+        respuesta_tres = st.text_input(f"**Pregunta 3:** {pregunta_tres}", type='password', key="respuesta_tres",
+                                       icon=":material/security:", max_chars=18,)
 
         col_verificar, col_cancelar = st.columns(2)
         with col_verificar:
             btn_verificar = st.form_submit_button("Verificar", type="primary", width="stretch", icon=":material/verified_user:")
         with col_cancelar:
-            btn_cancelar = st.form_submit_button("Cancelar", type="secondary", width="stretch", icon=":material/cancel:", help="Vuelves a la Verificación de Usuario y Cédula.")
+            btn_cancelar = st.form_submit_button("Cancelar", type="secondary", width="stretch", icon=":material/cancel:")
 
         if btn_verificar:
             if not all([respuesta_uno, respuesta_dos, respuesta_tres]):
                 st.error("Todos los campos son obligatorios.", icon=":material/error:")
-            elif pregunta_uno == pregunta_dos or pregunta_uno == pregunta_tres or pregunta_dos == pregunta_tres:
-                st.error("Las preguntas de seguridad no pueden ser iguales.", icon=":material/error:")  
-            elif not validar_texto(respuesta_uno, "La", "primera respuesta de seguridad"):
                 return
-            elif not validar_texto(respuesta_dos, "La", "segunda respuesta de seguridad"):
-                return
-            elif not validar_texto(respuesta_tres, "La", "tercera respuesta de seguridad"):
-                return
-            else:
-                usuario = st.session_state.get("olvido_usuario_id")
-                if not usuario:
-                    st.error("Error interno: Usuario no disponible. Reinicia el proceso.", icon=":material/error:")
-                    st.session_state["pagina_actual"] = "verificacion"
-                    st.session_state["olvido_usuario_id"] = None
-                    st.rerun()
-                    return
-                ok, _ = verificar_preg_res_seg(
-                    respuesta_uno, pregunta_uno,
-                    respuesta_dos, pregunta_dos,
-                    respuesta_tres, pregunta_tres,
-                    usuario, DB_PATH
-                )
-                if ok:
-                    st.session_state["pagina_actual"] = "nueva_contra"
-                    st.rerun()
+            if not validar_texto(respuesta_uno, "La", "primera respuesta de seguridad"): return
+            if not validar_texto(respuesta_dos, "La", "segunda respuesta de seguridad"): return
+            if not validar_texto(respuesta_tres, "La", "tercera respuesta de seguridad"): return
+
+            ok, _ = verificar_preg_res_seg(
+                respuesta_uno, pregunta_uno,
+                respuesta_dos, pregunta_dos,
+                respuesta_tres, pregunta_tres,
+                usuario, DB_PATH
+            )
+            if ok:
+                st.session_state["pagina_actual"] = "nueva_contra"
+                st.rerun()
 
         if btn_cancelar:
             st.session_state["olvido_usuario_id"] = None
@@ -227,7 +217,7 @@ def informacion():
         st.markdown("Indica tu **nombre de usuario** y los **últimos 4 dígitos de tu cédula**.")
     with col_paso2:
         st.subheader(":material/looks_two: Preguntas de seguridad", anchor=False)
-        st.markdown("Selecciona tus **3 preguntas de seguridad** registradas y escribe sus respuestas.")
+        st.markdown("Responde tus **3 preguntas de seguridad** registradas y verifica.")
 
     st.subheader(":material/looks_3: ¡Listo! Cambia tu contraseña", anchor=False)
     st.markdown("Establece una nueva contraseña. Recuerda **cumplir** con los siguientes parámetros:")
@@ -264,11 +254,18 @@ def formulario_verificacion():
             return
         try:
             if verificar_usuario_cedula(nombre_usuario, ci, DB_PATH):
+                preguntas = obtener_preguntas_usuario(nombre_usuario, DB_PATH)
+                if not preguntas:
+                    st.error("Este usuario no tiene preguntas de seguridad registradas.", icon=":material/error:")
+                    #if st.button("Volver", key="volver_sin_preg"):
+                    #    st.session_state["pagina_actual"] = "verificacion"
+                    #    st.session_state["olvido_usuario_id"] = None
+                    #    st.rerun()
+                    return
                 st.session_state["olvido_usuario_id"] = nombre_usuario
+                st.session_state["olvido_preguntas"] = preguntas
                 st.session_state["pagina_actual"] = "seguridad"
                 st.rerun()
-            #else:
-            #    st.warning("Verificación fallida. Revisa usuario y CI.", icon=":material/warning:")
         except Exception as e:
             st.error(f"Error al verificar: {str(e)}. Contacta al admin.", icon=":material/error:")
 

@@ -132,7 +132,7 @@ def formulario_morb_extenso(db=DB_PATH):
             with col_descargar_seleccionado:
                 df_sel = edited_df[edited_df[' '] == True]
                 descargar_registros_seleccionados(edited_df, "morbilidad_extensa")
-                descargar_pdf(df_sel, "morbilidad_extensa_seleccionado", label="Descarga selección", disabled=not has_selection)
+                descargar_pdf(df_sel, "morbilidad_extensa_seleccionado", label="Descargar Selección", disabled=not has_selection)
 
             with col_eliminar:
                 btn_eliminar = st.button(

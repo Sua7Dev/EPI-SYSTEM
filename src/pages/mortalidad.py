@@ -188,6 +188,7 @@ def formulario_neonatal(db=DB_PATH):
                     descargar_pdf(
                         df_sel,
                         "mortalidad_neonatal_seleccionado",
+                        label="Descargar Selección",
                         disabled=not has_selection
                     )
             else:
@@ -210,6 +211,7 @@ def formulario_neonatal(db=DB_PATH):
                     descargar_pdf(
                         df_sel,
                         "mortalidad_neonatal_seleccionado",
+                        label="Descargar Selección",
                         disabled=not has_selection
                     )
 
@@ -260,12 +262,41 @@ def formulario_neonatal(db=DB_PATH):
             
             col_fecha_defuncion, col_hora_defuncion, col_edad, col_tiempo = st.columns(4)
 
+            # Normalizar fecha_nacimiento a datetime.date por seguridad
+            if isinstance(fecha_nacimiento, (pd.Timestamp, datetime.datetime)):
+                fecha_nacimiento = fecha_nacimiento.date()
+            elif not isinstance(fecha_nacimiento, datetime.date):
+                try:
+                    fecha_nacimiento = pd.to_datetime(fecha_nacimiento, dayfirst=True, errors='coerce')
+                    fecha_nacimiento = fecha_nacimiento.date() if not pd.isna(fecha_nacimiento) else fecha_maxima_hoy
+                except Exception:
+                    fecha_nacimiento = fecha_maxima_hoy
+
+            # Calcular ventana máxima (hasta 28 días desde nacimiento, pero no más allá de fecha_maxima)
             veintiocho_dias = fecha_nacimiento + relativedelta(days=28)
-            # Limitar el selector a la ventana entre la fecha de nacimiento y 28 días después.
             max_defuncion = min(veintiocho_dias, fecha_maxima) if 'fecha_maxima' in locals() else veintiocho_dias
+
+            # Asegurar que max_defuncion sea datetime.date y >= min_value
+            if isinstance(max_defuncion, (pd.Timestamp, datetime.datetime)):
+                max_defuncion = max_defuncion.date()
+            if max_defuncion < fecha_minimi_1935:
+                max_defuncion = fecha_minimi_1935
+
+            # Llamada segura a date_input con captura de excepción para dar feedback útil
             with col_fecha_defuncion:
-                fecha_defuncion = st.date_input("Fecha de defunción", format='DD/MM/YYYY', min_value=fecha_minimi_1935, 
-                                                max_value=max_defuncion, key="fecha_defuncion_neonatal")
+                try:
+                    fecha_defuncion = st.date_input(
+                        "Fecha de defunción",
+                        format=DATE_FORMAT,
+                        min_value=fecha_minimi_1935,
+                        max_value=max_defuncion,
+                        key="fecha_defuncion_neonatal"
+                    )
+                except Exception as e:
+                    st.error(f"Error en selector de fecha: {e}", icon=":material/error:")
+                    # fallback razonable
+                    fecha_defuncion = fecha_maxima_hoy
+
             with col_hora_defuncion:
                 hora_defuncion = st.time_input("Hora de defunción", key="hora_defuncion_neonatal", value="now")
             with col_edad:
@@ -542,7 +573,7 @@ def formulario_infantil(db=DB_PATH):
                     descargar_pdf(
                         df_sel,
                         "mortalidad_infantil_seleccionado",
-                        label="Descarga selección",
+                        label="Descargar Selección",
                         disabled=not has_selection
                     )
             else:
@@ -571,7 +602,7 @@ def formulario_infantil(db=DB_PATH):
                     descargar_pdf(
                         df_sel,
                         "mortalidad_infantil_seleccionado",
-                        label="Descarga selección",
+                        label="Descargar Selección",
                         disabled=not has_selection
                     )
 
@@ -822,7 +853,7 @@ def formulario_materna(db=DB_PATH):
                     descargar_pdf(
                         df_sel,
                         "mortalidad_materna_seleccionado",
-                        label="Descarga selección",
+                        label="Descargar Selección",
                         disabled=not has_selection,
                         #key_f="descargar_pdf_materna_seleccionado_f"
                     )
@@ -852,7 +883,7 @@ def formulario_materna(db=DB_PATH):
                     descargar_pdf(
                         df_sel,
                         "mortalidad_materna_seleccionado",
-                        label="Descarga selección",
+                        label="Descargar Selección",
                         disabled=not has_selection
                     )
 
