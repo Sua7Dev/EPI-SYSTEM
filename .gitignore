@@ -4,7 +4,7 @@ __pychache__
 *.db
 .spec
 *.spec
-
+*.log
 
 # Archivos y carpetas de Python
 *.pyc

@@ -1,7 +1,11 @@
 # 01_Morbilidad_Preparacion_Geografica.py
 import random
 from datetime import date, timedelta
+import sys
+import codecs
 
+# Configurar la salida estándar para UTF-8
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 # --- Datos Fijos de Ubicación ---
 # Asumimos que ID_CIUDAD = 1 (El Tigre) ya existe.
 ID_CIUDAD = 1 

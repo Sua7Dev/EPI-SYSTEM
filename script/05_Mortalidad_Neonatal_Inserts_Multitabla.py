@@ -3,7 +3,11 @@ import random
 from datetime import date, timedelta
 from faker import Faker
 import json
+import sys
+import codecs
 
+# Configurar la salida estándar para UTF-8
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 fake = Faker('es_ES')
 NUM_REGISTROS = 50 # Generaremos 200 registros
 

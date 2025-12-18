@@ -1,6 +1,10 @@
 # 03_Morbilidad_Registros_Finales.py
 import json
+import sys
+import codecs
 
+# Configurar la salida estándar para UTF-8
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 # --- Configuración de IDs de inicio (debe coincidir con el SCRIPT 02) ---
 # Si persona_paciente se limpió, el primer ID será 1.
 ID_INICIO_PACIENTE = 1 

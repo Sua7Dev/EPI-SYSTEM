@@ -2,7 +2,11 @@ import sqlite3
 from faker import Faker
 import random
 from datetime import date, timedelta
+import sys
+import codecs
 
+# Configurar la salida estándar para UTF-8
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 # 1. Configuración y Claves Foráneas
 # ------------------------------------
 ID_DOCTOR_INICIAL = 1 
