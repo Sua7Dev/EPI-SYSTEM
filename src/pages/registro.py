@@ -51,15 +51,72 @@ def registro_formulario():
             st.error("Acceso denegado. Solo el administrador puede acceder a este formulario.", icon=":material/lock:")
             return
 
-        
+        st.components.v1.html("""
+            <script>
+            const setupLogic = () => {
+                const doc = window.parent.document;
+                const inputs = doc.querySelectorAll('input[type="number"]');
+                
+                inputs.forEach(input => {
+                    if (!input.dataset.listenerActive) {
+                        // Bloqueo por teclado (Keydown)
+                        input.addEventListener('keydown', (e) => {
+                            const prohibidas = ['e', 'E', '+', '-', '.', ','];
+                            const esControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', "Enter"].includes(e.key);
+                            
+                            // 1. Bloquear caracteres especiales
+                            if (prohibidas.includes(e.key)) {
+                                e.preventDefault();
+                            }
+                            
+                            // 2. Bloquear si supera 8 caracteres (y no es tecla de borrar/mover)
+                            if (input.value.length >= 8 && !esControl) {
+                                e.preventDefault();
+                            }
+                        });
+
+                        // Bloqueo por pegado o arrastre (Input event)
+                        input.addEventListener('input', (e) => {
+                            if (input.value.length > 8) {
+                                input.value = input.value.slice(0, 8);
+                            }
+                        });
+
+                        input.dataset.listenerActive = "true";
+                    }
+                });
+            };
+
+            setupLogic();
+            setInterval(setupLogic, 700);
+            </script>
+            """, height=0)
+
         st.header(':material/group_add: Registro De Usuarios', divider='gray', anchor=False)
         with st.form(key='registro_form'):
+            st.markdown("""
+                <style>
+                /* Ocultar los botones de + y - de todos los st.number_input */
+                button[data-testid="stNumberInputStepDown"], 
+                button[data-testid="stNumberInputStepUp"] {
+                    display: none !important;
+                }
+                iframe {
+                    display: none !important;
+                    height: 0 !important;
+                    margin: 0 !important;
+                }
+                }
+                </style>
+                    """, unsafe_allow_html=True)
             # Primera fila
             col_ci, col_nombre,  = st.columns(2)
             with col_ci:
-                ci = st.text_input("Cédula de identidad", max_chars=8, 
-                                   placeholder="Ejemplo: 12345678", 
-                                   key="ci", icon=":material/contact_mail:")            
+                ci = st.number_input("Cédula de identidad", #max_chars=8, 
+                                    value=None, step=1,
+                                    max_value=99999999, min_value=1,
+                                    placeholder="Ejemplo: 12345678", 
+                                    key="ci", icon=":material/contact_mail:", format= "%d")            
             with col_nombre:
                 nombre = st.text_input('Nombres y Apellidos:', 
                                        max_chars=40, 
@@ -124,8 +181,8 @@ def registro_formulario():
             if registrar_btn:
                 if not all([nombre, sexo, nacimiento, nombre_usuario, correo, ci, nacionalidad, contrasena, confirmar_contra, rol]):
                     st.error("Todos los campos son obligatorios. Por favor, completa todos los campos.", icon=":material/error:")
-                elif not val_solo_numeros(ci, "La", "cédula de identidad"):
-                    return
+                #elif not val_solo_numeros(ci, "La", "cédula de identidad"):
+                #    return
                 elif not validar_texto(nombre, "El", "nombre"):
                     return
                 elif not validar_cinco_espacios(nombre, "El", "nombre"):

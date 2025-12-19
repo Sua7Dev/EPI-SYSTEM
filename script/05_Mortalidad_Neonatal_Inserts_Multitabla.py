@@ -346,7 +346,7 @@ for i, registro in enumerate(ID_MAPPING):
     
     # A) INSERT en la tabla 'mortalidad' (Tabla Principal)
     
-    # Para ser robustos, buscamos el paciente y la dirección exacta que acabamos de insertar.
+    # Para ser robustos, buscamos el paciente y la Dirección que acabamos de insertar.
     # NOTA: La búsqueda del paciente por MAX(id_paciente) es PELIGROSA si la base de datos es concurrente, 
     # pero es la solución estándar para scripts secuenciales con SQLite.
     

@@ -228,10 +228,92 @@ def formulario_neonatal(db=DB_PATH):
                 if guardar:
                     procesar_guardado_cambios_mortalidad_neonatal(edited_df)
 
+    st.components.v1.html("""
+                <script>
+                const setupLogic = () => {
+                    const doc = window.parent.document;
+                    // Buscamos todos los contenedores de number_input
+                    const widgets = doc.querySelectorAll('[data-testid="stNumberInput"]');
+                    
+                    widgets.forEach(widget => {
+                        const labelText = widget.querySelector('label')?.innerText;
+                        const input = widget.querySelector('input');
+                        const buttons = widget.querySelectorAll('button');
+                        
+                        // CONFIGURACIÓN PARA EL INPUT RESTRINGIDO (DNI / ID / etc)
+                        // si queremps varios input asi: if (labelText === "ID" || labelText === "Teléfono" || labelText === "Código") { ... }
+                        // Aquí pones el nombre exacto de la etiqueta que quieres restringir
+                        if (labelText === "Historia clínica" || labelText === "Edad") {
+                            
+                            // 1. Ocultar botones solo para este input
+                            buttons.forEach(btn => btn.style.display = 'none');
+                            
+                            if (!input.dataset.listenerActive) {
+                                input.addEventListener('keydown', (e) => {
+                                    const prohibidas = ['e', 'E', '+', '-', '.', ','];
+                                    const esControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', "Enter"].includes(e.key);
+                                    
+                                    if (prohibidas.includes(e.key)) e.preventDefault();
+                                    if (input.value.length >= 8 && !esControl) e.preventDefault();
+                                });
+
+                                input.addEventListener('input', (e) => {
+                                    if (input.value.length > 8) input.value = input.value.slice(0, 8);
+                                });
+                                input.dataset.listenerActive = "true";
+                            }
+                        }
+                        
+                        // CONFIGURACIÓN PARA INPUT FLOAT (Precio / Peso / etc)
+                        // --- CASO 2: FLOAT LIMPIO (Sin e, sin signos) ---
+                                    if (labelText === "Peso (kg)" || labelText === "Talla (cm)" || labelText === "Semanas de gestación" || labelText === "Edad") {
+                                        // AQUÍ NO OCULTAMOS LOS BOTONES (se quedan los + y - de Streamlit)
+                                        
+                                        if (!input.dataset.listenerActive) {
+                                            input.addEventListener('keydown', (e) => {
+                                                // Bloqueamos e, E y los signos, pero PERMITIMOS el punto y la coma
+                                                const prohibidas = ['e', 'E', '+', '-'];
+                                                if (prohibidas.includes(e.key)) e.preventDefault();
+                                            });
+                                            input.dataset.listenerActive = "true";
+                                        }
+                                    }
+                                });
+                            };
+
+                            setupLogic();
+                            setInterval(setupLogic, 500);
+                            </script>
+                            """, height=0)
+
 
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Neonatal", anchor=False)
         with st.form("form_neonatal"):
+            # 1. CSS base (solo para limpiar las flechas nativas del navegador, no las de Streamlit)
+            st.markdown("""
+                <style>
+                /* Quitar flechas por defecto del navegador (spinners) */
+                input::-webkit-outer-spin-button,
+                input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+                }
+                input[type=number] {
+                -moz-appearance: textfield;
+                }
+                iframe {
+                    display: none !important;
+                    height: 0 !important;
+                    margin: 0 !important;
+                
+                /* Ocultamos el contenedor del script para que no deje hueco */
+                [data-testid="stHtml"] {
+                    display: none !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+
             # variables de rangos de fechas posibles
             fecha_minima = datetime.date.today() - relativedelta(months=1)
             fecha_maxima = datetime.date.today() + relativedelta(months=1)
@@ -241,7 +323,17 @@ def formulario_neonatal(db=DB_PATH):
             # primera fila
             col_hc, col_nombres, col_madre = st.columns(3)
             with col_hc:
-                historia_clinica = st.text_input("Historia clínica", max_chars=8, key="historia_clinica_neonatal", placeholder="Ej. 12345678")
+                historia_clinica = st.number_input(
+                    "Historia clínica",
+                    value=None,
+                    step=1,
+                    max_value=99999999,
+                    min_value=1, 
+                    key="historia_clinica_neonatal", 
+                    placeholder="Ej. 12345678",
+                    format="%d"
+                )
+            st.markdown('</div>', unsafe_allow_html=True)
             with col_nombres:
                 nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_neonatal", placeholder="Ej. Juan Pérez")
             with col_madre:
@@ -325,15 +417,15 @@ def formulario_neonatal(db=DB_PATH):
                 parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_neonatal", placeholder="Edmundo Barrios (zona norte)")
             with col_city:
                 ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="cuidad_hogar_neonatal", placeholder="El Tigre")
-            direccion_exacta = st.text_area("Dirección Exacta", max_chars=150, key="direccion_exacta_neonatal", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
+            direccion_exacta = st.text_area("Dirección", max_chars=150, key="direccion_exacta_neonatal", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
             col_semanas, col_peso, col_talla = st.columns(3)
             with col_semanas:
                 semanas_gestacion = st.number_input("Semanas de gestación", min_value=0, step=1, key="semanas_gestacion_neonatal")
             with col_peso:
-                peso = st.number_input("Peso (kg)", min_value=0.0, step=0.25, format="%.1f", 
+                peso = st.number_input("Peso (kg)", min_value=0.0, step=0.25, format="%.2f", #, format="%.2f"
                                        key="peso_neonatal")
             with col_talla:
-                talla = st.number_input("Talla (cm)", min_value=0.0, step=0.25, format="%.1f", 
+                talla = st.number_input("Talla (cm)", min_value=0.0, step=0.25, format="%.2f", 
                                         key="talla_neonatal")
             col_reg, col_limp = st.columns([30, 1])
             with col_reg:
@@ -374,8 +466,6 @@ def formulario_neonatal(db=DB_PATH):
                 if not all([historia_clinica, nombres_apellidos, nombre_madre, fecha_nacimiento, pais_hogar, 
                             estado_hogar, parroquia_hogar, ciudad_hogar, direccion_exacta]):
                     st.error("Por favor completa todos los campos", icon=":material/error:")
-                    return
-                elif not val_num_espacios(historia_clinica, "La", "historia clinica"):
                     return
                 elif not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"):
                     return
@@ -624,10 +714,91 @@ def formulario_infantil(db=DB_PATH):
                 if guardar:
                     procesar_guardado_cambios_mortalidad_infantil(edited_df)
 
+    st.components.v1.html("""
+                <script>
+                const setupLogic = () => {
+                    const doc = window.parent.document;
+                    // Buscamos todos los contenedores de number_input
+                    const widgets = doc.querySelectorAll('[data-testid="stNumberInput"]');
+                    
+                    widgets.forEach(widget => {
+                        const labelText = widget.querySelector('label')?.innerText;
+                        const input = widget.querySelector('input');
+                        const buttons = widget.querySelectorAll('button');
+                        
+                        // CONFIGURACIÓN PARA EL INPUT RESTRINGIDO (DNI / ID / etc)
+                        // si queremps varios input asi: if (labelText === "ID" || labelText === "Teléfono" || labelText === "Código") { ... }
+                        // Aquí pones el nombre exacto de la etiqueta que quieres restringir
+                        if (labelText === "Historia clínica" || labelText === "Edad") {
+                            
+                            // 1. Ocultar botones solo para este input
+                            buttons.forEach(btn => btn.style.display = 'none');
+                            
+                            if (!input.dataset.listenerActive) {
+                                input.addEventListener('keydown', (e) => {
+                                    const prohibidas = ['e', 'E', '+', '-', '.', ','];
+                                    const esControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', "Enter"].includes(e.key);
+                                    
+                                    if (prohibidas.includes(e.key)) e.preventDefault();
+                                    if (input.value.length >= 8 && !esControl) e.preventDefault();
+                                });
 
+                                input.addEventListener('input', (e) => {
+                                    if (input.value.length > 8) input.value = input.value.slice(0, 8);
+                                });
+                                input.dataset.listenerActive = "true";
+                            }
+                        }
+                        
+                        // CONFIGURACIÓN PARA INPUT FLOAT (Precio / Peso / etc)
+                        // --- CASO 2: FLOAT LIMPIO (Sin e, sin signos) ---
+                                    if (labelText === "Edad") {
+                                        // AQUÍ NO OCULTAMOS LOS BOTONES (se quedan los + y - de Streamlit)
+                                        
+                                        if (!input.dataset.listenerActive) {
+                                            input.addEventListener('keydown', (e) => {
+                                                // Bloqueamos e, E y los signos, pero PERMITIMOS el punto y la coma
+                                                const prohibidas = ['e', 'E', '+', '-'];
+                                                if (prohibidas.includes(e.key)) e.preventDefault();
+                                            });
+                                            input.dataset.listenerActive = "true";
+                                        }
+                                    }
+                                });
+                            };
+
+                            setupLogic();
+                            setInterval(setupLogic, 500);
+                            </script>
+                            """, height=0)
+    
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Infantil", anchor=False)
         with st.form("form_infantil"):
+            # 1. CSS base (solo para limpiar las flechas nativas del navegador, no las de Streamlit)
+            st.markdown("""
+                <style>
+                /* Quitar flechas por defecto del navegador (spinners) */
+                input::-webkit-outer-spin-button,
+                input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+                }
+                input[type=number] {
+                -moz-appearance: textfield;
+                }
+                iframe {
+                    display: none !important;
+                    height: 0 !important;
+                    margin: 0 !important;
+                
+                /* Ocultamos el contenedor del script para que no deje hueco */
+                [data-testid="stHtml"] {
+                    display: none !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+            
             fecha_minima = datetime.date.today() - relativedelta(months=1)
             fecha_minima_7_anos = datetime.date.today() - relativedelta(years=7)
             fecha_maxima = datetime.date.today() + relativedelta(months=1)
@@ -635,7 +806,14 @@ def formulario_infantil(db=DB_PATH):
             fecha_minimi_1935 = datetime.date(1935, 1, 1)
             col_hc, col_nombres, col_madre = st.columns(3)
             with col_hc:
-                historia_clinica = st.text_input("Historia clínica", max_chars=8, key="historia_clinica_infantil", placeholder="Ej. 12345678")
+                historia_clinica = st.number_input("Historia clínica", 
+                    value=None,
+                    step=1,
+                    max_value=99999999,
+                    min_value=1, 
+                    placeholder="Ej. 12345678",
+                    format="%d",
+                    key="historia_clinica_infantil")
             with col_nombres:
                 nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_infantil", placeholder="Ej. Juan Pérez")
             with col_madre:
@@ -678,7 +856,7 @@ def formulario_infantil(db=DB_PATH):
                 parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_infantil", placeholder="Edmundo Barrios (zona norte)")
             with col_city:
                 ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="ciudad_hogar_infantil", placeholder="El Tigre")
-            direccion_exacta_hogar = st.text_area("Dirección Exacta", max_chars=150, key="direccion_exacta_hogar_infantil", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
+            direccion_exacta_hogar = st.text_area("Dirección", max_chars=150, key="direccion_exacta_hogar_infantil", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
             col_reg, col_limp = st.columns([30, 1])
             with col_reg:
                 registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
@@ -712,8 +890,6 @@ def formulario_infantil(db=DB_PATH):
                             estado_hogar, parroquia_hogar, ciudad_hogar, direccion_exacta_hogar, 
                             idx_ingreso, idx_defuncion]):
                     st.error("Por favor completa todos los campos", icon=":material/error:")
-                    return
-                elif not val_num_espacios(historia_clinica, "La", "historia clinica"):
                     return
                 elif not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"):
                     return
@@ -779,7 +955,7 @@ def data_editor_materna(df, rol_usuario):
         "municipio_hogar": st.column_config.TextColumn("Municipio", disabled=(rol_usuario == "Secretario (a)")),
         "parroquia_hogar": st.column_config.TextColumn("Parroquia", disabled=(rol_usuario == "Secretario (a)")),
         "ciudad_hogar": st.column_config.TextColumn("Ciudad", disabled=(rol_usuario == "Secretario (a)")),
-        "direccion_exacta_hogar": st.column_config.TextColumn("Dirección Exacta", disabled=(rol_usuario == "Secretario (a)")),
+        "direccion_exacta_hogar": st.column_config.TextColumn("Dirección", disabled=(rol_usuario == "Secretario (a)")),
         "direccion": st.column_config.TextColumn("Dirección", disabled=True),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "registrado_por": st.column_config.TextColumn("Registrado por", disabled=True),
@@ -906,17 +1082,104 @@ def formulario_materna(db=DB_PATH):
                 if guardar:
                     procesar_guardado_cambios_mortalidad_materna(edited_df)
 
+    st.components.v1.html("""
+                <script>
+                const setupLogic = () => {
+                    const doc = window.parent.document;
+                    // Buscamos todos los contenedores de number_input
+                    const widgets = doc.querySelectorAll('[data-testid="stNumberInput"]');
+                    
+                    widgets.forEach(widget => {
+                        const labelText = widget.querySelector('label')?.innerText;
+                        const input = widget.querySelector('input');
+                        const buttons = widget.querySelectorAll('button');
+                        
+                        // CONFIGURACIÓN PARA EL INPUT RESTRINGIDO (DNI / ID / etc)
+                        // si queremps varios input asi: if (labelText === "ID" || labelText === "Teléfono" || labelText === "Código") { ... }
+                        // Aquí pones el nombre exacto de la etiqueta que quieres restringir
+                        if (labelText === "Historia clínica" || labelText === "Edad") {
+                            
+                            // 1. Ocultar botones solo para este input
+                            buttons.forEach(btn => btn.style.display = 'none');
+                            
+                            if (!input.dataset.listenerActive) {
+                                input.addEventListener('keydown', (e) => {
+                                    const prohibidas = ['e', 'E', '+', '-', '.', ','];
+                                    const esControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', "Enter"].includes(e.key);
+                                    
+                                    if (prohibidas.includes(e.key)) e.preventDefault();
+                                    if (input.value.length >= 8 && !esControl) e.preventDefault();
+                                });
+
+                                input.addEventListener('input', (e) => {
+                                    if (input.value.length > 8) input.value = input.value.slice(0, 8);
+                                });
+                                input.dataset.listenerActive = "true";
+                            }
+                        }
+                        
+                        // CONFIGURACIÓN PARA INPUT FLOAT (Precio / Peso / etc)
+                        // --- CASO 2: FLOAT LIMPIO (Sin e, sin signos) ---
+                                    if (labelText === "Edad") {
+                                        // AQUÍ NO OCULTAMOS LOS BOTONES (se quedan los + y - de Streamlit)
+                                        
+                                        if (!input.dataset.listenerActive) {
+                                            input.addEventListener('keydown', (e) => {
+                                                // Bloqueamos e, E y los signos, pero PERMITIMOS el punto y la coma
+                                                const prohibidas = ['e', 'E', '+', '-'];
+                                                if (prohibidas.includes(e.key)) e.preventDefault();
+                                            });
+                                            input.dataset.listenerActive = "true";
+                                        }
+                                    }
+                                });
+                            };
+
+                            setupLogic();
+                            setInterval(setupLogic, 500);
+                            </script>
+                            """, height=0)
 
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Materna", anchor=False)
         with st.form("form_materna"):
+            # 1. CSS base (solo para limpiar las flechas nativas del navegador, no las de Streamlit)
+            st.markdown("""
+                <style>
+                /* Quitar flechas por defecto del navegador (spinners) */
+                input::-webkit-outer-spin-button,
+                input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+                }
+                input[type=number] {
+                -moz-appearance: textfield;
+                }
+                iframe {
+                    display: none !important;
+                    height: 0 !important;
+                    margin: 0 !important;
+                
+                /* Ocultamos el contenedor del script para que no deje hueco */
+                [data-testid="stHtml"] {
+                    display: none !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
             fecha_minima = datetime.date.today() - relativedelta(months=1)
             fecha_maxima = datetime.date.today() + relativedelta(months=1)
             fecha_maxima_hoy = datetime.date.today()
             fecha_minimi_1935 = datetime.date(1935, 1, 1)
             col_hc, col_nombres = st.columns(2)
             with col_hc:
-                historia_clinica = st.text_input("Historia clínica", max_chars=8, key="historia_clinica_materna", placeholder="Ej. 12345678")
+                historia_clinica = st.number_input("Historia clínica", 
+                    value=None,
+                    step=1,
+                    max_value=99999999,
+                    min_value=1, 
+                    placeholder="Ej. 12345678",
+                    format="%d",
+                    key="historia_clinica_materna")
             with col_nombres:
                 nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_materna", placeholder="Ej. Juan Pérez")
             col_fecha_nacimiento, col_fecha_ingreso, col_hora_ingreso, col_fecha_defuncion = st.columns(4)
@@ -957,7 +1220,7 @@ def formulario_materna(db=DB_PATH):
                 parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_materna", placeholder="Edmundo Barrios (zona norte)")
             with col_city:
                 ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="ciudad_hogar_materna", placeholder="El Tigre")
-            direccion_exacta_hogar = st.text_area("Dirección Exacta", max_chars=150, key="direccion_exacta_hogar_materna", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
+            direccion_exacta_hogar = st.text_area("Dirección", max_chars=150, key="direccion_exacta_hogar_materna", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
             col_reg, col_limp = st.columns([30, 1])
             with col_reg:
                 registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
@@ -980,8 +1243,6 @@ def formulario_materna(db=DB_PATH):
                             estado_hogar, parroquia_hogar, ciudad_hogar, direccion_exacta_hogar, 
                             idx_ingreso, idx_defuncion]):
                     st.error("Por favor completa todos los campos", icon=":material/error:")
-                    return
-                elif not val_num_espacios(historia_clinica, "La", "historia clinica"):
                     return
                 elif not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"):
                     return
@@ -1015,9 +1276,7 @@ def mostrar_morta():
     recargar_una_vez(__file__) 
     menu()
     logo(tamano="100%")
-    if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
-        return
+
     tab1, tab2 = st.tabs(["| :material/skull: Mortalidad |", 
                                 "| :material/article_shortcut: Reporte General |"])
     with tab1:

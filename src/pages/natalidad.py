@@ -116,6 +116,7 @@ def formulario_natalidad():
 
     nombre_usuario = st.session_state["autenticado_usuario"]
     info_usuario = obtener_info_usuario(nombre_usuario)
+
     if not info_usuario:
         st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
         return
@@ -209,9 +210,66 @@ def formulario_natalidad():
 
                 if guardar:
                     procesar_guardado_cambios_natalidad(edited_df)
+
+        st.components.v1.html("""
+            <script>
+            const setupLogic = () => {
+                const doc = window.parent.document;
+                const inputs = doc.querySelectorAll('input[type="number"]');
+                
+                inputs.forEach(input => {
+                    if (!input.dataset.listenerActive) {
+                        // Bloqueo por teclado (Keydown)
+                        input.addEventListener('keydown', (e) => {
+                            const prohibidas = ['e', 'E', '+', '-', '.', ','];
+                            const esControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', "Enter"].includes(e.key);
+                            
+                            // 1. Bloquear caracteres especiales
+                            if (prohibidas.includes(e.key)) {
+                                e.preventDefault();
+                            }
+                            
+                            // 2. Bloquear si supera 8 caracteres (y no es tecla de borrar/mover)
+                            if (input.value.length >= 8 && !esControl) {
+                                e.preventDefault();
+                            }
+                        });
+
+                        // Bloqueo por pegado o arrastre (Input event)
+                        input.addEventListener('input', (e) => {
+                            if (input.value.length > 8) {
+                                input.value = input.value.slice(0, 8);
+                            }
+                        });
+
+                        input.dataset.listenerActive = "true";
+                    }
+                });
+            };
+
+            setupLogic();
+            setInterval(setupLogic, 700);
+            </script>
+            """, height=0)
+
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Natalidad", anchor=False)
         with st.form("form_natalidad"):
+            st.markdown("""
+                <style>
+                /* Ocultar los botones de + y - de todos los st.number_input */
+                button[data-testid="stNumberInputStepDown"], 
+                button[data-testid="stNumberInputStepUp"] {
+                    display: none !important;
+                }
+                iframe {
+                    display: none !important;
+                    height: 0 !important;
+                    margin: 0 !important;
+                }
+                }
+                </style>
+                    """, unsafe_allow_html=True)
             col_fecha, col_partos, col_hembras, col_varones = st.columns(4)
 
             with col_fecha:
@@ -261,7 +319,8 @@ def formulario_natalidad():
                 st.form_submit_button(
                     "",
                     icon=":material/cleaning_services:",
-                    on_click=limpiar_campos_natalidad
+                    on_click=limpiar_campos_natalidad,
+                    type="tertiary"
                 )
 
             if registrar:
@@ -312,6 +371,18 @@ def mostrar_nata():
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     logo(tamano="100%")
+    
+    if "autenticado_usuario" not in st.session_state:
+        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+        return
+
+    nombre_usuario = st.session_state["autenticado_usuario"]
+    info_usuario = obtener_info_usuario(nombre_usuario)
+
+    if not info_usuario:
+        st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
+        return
+    
     tab1, tab2 = st.tabs(["| :material/pregnant_woman: Natalidad |", 
                                 "| :material/article_shortcut: Reporte General |"])
     with tab1:

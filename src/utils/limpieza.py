@@ -11,7 +11,7 @@ def limpiar_campos_registro_usuario():
     st.session_state.rol = "Doctor (a)"
     st.session_state.correo = ""
     st.session_state.nombre_usuario = ""
-    st.session_state.ci = ""
+    st.session_state.ci = None
     st.session_state.nacionalidad = "Venezolano (a)"
     st.session_state.contra_usuario = ""
     st.session_state.confirmar_contra = ""
@@ -39,7 +39,7 @@ def limpiar_campos_materna():
     value=datetime.datetime.now().time()
     fecha_maxima_hoy = datetime.date.today()
     def primera_parte():
-        st.session_state.historia_clinica_materna = ""
+        st.session_state.historia_clinica_materna = None
         st.session_state.nombres_apellidos_materna = ""
         st.session_state.fecha_nacimiento_materna = fecha_maxima_hoy
         st.session_state.fecha_ingreso_materna = fecha_maxima_hoy
@@ -68,7 +68,7 @@ def limpiar_campos_infantil():
     value=datetime.datetime.now().time()
     fecha_maxima_hoy = datetime.date.today()
     def primera_parte():
-        st.session_state.historia_clinica_infantil = ""
+        st.session_state.historia_clinica_infantil = None
         st.session_state.nombres_apellidos_infantil = ""
         st.session_state.nombre_madre_infantil = ""
         st.session_state.fecha_nacimiento_infantil = fecha_maxima_hoy
@@ -103,7 +103,7 @@ def limpiar_campos_neonatal():
     value=datetime.datetime.now().time()
     fecha_maxima_hoy = datetime.date.today()
     def primera_parte():
-        st.session_state.historia_clinica_neonatal  = ""
+        st.session_state.historia_clinica_neonatal  = None
         st.session_state.nombres_apellidos_neonatal = ""
         st.session_state.nombre_madre_neonatal = ""
         st.session_state.fecha_nacimiento_neonatal = fecha_maxima_hoy

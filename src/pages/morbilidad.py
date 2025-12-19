@@ -149,9 +149,86 @@ def formulario_morb_extenso(db=DB_PATH):
                 procesar_guardado_morb_extenso(edited_df)
 
     st.subheader(":material/new_label: Registrar Morbilidad", anchor=False)
+    st.components.v1.html("""
+                <script>
+                const setupLogic = () => {
+                    const doc = window.parent.document;
+                    // Buscamos todos los contenedores de number_input
+                    const widgets = doc.querySelectorAll('[data-testid="stNumberInput"]');
+                    
+                    widgets.forEach(widget => {
+                        const labelText = widget.querySelector('label')?.innerText;
+                        const input = widget.querySelector('input');
+                        const buttons = widget.querySelectorAll('button');
+                        
+                        // CONFIGURACIÓN PARA EL INPUT RESTRINGIDO (DNI / ID / etc)
+                        // si queremps varios input asi: if (labelText === "ID" || labelText === "Teléfono" || labelText === "Código") { ... }
+                        // Aquí pones el nombre exacto de la etiqueta que quieres restringir
+                        if (labelText === "Historia clínica" || labelText === "Edad") {
+                            
+                            // 1. Ocultar botones solo para este input
+                            buttons.forEach(btn => btn.style.display = 'none');
+                            
+                            if (!input.dataset.listenerActive) {
+                                input.addEventListener('keydown', (e) => {
+                                    const prohibidas = ['e', 'E', '+', '-', '.', ','];
+                                    const esControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', "Enter"].includes(e.key);
+                                    
+                                    if (prohibidas.includes(e.key)) e.preventDefault();
+                                    if (input.value.length >= 8 && !esControl) e.preventDefault();
+                                });
 
+                                input.addEventListener('input', (e) => {
+                                    if (input.value.length > 8) input.value = input.value.slice(0, 8);
+                                });
+                                input.dataset.listenerActive = "true";
+                            }
+                        }
+                        
+                        // CONFIGURACIÓN PARA INPUT FLOAT (Precio / Peso / etc)
+                        // --- CASO 2: FLOAT LIMPIO (Sin e, sin signos) ---
+                                    if (labelText === "Peso (kg)" || labelText === "Talla (cm)" || labelText === "Semanas de gestación" || labelText === "Edad") {
+                                        // AQUÍ NO OCULTAMOS LOS BOTONES (se quedan los + y - de Streamlit)
+                                        
+                                        if (!input.dataset.listenerActive) {
+                                            input.addEventListener('keydown', (e) => {
+                                                // Bloqueamos e, E y los signos, pero PERMITIMOS el punto y la coma
+                                                const prohibidas = ['e', 'E', '+', '-'];
+                                                if (prohibidas.includes(e.key)) e.preventDefault();
+                                            });
+                                            input.dataset.listenerActive = "true";
+                                        }
+                                    }
+                                });
+                            };
+
+                            setupLogic();
+                            setInterval(setupLogic, 500);
+                            </script>
+                            """, height=0)
     with st.form("form_morb_extenso"):
-
+        st.markdown("""
+            <style>
+            /* Quitar flechas por defecto del navegador (spinners) */
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+            }
+            input[type=number] {
+            -moz-appearance: textfield;
+            }
+            iframe {
+                display: none !important;
+                height: 0 !important;
+                margin: 0 !important;
+            
+            /* Ocultamos el contenedor del script para que no deje hueco */
+            [data-testid="stHtml"] {
+                display: none !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
         # Primeras filas del formulario
         col_nombre, col_edad = st.columns(2)
         with col_nombre:
@@ -182,7 +259,7 @@ def formulario_morb_extenso(db=DB_PATH):
             parroquia_hogar = st.text_input("Parroquia (Opcional)", max_chars=56, key="parroquia_hogar_morb_extenso", placeholder="Edmundo Barrios (zona norte)")
         with col_ciudad:
             ciudad_hogar = st.text_input("Ciudad (Opcional)", max_chars=56, key="cuidad_hogar_morb_extenso", placeholder="El Tigre")
-        direccion_exacta_hogar = st.text_area("Dirección Exacta", max_chars=150, key="direccion_exacta_hogar_morb_extenso", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
+        direccion_exacta_hogar = st.text_area("Dirección", max_chars=150, key="direccion_exacta_hogar_morb_extenso", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
 
         col_reg, col_limp = st.columns([30, 1])
         with col_reg:
@@ -231,6 +308,13 @@ def mostrar_morb():
     logo(tamano="100%")
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+        return
+
+    nombre_usuario = st.session_state["autenticado_usuario"]
+    info_usuario = obtener_info_usuario(nombre_usuario)
+
+    if not info_usuario:
+        st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
         return
     tab1, tab2 = st.tabs(["| :material/personal_injury: Morbilidad |", 
                                 "| :material/article_shortcut: Reporte General |"])

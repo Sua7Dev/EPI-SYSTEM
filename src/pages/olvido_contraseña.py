@@ -235,9 +235,67 @@ def formulario_verificacion():
     st.markdown("")
     st.header(":material/passkey: Verificación de Usuario y Cédula", anchor=False)
 
+    st.components.v1.html("""
+        <script>
+        const setupLogic = () => {
+            const doc = window.parent.document;
+            const inputs = doc.querySelectorAll('input[type="number"]');
+            
+            inputs.forEach(input => {
+                if (!input.dataset.listenerActive) {
+                    // Bloqueo por teclado (Keydown)
+                    input.addEventListener('keydown', (e) => {
+                        const prohibidas = ['e', 'E', '+', '-', '.', ','];
+                        const esControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', "Enter"].includes(e.key);
+                        
+                        // 1. Bloquear caracteres especiales
+                        if (prohibidas.includes(e.key)) {
+                            e.preventDefault();
+                        }
+                        
+                        // 2. Bloquear si supera 4 caracteres (y no es tecla de borrar/mover)
+                        if (input.value.length >= 4 && !esControl) {
+                            e.preventDefault();
+                        }
+                    });
+                    // Bloqueo por pegado o arrastre (Input event)
+                    input.addEventListener('input', (e) => {
+                        if (input.value.length > 4) {
+                            input.value = input.value.slice(0, 4);
+                        }
+                    });
+                    input.dataset.listenerActive = "true";
+                }
+            });
+        };
+        setupLogic();
+        setInterval(setupLogic, 700);
+        </script>
+        """, height=0)
+
     with st.form(key='formulario_verificacion'):
+        st.markdown("""
+            <style>
+            /* Ocultar los botones de + y - de todos los st.number_input */
+            button[data-testid="stNumberInputStepDown"], 
+            button[data-testid="stNumberInputStepUp"] {
+                display: none !important;
+            }
+            iframe {
+                display: none !important;
+                height: 0 !important;
+                margin: 0 !important;
+            }
+            }
+            </style>
+                """, unsafe_allow_html=True)
         nombre_usuario = st.text_input("Nombre de Usuario", max_chars=16, icon=":material/person_check:", placeholder="Ejemplo: Juan33", help="Tiene que ser un usuario registrado en el sistema.")
-        ci = st.text_input("Últimos 4 dígitos de la cédula", max_chars=4, type="password", icon=":material/contact_mail:", placeholder="Ejemplo: 1234", help="Tiene que ser de la cédula asociada al usuario.")
+        ci = st.number_input("Últimos 4 dígitos de la cédula",
+                                    value=None, step=1,
+                                    max_value=9999, min_value=1,
+                                    placeholder="Ejemplo: 1234", 
+                                    key="ci", icon=":material/contact_mail:", format= "%d",
+                                    help="Tiene que ser de la cédula asociada al usuario.")
         col_verificar, col_volver = st.columns(2)
         with col_verificar:    
             verificar = st.form_submit_button("Verificar", type="primary", width="stretch", icon=":material/lock:")
@@ -249,8 +307,6 @@ def formulario_verificacion():
             st.warning("Por favor, completa todos los campos.", icon=":material/warning:")
             return
         elif not validar_nombre_usuario(nombre_usuario):
-            return
-        elif not val_solo_numeros(ci, "Los", "digitos de la cédula de identidad"):
             return
         try:
             if verificar_usuario_cedula(nombre_usuario, ci, DB_PATH):

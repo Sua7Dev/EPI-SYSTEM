@@ -7,6 +7,7 @@ from utils.visuales import reloj, logo, configurar_pagina_espanol, recargar_una_
 import altair as alt
 import pandas as pd
 import numpy as npv
+from utils.verificaciones import obtener_info_usuario
 from utils.informaciones import mostrar_usuario_activo, usuario_activo_fixed
 from pathlib import Path
 DB_PATH = os.getenv("hospital.db", "hospital.db")
@@ -180,7 +181,14 @@ def graficas_dashboard():
 def dashboard():
     logo(tamano="100%")
     if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder al inicio.", icon=":material/error:")
+        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+        return
+
+    nombre_usuario = st.session_state["autenticado_usuario"]
+    info_usuario = obtener_info_usuario(nombre_usuario)
+
+    if not info_usuario:
+        st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
         return
     _, col_reloj = st.columns([1.5, 2.8])
     with col_reloj:
@@ -195,12 +203,15 @@ def dashboard():
 
  
 def inicio():
+    
     logo_bandera  = ASSETS_DIR / "imagebanderanueva2.png"
 
     logo_base64 = img_a_base64(logo_bandera)
-
+    
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
+    
+
     dashboard()
 # Aquí va el contenido que quieres mostrar después de que termine el "cargando"
 inicio()

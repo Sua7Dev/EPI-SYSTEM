@@ -4,6 +4,7 @@ import sqlite3
 import os
 from datetime import date, datetime
 from pathlib import Path
+from utils.verificaciones import obtener_info_usuario
 
 
 DB_PATH = os.getenv("hospital.db", "hospital.db")
@@ -17,8 +18,12 @@ def registrar_actividad_duradera(
     id_registro: str | int = "-",
     usuario: str = None
 ):
+    # Si no se pasa usuario explícitamente y no hay usuario autenticado, NO registrar nada
     if usuario is None:
-        usuario = st.session_state.get("autenticado_usuario", "Desconocido")
+        autenticado = st.session_state.get("autenticado_usuario")
+        if autenticado is None:
+            return  # No se escribe en el log → "Desconocido" nunca aparecerá
+        usuario = autenticado
 
     try:
         id_str = f"ID:{id_registro}" if id_registro != "-" else "-"
@@ -65,6 +70,12 @@ def obtener_datos_historial(nombre_usuario: str):
 
 def mostrar_historial_actividades():
     if "autenticado_usuario" not in st.session_state:
+        return
+
+    nombre_usuario = st.session_state["autenticado_usuario"]
+    info_usuario = obtener_info_usuario(nombre_usuario)
+
+    if not info_usuario:
         return
 
     with st.expander("Historial de actividades", expanded=False, icon=":material/history:"):
