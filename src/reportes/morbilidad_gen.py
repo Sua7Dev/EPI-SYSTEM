@@ -238,3 +238,6 @@ def formulario_reporte_general_morbilidad():
 
         except Exception as e:
             st.error(f"Error al generar el reporte: {e}")
+
+    st.markdown("#")
+    st.markdown("#####") 

@@ -148,3 +148,6 @@ def formulario_reporte_general():
                 "No hay datos para el período seleccionado.",
                 icon=":material/error:"
             )
+
+    st.markdown("#")
+    st.markdown("#####") 

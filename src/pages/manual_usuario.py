@@ -61,6 +61,8 @@ def manual_usuario():
     logo(tamano="70%")
     mostrar_pdf()
     botones_manual()
+    st.markdown("######")
+    st.markdown("######")
     copyright_footer_dos("Equipo Investigador", margin_right="0px")
 
 manual_usuario()

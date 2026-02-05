@@ -281,3 +281,6 @@ def formulario_reporte_general_natalidad():
 
         except Exception as e:
             st.error(f"Error al generar el reporte: {e}")
+
+    st.markdown("#")
+    st.markdown("#####") 
