@@ -20,7 +20,7 @@ DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
 
 import sys
-
+from utils.validaciones import bloquear_caracteres
 
 def get_project_root() -> Path:
     """Devuelve la raíz del proyecto, incluso empaquetado con PyInstaller."""
@@ -237,6 +237,12 @@ def formulario_morb_extenso(db=DB_PATH):
                 key="nombres_apellidos_morb_extenso",
                 placeholder="Ej. Juan Pérez"
             )
+            bloquear_caracteres(
+                caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                tipo_de_input="text",
+                max_chars=40,
+                label="Nombres y apellidos"
+            )
         with col_edad:
             edad = st.number_input("Edad", min_value=0, step=1, key="edad_morb_extenso")
 
@@ -245,22 +251,63 @@ def formulario_morb_extenso(db=DB_PATH):
             key="diagnostico_morb_extenso",
             placeholder="Descripción del diagnóstico"
         )
+        bloquear_caracteres(
+            caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
+            tipo_de_input="textarea",
+            max_chars=150,
+            label="Diagnóstico"
+        )
 
         st.markdown("**Dirección de Hogar**")
         col_pais, col_estado, col_muni = st.columns(3)
         with col_pais:
             pais_hogar = st.text_input("País (Opcional)", max_chars=56, key="pais_hogar_morb_extenso", placeholder="Venezuela")
+            bloquear_caracteres(
+                caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                tipo_de_input="text",
+                max_chars=40,
+                label="País"
+            )
         with col_estado:
             estado_hogar = st.text_input("Estado (Opcional)", max_chars=56, key="estado_hogar_morb_extenso", placeholder="Anzoátegui")
+            bloquear_caracteres(
+                caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                tipo_de_input="text",
+                max_chars=40,
+                label="Estado (Opcional)"
+            )    
         with col_muni:
             municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_morb_extenso", placeholder="Simón Rodríguez")
+            bloquear_caracteres(
+                caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                tipo_de_input="text",
+                max_chars=40,
+                label="Municipio (Opcional)"
+            )
         col_parroquia, col_ciudad = st.columns(2)
         with col_parroquia:
             parroquia_hogar = st.text_input("Parroquia (Opcional)", max_chars=56, key="parroquia_hogar_morb_extenso", placeholder="Edmundo Barrios (zona norte)")
+            bloquear_caracteres(
+                caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                tipo_de_input="text",
+                max_chars=40,
+                label="Parroquia (Opcional)"
+            )
         with col_ciudad:
             ciudad_hogar = st.text_input("Ciudad (Opcional)", max_chars=56, key="cuidad_hogar_morb_extenso", placeholder="El Tigre")
+            bloquear_caracteres(
+                caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                tipo_de_input="text",
+                max_chars=40,
+                label="Ciudad (Opcional)"
+            )
         direccion_exacta_hogar = st.text_area("Dirección", max_chars=150, key="direccion_exacta_hogar_morb_extenso", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
-
+        bloquear_caracteres(
+            caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•"),  # caracteres prohibidos (excluye ' / - . , #)
+            tipo_de_input="textarea",
+            max_chars=150,
+            label="Dirección"
+        )
         col_reg, col_limp = st.columns([30, 1])
         with col_reg:
             registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")

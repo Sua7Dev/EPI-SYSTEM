@@ -21,7 +21,7 @@ DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
 configurar_pagina_espanol()
 import sys
-
+from utils.validaciones import bloquear_caracteres
 
 def get_project_root() -> Path:
     """Devuelve la raíz del proyecto, incluso empaquetado con PyInstaller."""
@@ -336,9 +336,20 @@ def formulario_neonatal(db=DB_PATH):
             st.markdown('</div>', unsafe_allow_html=True)
             with col_nombres:
                 nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_neonatal", placeholder="Ej. Juan Pérez")
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Nombres y apellidos"
+                )
             with col_madre:
                 nombre_madre = st.text_input("Nombre de la madre", max_chars=40, key="nombre_madre_neonatal", placeholder="Ej. Maria Jimenez")
-            
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Nombre de la madre"
+                )
             col_fecha_nacimiento, col_hora_nacimiento, col_fecha_ingreso, col_hora_ingreso = st.columns(4)
             with col_fecha_nacimiento:
                 fecha_nacimiento = st.date_input("Fecha de nacimiento", format=DATE_FORMAT, min_value=fecha_minima, 
@@ -348,7 +359,7 @@ def formulario_neonatal(db=DB_PATH):
 
             with col_fecha_ingreso:
                 fecha_ingreso = st.date_input("Fecha de ingreso", format=DATE_FORMAT, min_value=fecha_minima, 
-                                              max_value=fecha_maxima, key="fecha_ingreso_neonatal")
+                                            max_value=fecha_maxima, key="fecha_ingreso_neonatal")
             with col_hora_ingreso:
                 hora_ingreso = st.time_input("Hora de ingreso", key="hora_ingreso_neonatal", value="now")
             
@@ -400,30 +411,77 @@ def formulario_neonatal(db=DB_PATH):
             col_idx_ingreso, col_idx_defuncion = st.columns(2)
             with col_idx_ingreso:
                 idx_ingreso = st.text_area("IDX de ingreso", max_chars=150, key="idx_ingreso_neonatal", placeholder="Descripción de la IDX de ingreso")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),  # bloquea caracteres NO permitidos por val_diagnostico
+                    tipo_de_input="textarea",
+                    max_chars=150,
+                    label="IDX de ingreso"
+                )
             with col_idx_defuncion:
                 idx_defuncion = st.text_area("IDX de defunción", max_chars=150, key="idx_defuncion_neonatal", placeholder="Descripción de la IDX de defuncion")
-            
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
+                    tipo_de_input="textarea",
+                    max_chars=150,
+                    label="IDX de defunción"
+                )
             st.markdown("**Dirección**")
             col_pais, col_estado, col_muni = st.columns(3)
             with col_pais:
                 pais_hogar = st.text_input("País", max_chars=56, key="pais_hogar_neonatal", placeholder="Venezuela")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="País"
+                )
             with col_estado:
                 estado_hogar = st.text_input("Estado", max_chars=56, key="estado_hogar_neonatal", placeholder="Anzoátegui")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Estado"
+                )
             with col_muni:
                 municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_neonatal", 
                                                 placeholder="Simón Rodríguez")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Municipio (Opcional)"
+                )
             col_parroquia, col_city = st.columns(2)
             with col_parroquia:
                 parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_neonatal", placeholder="Edmundo Barrios (zona norte)")
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Parroquia"
+                ) 
             with col_city:
                 ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="cuidad_hogar_neonatal", placeholder="El Tigre")
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Ciudad"
+                ) 
             direccion_exacta = st.text_area("Dirección", max_chars=150, key="direccion_exacta_neonatal", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
+            bloquear_caracteres(
+                caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•"),  # caracteres prohibidos (excluye ' / - . , #)
+                tipo_de_input="textarea",
+                max_chars=150,
+                label="Dirección"
+            )
             col_semanas, col_peso, col_talla = st.columns(3)
             with col_semanas:
                 semanas_gestacion = st.number_input("Semanas de gestación", min_value=0, step=1, key="semanas_gestacion_neonatal")
             with col_peso:
                 peso = st.number_input("Peso (kg)", min_value=0.0, step=0.25, format="%.2f", #, format="%.2f"
-                                       key="peso_neonatal")
+                                    key="peso_neonatal")
             with col_talla:
                 talla = st.number_input("Talla (cm)", min_value=0.0, step=0.25, format="%.2f", 
                                         key="talla_neonatal")
@@ -816,8 +874,20 @@ def formulario_infantil(db=DB_PATH):
                     key="historia_clinica_infantil")
             with col_nombres:
                 nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_infantil", placeholder="Ej. Juan Pérez")
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Nombres y apellidos"
+                )
             with col_madre:
                 nombre_madre = st.text_input("Nombre de la madre", max_chars=40, key="nombre_madre_infantil", placeholder="Ej. Maria Jimenez")
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Nombre de la madre"
+                )
             col_fecha_nacimiento, col_fecha_ingreso, col_hora_ingreso, col_fecha_defuncion = st.columns(4)
             with col_fecha_nacimiento:
                 fecha_nacimiento = st.date_input("Fecha de nacimiento", format=DATE_FORMAT, min_value=fecha_minima_7_anos, 
@@ -841,22 +911,70 @@ def formulario_infantil(db=DB_PATH):
             col1, col2 = st.columns(2)
             with col1:
                 idx_ingreso = st.text_area("IDX de ingreso", max_chars=150, key="idx_ingreso_infantil", placeholder="Descripción de la IDX de ingreso")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
+                    tipo_de_input="textarea",
+                    max_chars=150,
+                    label="IDX de ingreso"
+                )
             with col2:
                 idx_defuncion = st.text_area("IDX de defunción", max_chars=150, key="idx_defuncion_infantil", placeholder="Descripción de la IDX de defuncion")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
+                    tipo_de_input="textarea",
+                    max_chars=150,
+                    label="IDX de defunción"
+                )
             st.markdown("**Dirección**")
             col_pais, col_estado, col_muni = st.columns(3)
             with col_pais:
                 pais_hogar = st.text_input("País", max_chars=56, key="pais_hogar_infantil", placeholder="Venezuela")
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="País"
+                )
             with col_estado:
                 estado_hogar = st.text_input("Estado", max_chars=56, key="estado_hogar_infantil", placeholder="Anzoátegui")
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Estado"
+                )
             with col_muni:
                 municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_infantil", placeholder="Simón Rodríguez")
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Municipio (Opcional)"
+                )
             col_parroquia, col_city = st.columns(2)
             with col_parroquia:
                 parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_infantil", placeholder="Edmundo Barrios (zona norte)")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Parroquia"
+                )
             with col_city:
                 ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="ciudad_hogar_infantil", placeholder="El Tigre")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Ciudad"
+                )
             direccion_exacta_hogar = st.text_area("Dirección", max_chars=150, key="direccion_exacta_hogar_infantil", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
+            bloquear_caracteres(
+                caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•"),  # caracteres prohibidos (excluye ' / - . , #)
+                tipo_de_input="textarea",
+                max_chars=150,
+                label="Dirección"
+            )
             col_reg, col_limp = st.columns([30, 1])
             with col_reg:
                 registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
@@ -1182,6 +1300,12 @@ def formulario_materna(db=DB_PATH):
                     key="historia_clinica_materna")
             with col_nombres:
                 nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_materna", placeholder="Ej. Juan Pérez")
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Nombres y apellidos"
+                )
             col_fecha_nacimiento, col_fecha_ingreso, col_hora_ingreso, col_fecha_defuncion = st.columns(4)
             with col_fecha_nacimiento:
                 fecha_nacimiento = st.date_input("Fecha de nacimiento", format=DATE_FORMAT, min_value=fecha_minimi_1935, 
@@ -1205,22 +1329,70 @@ def formulario_materna(db=DB_PATH):
             col1, col2 = st.columns(2)
             with col1:
                 idx_ingreso = st.text_area("IDX de ingreso", max_chars=150, key="idx_ingreso_materna", placeholder="Descripción de la IDX de ingreso")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
+                    tipo_de_input="textarea",
+                    max_chars=150,
+                    label="IDX de ingreso"
+                )
             with col2:
                 idx_defuncion = st.text_area("IDX de defunción", max_chars=150, key="idx_defuncion_materna", placeholder="Descripción de la IDX de defuncion")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
+                    tipo_de_input="textarea",
+                    max_chars=150,
+                    label="IDX de defunción"
+                )
             st.markdown("**Dirección**")
             col_pais, col_estado, col_muni = st.columns(3)
             with col_pais:
                 pais_hogar = st.text_input("País", max_chars=56, key="pais_hogar_materna", placeholder="Venezuela")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="País"
+                )
             with col_estado:
                 estado_hogar = st.text_input("Estado", max_chars=56, key="estado_hogar_materna", placeholder="Anzoátegui")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Estado"
+                )
             with col_muni:
                 municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_materna", placeholder="Simón Rodríguez")
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Municipio (Opcional)"
+                )
             col_parroquia, col_city = st.columns(2)
             with col_parroquia:
                 parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_materna", placeholder="Edmundo Barrios (zona norte)")
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Parroquia"
+                )
             with col_city:
                 ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="ciudad_hogar_materna", placeholder="El Tigre")
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Ciudad"
+                )
             direccion_exacta_hogar = st.text_area("Dirección", max_chars=150, key="direccion_exacta_hogar_materna", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
+            bloquear_caracteres(
+                caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•"),  # caracteres prohibidos (excluye ' / - . , #)
+                tipo_de_input="textarea",
+                max_chars=150,
+                label="Dirección"
+            )
             col_reg, col_limp = st.columns([30, 1])
             with col_reg:
                 registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")

@@ -18,8 +18,6 @@ import os
 from pathlib import Path
 
 
-
-
 def get_project_root() -> Path:
     """Devuelve la raíz del proyecto, incluso empaquetado con PyInstaller."""
     if getattr(sys, "frozen", False):  # Si está empaquetado

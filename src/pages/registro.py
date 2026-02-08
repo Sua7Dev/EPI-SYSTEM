@@ -13,6 +13,7 @@ from utils.limpieza import limpiar_campos_registro_usuario
 from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 
 import sqlite3
+from utils.validaciones import bloquear_caracteres
 
 # ------------------- Configuración -------------------
 configurar_pagina_espanol()
@@ -118,11 +119,16 @@ def registro_formulario():
                                     placeholder="Ejemplo: 12345678", 
                                     key="ci", icon=":material/contact_mail:", format= "%d")            
             with col_nombre:
-                nombre = st.text_input('Nombres y Apellidos:', 
+                nombre = st.text_input('Nombres y Apellidos', 
                                        max_chars=40, 
                                        placeholder='Ejemplo: Juan Pérez', 
                                        key="nombre", icon=":material/person:")
-            
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Nombres y Apellidos"
+                )
             # Segunda fila
             col_sexo, col_nacional = st.columns(2)
             with col_sexo:
@@ -134,7 +140,7 @@ def registro_formulario():
             col_nacimiento1, col_rol = st.columns(2)
             with col_nacimiento1:
                 nacimiento = st.date_input(
-                    ':material/calendar_month: Fecha de nacimiento:', format='DD-MM-YYYY',
+                    ':material/calendar_month: Fecha de nacimiento', format='DD-MM-YYYY',
                     min_value=datetime.date(1960, 1, 1), 
                     max_value=datetime.datetime.now(),
                      key="nacimiento"
@@ -145,22 +151,33 @@ def registro_formulario():
             # Cuarta fila
             col_correo, col_usuario = st.columns(2)
             with col_correo:
-                correo = st.text_input('Correo electrónico:', max_chars=35, 
+                correo = st.text_input('Correo electrónico', max_chars=35, 
                                        placeholder='Ejemplo: Juan@gmail.com', 
-                                       key="correo", icon=":material/mail:")            
+                                       key="correo", icon=":material/mail:") 
+                bloquear_caracteres(
+                    caracteres=list(" \"'()<>:;,/\\|{}[]`~¡¿!?#^°+=•"),  # bloquea espacios y caracteres no permitidos
+                    tipo_de_input="text",
+                    max_chars=35,
+                    label="Correo electrónico"
+                )           
             with col_usuario:
-                nombre_usuario = st.text_input('Nombre de usuario:', max_chars=16, 
+                nombre_usuario = st.text_input('Nombre de usuario', max_chars=16, 
                                                placeholder='Ejemplo: Juan33', 
                                                key="nombre_usuario", icon=":material/person_check:")
-            
+                bloquear_caracteres(
+                    caracteres=list(" !@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),  # bloquea todos los símbolos y espacios
+                    tipo_de_input="text",
+                    max_chars=16,
+                    label="Nombre de usuario"
+                )
             # Quinta fila
             col_contra, col_confirmar = st.columns(2)
             with col_contra:
-                contrasena = st.text_input('Contraseña:', max_chars=16, 
+                contrasena = st.text_input('Contraseña', max_chars=16, 
                                            type='password', 
                                            key="contra_usuario", icon=":material/visibility_lock:")
             with col_confirmar:
-                confirmar_contra = st.text_input('Confirmar Contraseña:', max_chars=16, 
+                confirmar_contra = st.text_input('Confirmar Contraseña', max_chars=16, 
                                                  type='password', 
                                                  key="confirmar_contra", icon=":material/preview_off:")
             st.info('La contraseña debe tener entre 8 y 16 caracteres, una letra minúscula, una mayúscula y al menos un número.', icon=":material/info:")    

@@ -141,11 +141,6 @@ def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
                     if result:
                         id_doctor_atendi = result[0]
 
-                # Formatear fecha
-                if isinstance(fecha, (datetime.date, datetime.datetime, pd.Timestamp)):
-                    fecha_formateada_nacimiento = fecha.strftime("%d/%m/%Y")
-                else:
-                    fecha_formateada_nacimiento = str(fecha)
 
                 # === INSERTAR EL REGISTRO ===
                 cursor.execute("""
@@ -154,7 +149,7 @@ def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
                         mto, partos_extrahospitalarios, id_doctor, fecha_registro_formulario
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    fecha_formateada_nacimiento, partos, cesareas, varones, hembras, gemelar, 
+                    fecha, partos, cesareas, varones, hembras, gemelar, 
                     mto, partos_extrahospitalarios, id_doctor_atendi, datetime.date.today()
                 ))
 

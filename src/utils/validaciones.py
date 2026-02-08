@@ -229,3 +229,90 @@ def val_diagnostico(diagnostico, el_la, campo):
         return False
 
     return True
+
+def bloquear_caracteres(caracteres, tipo_de_input, max_chars, label=None):
+    """
+    Bloquea caracteres y limita longitud de inputs en el DOM padre de Streamlit.
+
+    - `caracteres`: lista o string con caracteres a bloquear (ej. 's' o ['s','w']).
+    - `tipo_de_input`: 'text', 'number' o 'textarea'.
+    - `max_chars`: máximo de caracteres permitidos.
+    - `label` (opcional): texto exacto de la etiqueta (label/aria-label) para aplicar el bloqueo solo a ese input.
+    """
+    # Normalizar lista de caracteres y escapar para JS
+    if isinstance(caracteres, str):
+        chars_iter = list(caracteres)
+    else:
+        try:
+            chars_iter = list(caracteres)
+        except Exception:
+            chars_iter = [str(caracteres)]
+
+    escaped = []
+    for c in chars_iter:
+        s = str(c)
+        s = s.replace('\\', '\\\\').replace('"', '\\"')
+        escaped.append('"' + s + '"')
+    js_chars = ",".join(escaped)
+
+    # Selector según tipo
+    tipo = (tipo_de_input or 'text').lower()
+    if tipo == 'textarea':
+        selector = 'textarea'
+    else:
+        selector = f'input[type="{tipo}"]'
+
+    # Preparar JS para label (null o string escapada)
+    if label is None:
+        label_js = 'null'
+    else:
+        label_esc = str(label).replace('\\', '\\\\').replace('"', '\\"')
+        label_js = '"' + label_esc + '"'
+
+    html = """
+    <script>
+    const setupLogic = () => {
+        const doc = window.parent.document;
+        const inputs = doc.querySelectorAll('%s');
+        inputs.forEach(input => {
+            // Si se pasó un label, comprobamos aria-label o el texto del <label>
+            const targetLabel = %s;
+            if (targetLabel !== null) {
+                const aria = input.getAttribute('aria-label') || '';
+                const lblEl = (input.closest('label') && input.closest('label').innerText) || (input.parentElement && input.parentElement.querySelector('label')?.innerText) || '';
+                const foundLabel = (aria || lblEl).trim();
+                if (foundLabel !== targetLabel) return; // no es el input objetivo
+            }
+            // Si el input ya tiene el listener, saltamos
+            if (input.dataset.listenerActive) return;
+
+            const prohibidas = [%s];
+            const esControl = (key) => ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(key);
+
+            input.addEventListener('keydown', (e) => {
+                // Si el input tiene aria-label y se pasó un atributo label desde Python,
+                // el filtrado por label se debe hacer antes de llamar a esta función.
+                if (prohibidas.includes(e.key)) {
+                    e.preventDefault();
+                    return;
+                }
+                if (input.value.length >= %d && !esControl(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            input.addEventListener('input', (e) => {
+                if (input.value.length > %d) {
+                    input.value = input.value.slice(0, %d);
+                }
+            });
+
+            input.dataset.listenerActive = "true";
+        });
+    };
+    setupLogic();
+    setInterval(setupLogic, 700);
+    </script>
+    """ % (selector, label_js, js_chars, max_chars, max_chars, max_chars)
+
+    st.components.v1.html(html, height=0)

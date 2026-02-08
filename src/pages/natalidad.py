@@ -324,13 +324,14 @@ def formulario_natalidad():
                 )
 
             if registrar:
-                fecha_formateada = fecha.strftime("%d/%m/%Y")
+
                 if sexo_gemelar == "No aplica" and gemelar > 0:
                     st.warning(
                         "Al seleccionar 'No aplica', la cantidad de gemelares se ajusta automáticamente y se registra a 0.",
                         icon=":material/info:"
                     )
                     gemelar = 0
+                    return
 
                 varones_aj = varones
                 hembras_aj = hembras
@@ -353,7 +354,7 @@ def formulario_natalidad():
                     st.stop()
 
                 datos_registro = (
-                    fecha_formateada, partos, cesareas,
+                    fecha, partos, cesareas,
                     varones_aj, hembras_aj,
                     gemelar, mto,
                     partos_extrahospitalarios,
@@ -363,6 +364,183 @@ def formulario_natalidad():
                 if operaciones_sql_natalidad("registrar", datos_registro=datos_registro):
                     st.success("Registro guardado correctamente.", icon=":material/check_circle:")
                     st.rerun()
+
+import streamlit as st
+import streamlit.components.v1 as components
+
+def text_input_max_3_con_mensaje(label: str, key: str):
+    valor = st.text_input(label, key=key)
+
+    components.html(f"""
+    <script>
+    (function() {{
+        const LABEL = "{label}";
+        const MAX_LEN = 3;
+
+        function setup() {{
+            const doc = window.parent.document;
+            const labels = [...doc.querySelectorAll("label")];
+            const targetLabel = labels.find(l => l.innerText === LABEL);
+            if (!targetLabel) return;
+
+            const wrapper = targetLabel.parentElement;
+            const input = wrapper.querySelector("input");
+            if (!input || input.dataset.max3MsgActive) return;
+
+            // Crear mensaje si no existe
+            let msg = wrapper.querySelector(".max3-msg");
+            if (!msg) {{
+                msg = document.createElement("div");
+                msg.className = "max3-msg";
+                msg.style.fontSize = "12px";
+                msg.style.marginTop = "4px";
+                msg.style.color = "red";
+                msg.style.display = "none";
+                msg.innerText = "❌ Máximo 3 caracteres permitidos";
+                wrapper.appendChild(msg);
+            }}
+
+            const validar = () => {{
+                if (input.value.length <= MAX_LEN) {{
+                    input.style.borderColor = "green";
+                    msg.style.display = "none";
+                }} else {{
+                    input.style.borderColor = "red";
+                    msg.style.display = "block";
+                }}
+            }};
+
+            input.addEventListener("input", validar);
+            input.addEventListener("blur", validar);
+
+            validar();
+            input.dataset.max3MsgActive = "true";
+        }}
+
+        setup();
+        setInterval(setup, 600);
+    }})();
+    </script>
+    """, height=0)
+
+    return valor
+
+import streamlit as st
+import streamlit.components.v1 as components
+
+def email_input_validado_inteligente(label: str, key: str):
+    valor = st.text_input(label, key=key)
+
+    components.html(f"""
+    <script>
+    (function() {{
+        const LABEL = "{label}";
+
+        // Dominios NO permitidos antes del @
+        const TLD_BLOQUEADOS = ["com","org","net","edu","gob","mil","info"];
+
+        // Regex estricto y realista
+        const EMAIL_REGEX =
+            /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9-]+\\.)+[a-zA-Z]{{2,}}$/;
+
+        function autocorregir(value) {{
+            let v = value.toLowerCase().trim();
+
+            // Correcciones comunes
+            v = v.replace(/\\s+/g, "");          // quitar espacios
+            v = v.replace(/,+/g, ".");           // , -> .
+            v = v.replace(/@+/g, "@");           // múltiples @
+
+            return v;
+        }}
+
+        function dominioInvalido(localPart) {{
+            return TLD_BLOQUEADOS.some(tld =>
+                localPart.endsWith("." + tld)
+            );
+        }}
+
+        function setup() {{
+            const doc = window.parent.document;
+            const labels = [...doc.querySelectorAll("label")];
+            const targetLabel = labels.find(l => l.innerText === LABEL);
+            if (!targetLabel) return;
+
+            const wrapper = targetLabel.parentElement;
+            const input = wrapper.querySelector("input");
+            if (!input || input.dataset.emailSmartActive) return;
+
+            // Mensaje
+            let msg = wrapper.querySelector(".email-msg");
+            if (!msg) {{
+                msg = document.createElement("div");
+                msg.className = "email-msg";
+                msg.style.fontSize = "12px";
+                msg.style.marginTop = "4px";
+                msg.style.display = "none";
+                msg.style.color = "red";
+                wrapper.appendChild(msg);
+            }}
+
+            const validar = () => {{
+                let value = input.value;
+
+                // Autocorrección en vivo
+                const corregido = autocorregir(value);
+                if (corregido !== value) {{
+                    input.value = corregido;
+                }}
+
+                if (corregido === "") {{
+                    input.style.borderColor = "#ccc";
+                    msg.style.display = "none";
+                    return;
+                }}
+
+                const partes = corregido.split("@");
+                if (partes.length !== 2) {{
+                    error("Formato incorrecto del correo");
+                    return;
+                }}
+
+                const [local, dominio] = partes;
+
+                if (dominioInvalido(local)) {{
+                    error("El correo no puede contener dominios antes del @");
+                    return;
+                }}
+
+                if (!EMAIL_REGEX.test(corregido)) {{
+                    error("Correo electrónico no válido");
+                    return;
+                }}
+
+                // ✔ Válido
+                input.style.borderColor = "green";
+                msg.style.display = "none";
+            }};
+
+            function error(texto) {{
+                input.style.borderColor = "red";
+                msg.innerText = "❌ " + texto;
+                msg.style.display = "block";
+            }}
+
+            input.addEventListener("input", validar);
+            input.addEventListener("blur", validar);
+
+            validar();
+            input.dataset.emailSmartActive = "true";
+        }}
+
+        setup();
+        setInterval(setup, 600);
+    }})();
+    </script>
+    """, height=0)
+
+    return valor
+
 
 
 def mostrar_nata():
@@ -387,6 +565,9 @@ def mostrar_nata():
                                 "| :material/article_shortcut: Reporte General |"])
     with tab1:
         formulario_natalidad()
+        #codigo = text_input_max_3_con_mensaje("Código", key="codigo")
+        #correo = email_input_validado_inteligente("Correo electrónico", key="email")
+
     with tab2:
         st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
         col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
