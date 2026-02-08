@@ -149,7 +149,7 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
 @st.fragment
 def formulario_neonatal(db=DB_PATH):
     if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+        st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
         return
 
     nombre_usuario = st.session_state["autenticado_usuario"]
@@ -611,7 +611,7 @@ def data_editor_infantil(df, rol_usuario):
 @st.fragment
 def formulario_infantil(db=DB_PATH):
     if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+        st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
         return
 
     nombre_usuario = st.session_state["autenticado_usuario"]
@@ -977,7 +977,7 @@ def data_editor_materna(df, rol_usuario):
 @st.fragment
 def formulario_materna(db=DB_PATH):
     if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+        st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
         return
 
     nombre_usuario = st.session_state["autenticado_usuario"]
@@ -1276,6 +1276,16 @@ def mostrar_morta():
     recargar_una_vez(__file__) 
     menu()
     logo(tamano="100%")
+    if "autenticado_usuario" not in st.session_state:
+        st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
+        return
+
+    nombre_usuario = st.session_state["autenticado_usuario"]
+    info_usuario = obtener_info_usuario(nombre_usuario)
+
+    if not info_usuario:
+        st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
+        return
 
     tab1, tab2 = st.tabs(["| :material/skull: Mortalidad |", 
                                 "| :material/article_shortcut: Reporte General |"])

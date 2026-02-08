@@ -90,7 +90,7 @@ def data_editor_morb_extenso(df):
 def formulario_morb_extenso(db=DB_PATH):
 
     if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+        st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
         return
 
     nombre_usuario = st.session_state["autenticado_usuario"]
@@ -307,7 +307,7 @@ def mostrar_morb():
     recargar_una_vez(__file__) 
     logo(tamano="100%")
     if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+        st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
         return
 
     nombre_usuario = st.session_state["autenticado_usuario"]

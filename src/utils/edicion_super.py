@@ -123,13 +123,11 @@ def extras_exp():
 
 def mostrar_modo_normal():
     nombre_usuario = st.session_state.get("autenticado_usuario")
-    if not nombre_usuario:
-        st.error("Debes iniciar sesión para acceder a configuracion.", icon=":material/error:")
-        return
     info_usuario = obtener_info_usuario(nombre_usuario)
-    if not info_usuario:
-        st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
-        return
+    
+    # Si no hay info, salimos de la función silenciosamente
+    if not info_usuario: return 
+    
     rol_usuario = info_usuario["rol"]
     if rol_usuario == "Administrador (a)":
         st.subheader(":material/demography: Tablas de usuarios", anchor=False)

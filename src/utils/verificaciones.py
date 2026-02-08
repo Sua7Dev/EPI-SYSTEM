@@ -74,19 +74,21 @@ def verificar_correo_cedula(correo, primeros_4_cedula, DB_PATH=None):
         correo_encontrado = cursor.fetchone()
         if correo_encontrado is None:
             st.error("Correo electrónico no registrado.", icon=":material/alternate_email:")
-            #return False
+            return False
+        # Normalizar los primeros 4 dígitos como texto (rellenar con ceros a la izquierda)
+        primeros_4_cedula_str = str(primeros_4_cedula).zfill(4)
         cursor.execute("""
             SELECT u.CI 
             FROM usuario u
             JOIN correo c ON u.id_usuario = c.id_usuario
-            WHERE c.correo = ? AND SUBSTR(u.CI, 1, 4) = ?
-        """, (correo, primeros_4_cedula))
+            WHERE c.correo = ? AND SUBSTR(CAST(u.CI AS TEXT), 1, 4) = ?
+        """, (correo, primeros_4_cedula_str))
         match_encontrado = cursor.fetchone()
         if match_encontrado:
             return True
         else:
             st.warning("Los primeros 4 dígitos de la cédula no coinciden.", icon=":material/lock_open:")
-            #return False
+            return False
     except sqlite3.Error as e:
         st.error(f"Error en la base de datos: {e}", icon=":material/error:")
         return False
@@ -190,12 +192,13 @@ def obtener_nombre_usuario(correo, primeros_4_cedula, DB_PATH=None):
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
+        primeros_4_cedula_str = str(primeros_4_cedula).zfill(4)
         cursor.execute("""
             SELECT u.nombre_usuario
             FROM usuario u
             JOIN correo c ON u.id_usuario = c.id_usuario
-            WHERE c.correo = ? AND SUBSTR(u.CI, 1, 4) = ?
-        """, (correo, primeros_4_cedula))
+            WHERE c.correo = ? AND SUBSTR(CAST(u.CI AS TEXT), 1, 4) = ?
+        """, (correo, primeros_4_cedula_str))
         resultado = cursor.fetchone()
         if resultado:
             nombre_usuario = resultado[0]

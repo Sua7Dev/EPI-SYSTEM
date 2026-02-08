@@ -181,7 +181,7 @@ def graficas_dashboard():
 def dashboard():
     logo(tamano="100%")
     if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+        st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
         return
 
     nombre_usuario = st.session_state["autenticado_usuario"]

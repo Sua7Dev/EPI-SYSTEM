@@ -37,7 +37,7 @@ def registro_formulario():
     try:
         
         if "autenticado_usuario" not in st.session_state:
-            st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+            st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
             return
         nombre_usuario = st.session_state["autenticado_usuario"]
         info_usuario = obtener_info_usuario(nombre_usuario)
@@ -240,7 +240,7 @@ def registro():
     recargar_una_vez(__file__)
     logo(tamano="70%")
     if "autenticado_usuario" not in st.session_state:
-            st.error("Debes iniciar sesión para acceder a este formulario.", icon=":material/error:")
+            st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
             return
     _, col_centro, _ = st.columns([3, 6, 3])
     with col_centro:    
