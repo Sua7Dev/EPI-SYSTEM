@@ -14,6 +14,7 @@ from utils.validaciones import val_solo_numeros, validar_contraseña, validar_te
 from utils.visuales import cargando, configurar_pagina_espanol, logo, recargar_una_vez, copyright_footer_dos
 from utils.contra import borro_cassette, verifi_contra_hasheada
 import sys
+from utils.validaciones import bloquear_caracteres
 
 # Initialize session state
 if "olvido_usuario_id" not in st.session_state:
@@ -235,72 +236,57 @@ def formulario_verificacion():
     st.markdown("")
     st.header(":material/passkey: Verificación de Usuario y Cédula", anchor=False)
 
-    st.components.v1.html("""
-        <script>
-        const setupLogic = () => {
-            const doc = window.parent.document;
-            const inputs = doc.querySelectorAll('input[type="number"]');
+    # st.components.v1.html("""
+    #     <script>
+    #     const setupLogic = () => {
+    #         const doc = window.parent.document;
+    #         const inputs = doc.querySelectorAll('input[type="number"]');
             
-            inputs.forEach(input => {
-                if (!input.dataset.listenerActive) {
-                    // Bloqueo por teclado (Keydown)
-                    input.addEventListener('keydown', (e) => {
-                        const prohibidas = ['e', 'E', '+', '-', '.', ','];
-                        const esControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', "Enter"].includes(e.key);
+    #         inputs.forEach(input => {
+    #             if (!input.dataset.listenerActive) {
+    #                 // Bloqueo por teclado (Keydown)
+    #                 input.addEventListener('keydown', (e) => {
+    #                     const prohibidas = ['e', 'E', '+', '-', '.', ','];
+    #                     const esControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', "Enter"].includes(e.key);
                         
-                        // 1. Bloquear caracteres especiales
-                        if (prohibidas.includes(e.key)) {
-                            e.preventDefault();
-                        }
+    #                     // 1. Bloquear caracteres especiales
+    #                     if (prohibidas.includes(e.key)) {
+    #                         e.preventDefault();
+    #                     }
                         
-                        // 2. Bloquear si supera 4 caracteres (y no es tecla de borrar/mover)
-                        if (input.value.length >= 4 && !esControl) {
-                            e.preventDefault();
-                        }
-                    });
-                    // Bloqueo por pegado o arrastre (Input event)
-                    input.addEventListener('input', (e) => {
-                        if (input.value.length > 4) {
-                            input.value = input.value.slice(0, 4);
-                        }
-                    });
-                    input.dataset.listenerActive = "true";
-                }
-            });
-        };
-        setupLogic();
-        setInterval(setupLogic, 700);
-        </script>
-        """, height=0)
+    #                     // 2. Bloquear si supera 4 caracteres (y no es tecla de borrar/mover)
+    #                     if (input.value.length >= 4 && !esControl) {
+    #                         e.preventDefault();
+    #                     }
+    #                 });
+    #                 // Bloqueo por pegado o arrastre (Input event)
+    #                 input.addEventListener('input', (e) => {
+    #                     if (input.value.length > 4) {
+    #                         input.value = input.value.slice(0, 4);
+    #                     }
+    #                 });
+    #                 input.dataset.listenerActive = "true";
+    #             }
+    #         });
+    #     };
+    #     setupLogic();
+    #     setInterval(setupLogic, 700);
+    #     </script>
+    #     """, height=0)
 
     with st.form(key='formulario_verificacion'):
-        st.markdown("""
-            <style>
-            /* Ocultar los botones de + y - de todos los st.number_input */
-            button[data-testid="stNumberInputStepDown"], 
-            button[data-testid="stNumberInputStepUp"] {
-                display: none !important;
-            }
-            iframe {
-                display: none !important;
-                height: 0 !important;
-                margin: 0 !important;
-            }
-            }
-            </style>
-                """, unsafe_allow_html=True)
         nombre_usuario = st.text_input("Nombre de Usuario", max_chars=16, icon=":material/person_check:", placeholder="Ejemplo: Juan33", help="Tiene que ser un usuario registrado en el sistema.")
-        ci = st.number_input("Últimos 4 dígitos de la cédula",
-                                    value=None, step=1,
-                                    max_value=9999, min_value=1,
-                                    placeholder="Ejemplo: 1234", 
-                                    key="ci", icon=":material/contact_mail:", format= "%d",
+        ci = st.text_input("Últimos 4 dígitos de la cédula",
+                                    placeholder="Ejemplo: 1234", max_chars=4,
+                                    key="ci", icon=":material/contact_mail:",
                                     help="Tiene que ser de la cédula asociada al usuario.")
+
         col_verificar, col_volver = st.columns(2)
         with col_verificar:    
             verificar = st.form_submit_button("Verificar", type="primary", width="stretch", icon=":material/lock:")
         with col_volver:    
             volver = st.form_submit_button("Volver al inicio de sesión", type="secondary", width="stretch", icon=":material/arrow_back:")
+
 
     if verificar:
         if not nombre_usuario or not ci:
@@ -329,6 +315,13 @@ def formulario_verificacion():
         st.session_state["olvido_usuario_id"] = None
         st.session_state["pagina_actual"] = "verificacion"
         st.switch_page("pages/inicio_sesion.py")
+
+    bloquear_caracteres(
+        caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
+        tipo_de_input="text",
+        max_chars=4,
+        label="Últimos 4 dígitos de la cédula"
+    )
 
 # ------------------- Control principal -------------------
 def mostrar_olvido():

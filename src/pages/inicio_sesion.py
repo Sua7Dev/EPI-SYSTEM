@@ -108,9 +108,14 @@ def recuperar_usuario():
                 if verificar_correo_cedula(correo, ci, DB_PATH=DB_PATH):
                     obtener_nombre_usuario(correo, ci, DB_PATH=DB_PATH)
         if no:
-            st.rerun()               
+            st.rerun()  
 
-
+        bloquear_caracteres(
+            caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
+            tipo_de_input="text",
+            max_chars=4,
+            label="Primeros 4 dígitos de la cédula"
+        )     
 
 
 def foto():
