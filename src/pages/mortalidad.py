@@ -323,16 +323,17 @@ def formulario_neonatal(db=DB_PATH):
             # primera fila
             col_hc, col_nombres, col_madre = st.columns(3)
             with col_hc:
-                historia_clinica = st.number_input(
+                historia_clinica = st.text_input(
                     "Historia clínica",
-                    value=None,
-                    step=1,
-                    max_value=99999999,
-                    min_value=1, 
                     key="historia_clinica_neonatal", 
                     placeholder="Ej. 12345678",
-                    format="%d"
                 )
+            bloquear_caracteres(
+                caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
+                tipo_de_input="text",
+                max_chars=4,
+                label="Historia clínica"
+            )
             st.markdown('</div>', unsafe_allow_html=True)
             with col_nombres:
                 nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_neonatal", placeholder="Ej. Juan Pérez")

@@ -123,12 +123,7 @@ def registro_formulario():
                                        max_chars=40, 
                                        placeholder='Ejemplo: Juan Pérez', 
                                        key="nombre", icon=":material/person:")
-                bloquear_caracteres(
-                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
-                    tipo_de_input="text",
-                    max_chars=40,
-                    label="Nombres y Apellidos"
-                )
+
             # Segunda fila
             col_sexo, col_nacional = st.columns(2)
             with col_sexo:
@@ -154,22 +149,12 @@ def registro_formulario():
                 correo = st.text_input('Correo electrónico', max_chars=35, 
                                        placeholder='Ejemplo: Juan@gmail.com', 
                                        key="correo", icon=":material/mail:") 
-                bloquear_caracteres(
-                    caracteres=list(" \"'()<>:;,/\\|{}[]`~¡¿!?#^°+=•"),  # bloquea espacios y caracteres no permitidos
-                    tipo_de_input="text",
-                    max_chars=35,
-                    label="Correo electrónico"
-                )           
+         
             with col_usuario:
                 nombre_usuario = st.text_input('Nombre de usuario', max_chars=16, 
                                                placeholder='Ejemplo: Juan33', 
                                                key="nombre_usuario", icon=":material/person_check:")
-                bloquear_caracteres(
-                    caracteres=list(" !@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),  # bloquea todos los símbolos y espacios
-                    tipo_de_input="text",
-                    max_chars=16,
-                    label="Nombre de usuario"
-                )
+
             # Quinta fila
             col_contra, col_confirmar = st.columns(2)
             with col_contra:
@@ -193,6 +178,7 @@ def registro_formulario():
                 nuesvo_registro_btn = st.form_submit_button(label="Nuevo registro", type="secondary", width="stretch", icon=":material/new_label:", 
                                                             on_click=limpiar_campos_registro_usuario,
                                                             help="Limpia todos los campos del formulario.")
+
 
             # ------------------- Lógica de validaciones y guardado -------------------
             if registrar_btn:
@@ -236,6 +222,26 @@ def registro_formulario():
             if volver_btn:
                 st.switch_page("pages/configuracion.py")
                 st.rerun()
+
+            # area de bloqueos
+            bloquear_caracteres(
+                caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                tipo_de_input="text",
+                max_chars=40,
+                label="Nombres y Apellidos"
+            )
+            bloquear_caracteres(
+                caracteres=list(" \"'()<>:;,/\\|{}[]`~¡¿!?#^°+=•"),  # bloquea espacios y caracteres no permitidos
+                tipo_de_input="text",
+                max_chars=35,
+                label="Correo electrónico"
+            )  
+            bloquear_caracteres(
+                caracteres=list(" !@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),  # bloquea todos los símbolos y espacios
+                tipo_de_input="text",
+                max_chars=16,
+                label="Nombre de usuario"
+            )
 
     except sqlite3.IntegrityError as e:
         error_message = str(e).lower()
