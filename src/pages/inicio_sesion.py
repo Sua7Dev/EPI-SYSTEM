@@ -11,7 +11,7 @@ from utils.contra import borro_cassette
 from utils.bienvenida import bienvenida
 from utils.verificaciones import obtener_info_usuario, verificar_preguntas_guardadas, verificar_correo_cedula, obtener_nombre_usuario
 from pages.historial import registrar_actividad_duradera
-
+from utils.validaciones import bloquear_caracteres
 configurar_pagina_espanol()
 
 # --- CONFIGURACIÓN DE RUTAS ---
@@ -159,7 +159,7 @@ def iniciar_sesion():
         st.markdown("")
         st.header(":material/badge: Inicio de sesión", anchor=False, divider="gray")
         with st.form(key="inicio_sesion"):
-            nombre_usuario = st.text_input("Nombre de usuario:", placeholder='Ejemplo: Juan33', 
+            nombre_usuario = st.text_input("Nombre de usuario", placeholder='Ejemplo: Juan33', 
                                            icon=":material/person_check:", max_chars=16, key="usuario",
                                            help="El nombre de usuario debe estar ya registrado en el sistema.")
             contrasena = st.text_input("Contraseña", type="password", max_chars=16, 
@@ -195,6 +195,7 @@ def iniciar_sesion():
         recuperar_usuario()
     if olvido_btn:
         st.switch_page("pages/olvido_contraseña.py")
+
 
 
 def login():

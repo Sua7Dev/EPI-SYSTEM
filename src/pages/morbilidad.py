@@ -66,15 +66,14 @@ def data_editor_morb_extenso(df):
             "Fecha registro", format="DD/MM/YYYY", disabled=True
         ),
         "direccion_hogar": st.column_config.TextColumn(
-            "Dirección del hogar", disabled=True
-        ),
+            "Dirección del hogar", disabled=False), #
         "id": st.column_config.NumberColumn("ID", disabled=True),
     }
 
     # El resto solo lectura
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=True)
+            column_config[col] = st.column_config.TextColumn(col, disabled=False)
 
     edited_df = st.data_editor(
         df,
@@ -238,7 +237,7 @@ def formulario_morb_extenso(db=DB_PATH):
                 placeholder="Ej. Juan Pérez"
             )
             bloquear_caracteres(
-                caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                 tipo_de_input="text",
                 max_chars=40,
                 label="Nombres y apellidos"

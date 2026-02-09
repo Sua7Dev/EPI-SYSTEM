@@ -379,7 +379,7 @@ def procesar_guardado_morb_extenso(edited_df, DB_PATH=DB_PATH):
 
             if not validar_texto(nombres, "Los", "Nombres y apellidos"): return
             if not validar_cinco_espacios(nombres, "Los", "nombres y apellidos"): return
-            if not val_diagnostico(diagnostico, "El", "diagnóstico"): return
+            #if not val_diagnostico(diagnostico, "El", "diagnóstico"): return
 
             cursor.execute(
                 "UPDATE morbilidad SET nombres_apellidos = ? WHERE id_morb = ?",
@@ -388,16 +388,99 @@ def procesar_guardado_morb_extenso(edited_df, DB_PATH=DB_PATH):
             if cursor.rowcount > 0:
                 hubo_cambios = True
 
-            cursor.execute("SELECT id_paciente FROM morbilidad WHERE id_morb = ?", (id_morb,))
+            # Obtener id_paciente e id_direccion_hogar para actualizar edad y dirección
+            cursor.execute("SELECT id_paciente, id_direccion_hogar FROM morbilidad WHERE id_morb = ?", (id_morb,))
             res = cursor.fetchone()
-            if res and res[0] is not None and pd.notna(edad):
-                edad_val = int(edad)
-                cursor.execute(
-                    "UPDATE persona_paciente SET edad = ? WHERE id_paciente = ?",
-                    (edad_val, res[0])
-                )
-                if cursor.rowcount > 0:
-                    hubo_cambios = True
+            id_paciente = None
+            id_dir_hogar = None
+            if res:
+                id_paciente = res[0]
+                if len(res) > 1:
+                    id_dir_hogar = res[1]
+
+            if id_paciente is not None and pd.notna(edad):
+                try:
+                    edad_val = int(edad)
+                except Exception:
+                    edad_val = None
+                if edad_val is not None:
+                    cursor.execute(
+                        "UPDATE persona_paciente SET edad = ? WHERE id_paciente = ?",
+                        (edad_val, id_paciente)
+                    )
+                    if cursor.rowcount > 0:
+                        hubo_cambios = True
+
+            # Guardar cambios en la dirección si el usuario la editó
+            direccion_val = (row.get("direccion") or row.get("direccion_hogar") or "")
+            if pd.notna(direccion_val) and str(direccion_val).strip() != "":
+                direccion_text = str(direccion_val).strip()
+                if id_dir_hogar:
+                    cursor.execute("SELECT descripcion FROM direccion WHERE id_direccion = ?", (id_dir_hogar,))
+                    cur = cursor.fetchone()
+                    cur_desc = cur[0] if cur and cur[0] is not None else ""
+                    if cur_desc != direccion_text:
+                        # Si la dirección está siendo usada por otros registros, crear nueva entrada
+                        cursor.execute("SELECT COUNT(*) FROM morbilidad WHERE id_direccion_hogar = ?", (id_dir_hogar,))
+                        uso = cursor.fetchone()[0]
+                        if uso <= 1:
+                            cursor.execute("UPDATE direccion SET descripcion = ? WHERE id_direccion = ?", (direccion_text, id_dir_hogar))
+                            if cursor.rowcount > 0:
+                                hubo_cambios = True
+                        else:
+                            # Insertar nueva dirección asegurando la jerarquía 'No disponible' para id_parroquia
+                            cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", ("No disponible",))
+                            cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", ("No disponible",))
+                            id_pais = cursor.fetchone()[0]
+
+                            cursor.execute("INSERT OR IGNORE INTO estado (nombre, id_pais) VALUES (?, ?)", ("No disponible", id_pais))
+                            cursor.execute("SELECT id_estado FROM estado WHERE nombre = ? AND id_pais = ?", ("No disponible", id_pais))
+                            id_estado = cursor.fetchone()[0]
+
+                            cursor.execute("INSERT OR IGNORE INTO ciudad (nombre, id_estado) VALUES (?, ?)", ("No disponible", id_estado))
+                            cursor.execute("SELECT id_ciudad FROM ciudad WHERE nombre = ? AND id_estado = ?", ("No disponible", id_estado))
+                            id_ciudad = cursor.fetchone()[0]
+
+                            cursor.execute("INSERT OR IGNORE INTO municipio (nombre, id_ciudad) VALUES (?, ?)", ("No disponible", id_ciudad))
+                            cursor.execute("SELECT id_municipio FROM municipio WHERE nombre = ? AND id_ciudad = ?", ("No disponible", id_ciudad))
+                            id_municipio = cursor.fetchone()[0]
+
+                            cursor.execute("INSERT OR IGNORE INTO parroquia (nombre, id_municipio) VALUES (?, ?)", ("No disponible", id_municipio))
+                            cursor.execute("SELECT id_parroquia FROM parroquia WHERE nombre = ? AND id_municipio = ?", ("No disponible", id_municipio))
+                            id_parroquia = cursor.fetchone()[0]
+
+                            cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
+                            new_id = cursor.lastrowid
+                            cursor.execute("UPDATE morbilidad SET id_direccion_hogar = ? WHERE id_morb = ?", (new_id, id_morb))
+                            if cursor.rowcount > 0:
+                                hubo_cambios = True
+                else:
+                    # No existía dirección previa: insertar nueva y enlazar (usar jerarquía 'No disponible')
+                    cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", ("No disponible",))
+                    cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", ("No disponible",))
+                    id_pais = cursor.fetchone()[0]
+
+                    cursor.execute("INSERT OR IGNORE INTO estado (nombre, id_pais) VALUES (?, ?)", ("No disponible", id_pais))
+                    cursor.execute("SELECT id_estado FROM estado WHERE nombre = ? AND id_pais = ?", ("No disponible", id_pais))
+                    id_estado = cursor.fetchone()[0]
+
+                    cursor.execute("INSERT OR IGNORE INTO ciudad (nombre, id_estado) VALUES (?, ?)", ("No disponible", id_estado))
+                    cursor.execute("SELECT id_ciudad FROM ciudad WHERE nombre = ? AND id_estado = ?", ("No disponible", id_estado))
+                    id_ciudad = cursor.fetchone()[0]
+
+                    cursor.execute("INSERT OR IGNORE INTO municipio (nombre, id_ciudad) VALUES (?, ?)", ("No disponible", id_ciudad))
+                    cursor.execute("SELECT id_municipio FROM municipio WHERE nombre = ? AND id_ciudad = ?", ("No disponible", id_ciudad))
+                    id_municipio = cursor.fetchone()[0]
+
+                    cursor.execute("INSERT OR IGNORE INTO parroquia (nombre, id_municipio) VALUES (?, ?)", ("No disponible", id_municipio))
+                    cursor.execute("SELECT id_parroquia FROM parroquia WHERE nombre = ? AND id_municipio = ?", ("No disponible", id_municipio))
+                    id_parroquia = cursor.fetchone()[0]
+
+                    cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
+                    new_id = cursor.lastrowid
+                    cursor.execute("UPDATE morbilidad SET id_direccion_hogar = ? WHERE id_morb = ?", (new_id, id_morb))
+                    if cursor.rowcount > 0:
+                        hubo_cambios = True
 
         conn.commit()
 
