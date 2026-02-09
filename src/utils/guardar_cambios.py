@@ -9,6 +9,80 @@ from utils.validaciones import (val_diagnostico, validar_texto, val_texynum, val
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 from pages.historial import registrar_actividad_duradera
 
+
+def _ensure_default_jerarquia(cursor):
+    pais = "Venezuela"
+    estado = "Anzoátegui"
+    ciudad = "El Tigre"
+    municipio = "Simón Rodríguez"
+    parroquia = "Edmundo Barrios"
+
+    cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", (pais,))
+    cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", (pais,))
+    id_pais = cursor.fetchone()[0]
+
+    cursor.execute("INSERT OR IGNORE INTO estado (nombre, id_pais) VALUES (?, ?)", (estado, id_pais))
+    cursor.execute("SELECT id_estado FROM estado WHERE nombre = ? AND id_pais = ?", (estado, id_pais))
+    id_estado = cursor.fetchone()[0]
+
+    cursor.execute("INSERT OR IGNORE INTO ciudad (nombre, id_estado) VALUES (?, ?)", (ciudad, id_estado))
+    cursor.execute("SELECT id_ciudad FROM ciudad WHERE nombre = ? AND id_estado = ?", (ciudad, id_estado))
+    id_ciudad = cursor.fetchone()[0]
+
+    cursor.execute("INSERT OR IGNORE INTO municipio (nombre, id_ciudad) VALUES (?, ?)", (municipio, id_ciudad))
+    cursor.execute("SELECT id_municipio FROM municipio WHERE nombre = ? AND id_ciudad = ?", (municipio, id_ciudad))
+    id_municipio = cursor.fetchone()[0]
+
+    cursor.execute("INSERT OR IGNORE INTO parroquia (nombre, id_municipio) VALUES (?, ?)", (parroquia, id_municipio))
+    cursor.execute("SELECT id_parroquia FROM parroquia WHERE nombre = ? AND id_municipio = ?", (parroquia, id_municipio))
+    id_parroquia = cursor.fetchone()[0]
+
+    return id_parroquia
+
+
+def _overwrite_hierarchy_defaults(cursor, id_parroquia):
+    if not id_parroquia:
+        return
+    pais = "Venezuela"
+    estado = "Anzoátegui"
+    ciudad = "El Tigre"
+    municipio = "Simón Rodríguez"
+    parroquia = "Edmundo Barrios"
+
+    try:
+        cursor.execute("UPDATE parroquia SET nombre = ? WHERE id_parroquia = ?", (parroquia, id_parroquia))
+        cursor.execute("SELECT id_municipio FROM parroquia WHERE id_parroquia = ?", (id_parroquia,))
+        row = cursor.fetchone()
+        if not row or row[0] is None:
+            return
+        id_municipio = row[0]
+
+        cursor.execute("UPDATE municipio SET nombre = ? WHERE id_municipio = ?", (municipio, id_municipio))
+        cursor.execute("SELECT id_ciudad FROM municipio WHERE id_municipio = ?", (id_municipio,))
+        row = cursor.fetchone()
+        if not row or row[0] is None:
+            return
+        id_ciudad = row[0]
+
+        cursor.execute("UPDATE ciudad SET nombre = ? WHERE id_ciudad = ?", (ciudad, id_ciudad))
+        cursor.execute("SELECT id_estado FROM ciudad WHERE id_ciudad = ?", (id_ciudad,))
+        row = cursor.fetchone()
+        if not row or row[0] is None:
+            return
+        id_estado = row[0]
+
+        cursor.execute("UPDATE estado SET nombre = ? WHERE id_estado = ?", (estado, id_estado))
+        cursor.execute("SELECT id_pais FROM estado WHERE id_estado = ?", (id_estado,))
+        row = cursor.fetchone()
+        if not row or row[0] is None:
+            return
+        id_pais = row[0]
+
+        cursor.execute("UPDATE pais SET nombre = ? WHERE id_pais = ?", (pais, id_pais))
+    except Exception:
+        # No interrumpir el guardado si algo falla aquí
+        pass
+
 def procesar_guardado_cambios_mortalidad_neonatal(edited_df, DB_PATH=DB_PATH):
     usuario = st.session_state.get("autenticado_usuario", "Desconocido")
     hubo_cambios = False
@@ -61,8 +135,8 @@ def procesar_guardado_cambios_mortalidad_neonatal(edited_df, DB_PATH=DB_PATH):
             if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
             if not validar_texto(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
             if not validar_cinco_espacios(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
-            if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
-            if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
+            #if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
+            #if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
 
             updates = {
                 'mortalidad': {'fields': [], 'values': []},
@@ -104,6 +178,118 @@ def procesar_guardado_cambios_mortalidad_neonatal(edited_df, DB_PATH=DB_PATH):
                         f"UPDATE persona_paciente SET {', '.join(updates['persona_paciente']['fields'])} WHERE id_paciente = ?",
                         tuple(updates['persona_paciente']['values'] + [res[0]])
                     )
+                    if cursor.rowcount > 0:
+                        cambio_local = True
+
+            # Guardar cambios en la dirección si se editó la columna 'direccion'
+            direccion_val = (row.get('direccion') or row.get('direccion_hogar') or '')
+            if pd.notna(direccion_val) and str(direccion_val).strip() != '':
+                direccion_text = str(direccion_val).strip()
+                cursor.execute("SELECT id_direccion FROM mortalidad WHERE id_m = ?", (id_m,))
+                r = cursor.fetchone()
+                id_dir = r[0] if r and r[0] is not None else None
+                if id_dir:
+                    cursor.execute("SELECT descripcion FROM direccion WHERE id_direccion = ?", (id_dir,))
+                    cur = cursor.fetchone()
+                    cur_desc = cur[0] if cur and cur[0] is not None else ''
+                    if cur_desc != direccion_text:
+                        cursor.execute("SELECT COUNT(*) FROM mortalidad WHERE id_direccion = ?", (id_dir,))
+                        uso = cursor.fetchone()[0]
+                        if uso <= 1:
+                            cursor.execute("SELECT id_parroquia FROM direccion WHERE id_direccion = ?", (id_dir,))
+                            rpar = cursor.fetchone()
+                            if rpar and rpar[0] is not None:
+                                _overwrite_hierarchy_defaults(cursor, rpar[0])
+                            cursor.execute("UPDATE direccion SET descripcion = ? WHERE id_direccion = ?", (direccion_text, id_dir))
+                            if cursor.rowcount > 0:
+                                cambio_local = True
+                        else:
+                            id_parroquia = _ensure_default_jerarquia(cursor)
+                            cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
+                            new_id = cursor.lastrowid
+                            cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
+                            if cursor.rowcount > 0:
+                                cambio_local = True
+                else:
+                    id_parroquia = _ensure_default_jerarquia(cursor)
+                    cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
+                    new_id = cursor.lastrowid
+                    cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
+                    if cursor.rowcount > 0:
+                        cambio_local = True
+
+            # Guardar cambios en la dirección si se editó la columna 'direccion'
+            direccion_val = (row.get('direccion') or row.get('direccion_hogar') or '')
+            if pd.notna(direccion_val) and str(direccion_val).strip() != '':
+                direccion_text = str(direccion_val).strip()
+                cursor.execute("SELECT id_direccion FROM mortalidad WHERE id_m = ?", (id_m,))
+                r = cursor.fetchone()
+                id_dir = r[0] if r and r[0] is not None else None
+                if id_dir:
+                    cursor.execute("SELECT descripcion FROM direccion WHERE id_direccion = ?", (id_dir,))
+                    cur = cursor.fetchone()
+                    cur_desc = cur[0] if cur and cur[0] is not None else ''
+                    if cur_desc != direccion_text:
+                        cursor.execute("SELECT COUNT(*) FROM mortalidad WHERE id_direccion = ?", (id_dir,))
+                        uso = cursor.fetchone()[0]
+                        if uso <= 1:
+                            cursor.execute("SELECT id_parroquia FROM direccion WHERE id_direccion = ?", (id_dir,))
+                            rpar = cursor.fetchone()
+                            if rpar and rpar[0] is not None:
+                                _overwrite_hierarchy_defaults(cursor, rpar[0])
+                            cursor.execute("UPDATE direccion SET descripcion = ? WHERE id_direccion = ?", (direccion_text, id_dir))
+                            if cursor.rowcount > 0:
+                                cambio_local = True
+                        else:
+                            id_parroquia = _ensure_default_jerarquia(cursor)
+                            cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
+                            new_id = cursor.lastrowid
+                            cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
+                            if cursor.rowcount > 0:
+                                cambio_local = True
+                else:
+                    id_parroquia = _ensure_default_jerarquia(cursor)
+                    cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
+                    new_id = cursor.lastrowid
+                    cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
+                    if cursor.rowcount > 0:
+                        cambio_local = True
+
+            # Guardar cambios en la dirección si se editó la columna 'direccion'
+            direccion_val = (row.get('direccion') or row.get('direccion_hogar') or '')
+            if pd.notna(direccion_val) and str(direccion_val).strip() != '':
+                direccion_text = str(direccion_val).strip()
+                cursor.execute("SELECT id_direccion FROM mortalidad WHERE id_m = ?", (id_m,))
+                r = cursor.fetchone()
+                id_dir = r[0] if r and r[0] is not None else None
+                if id_dir:
+                    cursor.execute("SELECT descripcion FROM direccion WHERE id_direccion = ?", (id_dir,))
+                    cur = cursor.fetchone()
+                    cur_desc = cur[0] if cur and cur[0] is not None else ''
+                    if cur_desc != direccion_text:
+                        cursor.execute("SELECT COUNT(*) FROM mortalidad WHERE id_direccion = ?", (id_dir,))
+                        uso = cursor.fetchone()[0]
+                        if uso <= 1:
+                            # Forzar la jerarquía a los valores por defecto antes de actualizar
+                            cursor.execute("SELECT id_parroquia FROM direccion WHERE id_direccion = ?", (id_dir,))
+                            rpar = cursor.fetchone()
+                            if rpar and rpar[0] is not None:
+                                _overwrite_hierarchy_defaults(cursor, rpar[0])
+                            cursor.execute("UPDATE direccion SET descripcion = ? WHERE id_direccion = ?", (direccion_text, id_dir))
+                            if cursor.rowcount > 0:
+                                cambio_local = True
+                        else:
+                            id_parroquia = _ensure_default_jerarquia(cursor)
+                            cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
+                            new_id = cursor.lastrowid
+                            cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
+                            if cursor.rowcount > 0:
+                                cambio_local = True
+                else:
+                    id_parroquia = _ensure_default_jerarquia(cursor)
+                    cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
+                    new_id = cursor.lastrowid
+                    cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
                     if cursor.rowcount > 0:
                         cambio_local = True
 
@@ -152,8 +338,8 @@ def procesar_guardado_cambios_mortalidad_infantil(edited_df, DB_PATH=DB_PATH):
             if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
             if not validar_texto(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
             if not validar_cinco_espacios(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
-            if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
-            if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
+            #if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
+            #if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
 
             updates = {
                 'mortalidad': {'fields': [], 'values': []},
@@ -240,8 +426,8 @@ def procesar_guardado_cambios_mortalidad_materna(edited_df, DB_PATH=DB_PATH):
             if not val_num_espacios(str(row.get("historia_clinica", "")), "La", "historia clinica"): return
             if not validar_texto(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
             if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
-            if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
-            if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
+            #if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
+            #if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
 
             updates = {
                 'mortalidad': {'fields': [], 'values': []},
@@ -424,58 +610,23 @@ def procesar_guardado_morb_extenso(edited_df, DB_PATH=DB_PATH):
                         cursor.execute("SELECT COUNT(*) FROM morbilidad WHERE id_direccion_hogar = ?", (id_dir_hogar,))
                         uso = cursor.fetchone()[0]
                         if uso <= 1:
+                            cursor.execute("SELECT id_parroquia FROM direccion WHERE id_direccion = ?", (id_dir_hogar,))
+                            rpar = cursor.fetchone()
+                            if rpar and rpar[0] is not None:
+                                _overwrite_hierarchy_defaults(cursor, rpar[0])
                             cursor.execute("UPDATE direccion SET descripcion = ? WHERE id_direccion = ?", (direccion_text, id_dir_hogar))
                             if cursor.rowcount > 0:
                                 hubo_cambios = True
                         else:
-                            # Insertar nueva dirección asegurando la jerarquía 'No disponible' para id_parroquia
-                            cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", ("No disponible",))
-                            cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", ("No disponible",))
-                            id_pais = cursor.fetchone()[0]
-
-                            cursor.execute("INSERT OR IGNORE INTO estado (nombre, id_pais) VALUES (?, ?)", ("No disponible", id_pais))
-                            cursor.execute("SELECT id_estado FROM estado WHERE nombre = ? AND id_pais = ?", ("No disponible", id_pais))
-                            id_estado = cursor.fetchone()[0]
-
-                            cursor.execute("INSERT OR IGNORE INTO ciudad (nombre, id_estado) VALUES (?, ?)", ("No disponible", id_estado))
-                            cursor.execute("SELECT id_ciudad FROM ciudad WHERE nombre = ? AND id_estado = ?", ("No disponible", id_estado))
-                            id_ciudad = cursor.fetchone()[0]
-
-                            cursor.execute("INSERT OR IGNORE INTO municipio (nombre, id_ciudad) VALUES (?, ?)", ("No disponible", id_ciudad))
-                            cursor.execute("SELECT id_municipio FROM municipio WHERE nombre = ? AND id_ciudad = ?", ("No disponible", id_ciudad))
-                            id_municipio = cursor.fetchone()[0]
-
-                            cursor.execute("INSERT OR IGNORE INTO parroquia (nombre, id_municipio) VALUES (?, ?)", ("No disponible", id_municipio))
-                            cursor.execute("SELECT id_parroquia FROM parroquia WHERE nombre = ? AND id_municipio = ?", ("No disponible", id_municipio))
-                            id_parroquia = cursor.fetchone()[0]
-
+                            id_parroquia = _ensure_default_jerarquia(cursor)
                             cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
                             new_id = cursor.lastrowid
                             cursor.execute("UPDATE morbilidad SET id_direccion_hogar = ? WHERE id_morb = ?", (new_id, id_morb))
                             if cursor.rowcount > 0:
                                 hubo_cambios = True
                 else:
-                    # No existía dirección previa: insertar nueva y enlazar (usar jerarquía 'No disponible')
-                    cursor.execute("INSERT OR IGNORE INTO pais (nombre) VALUES (?)", ("No disponible",))
-                    cursor.execute("SELECT id_pais FROM pais WHERE nombre = ?", ("No disponible",))
-                    id_pais = cursor.fetchone()[0]
-
-                    cursor.execute("INSERT OR IGNORE INTO estado (nombre, id_pais) VALUES (?, ?)", ("No disponible", id_pais))
-                    cursor.execute("SELECT id_estado FROM estado WHERE nombre = ? AND id_pais = ?", ("No disponible", id_pais))
-                    id_estado = cursor.fetchone()[0]
-
-                    cursor.execute("INSERT OR IGNORE INTO ciudad (nombre, id_estado) VALUES (?, ?)", ("No disponible", id_estado))
-                    cursor.execute("SELECT id_ciudad FROM ciudad WHERE nombre = ? AND id_estado = ?", ("No disponible", id_estado))
-                    id_ciudad = cursor.fetchone()[0]
-
-                    cursor.execute("INSERT OR IGNORE INTO municipio (nombre, id_ciudad) VALUES (?, ?)", ("No disponible", id_ciudad))
-                    cursor.execute("SELECT id_municipio FROM municipio WHERE nombre = ? AND id_ciudad = ?", ("No disponible", id_ciudad))
-                    id_municipio = cursor.fetchone()[0]
-
-                    cursor.execute("INSERT OR IGNORE INTO parroquia (nombre, id_municipio) VALUES (?, ?)", ("No disponible", id_municipio))
-                    cursor.execute("SELECT id_parroquia FROM parroquia WHERE nombre = ? AND id_municipio = ?", ("No disponible", id_municipio))
-                    id_parroquia = cursor.fetchone()[0]
-
+                    # No existía dirección previa: insertar nueva y enlazar (usar jerarquía por defecto)
+                    id_parroquia = _ensure_default_jerarquia(cursor)
                     cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
                     new_id = cursor.lastrowid
                     cursor.execute("UPDATE morbilidad SET id_direccion_hogar = ? WHERE id_morb = ?", (new_id, id_morb))

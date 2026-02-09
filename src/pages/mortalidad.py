@@ -124,7 +124,7 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
             "Ciudad", disabled=(rol_usuario == "Secretario (a)")
         ),
         "direccion": st.column_config.TextColumn(
-            "Dirección", disabled=True
+            "Dirección", disabled=False
         ),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "registrado_por": st.column_config.TextColumn(
@@ -134,7 +134,7 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
 
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=True)
+            column_config[col] = st.column_config.TextColumn(col, disabled=False)
 
     edited_df = st.data_editor(
         df_filtrado,
@@ -643,7 +643,7 @@ def data_editor_infantil(df, rol_usuario):
             "Ciudad", disabled=(rol_usuario == "Secretario (a)")
         ),
         "direccion": st.column_config.TextColumn(
-            "Dirección", disabled=True
+            "Dirección", disabled=False
         ),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "registrado_por": st.column_config.TextColumn(
@@ -654,7 +654,7 @@ def data_editor_infantil(df, rol_usuario):
     # Cualquier otra columna → solo lectura
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=True)
+            column_config[col] = st.column_config.TextColumn(col, disabled=False)
 
     edited_df = st.data_editor(
         df,
@@ -1074,7 +1074,7 @@ def data_editor_materna(df, rol_usuario):
         "parroquia_hogar": st.column_config.TextColumn("Parroquia", disabled=(rol_usuario == "Secretario (a)")),
         "ciudad_hogar": st.column_config.TextColumn("Ciudad", disabled=(rol_usuario == "Secretario (a)")),
         "direccion_exacta_hogar": st.column_config.TextColumn("Dirección", disabled=(rol_usuario == "Secretario (a)")),
-        "direccion": st.column_config.TextColumn("Dirección", disabled=True),
+        "direccion": st.column_config.TextColumn("Dirección", disabled=False),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "registrado_por": st.column_config.TextColumn("Registrado por", disabled=True),
     }
@@ -1082,7 +1082,7 @@ def data_editor_materna(df, rol_usuario):
     # Cualquier otra columna → solo lectura
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=True)
+            column_config[col] = st.column_config.TextColumn(col, disabled=False)
 
     edited_df = st.data_editor(
         df,
