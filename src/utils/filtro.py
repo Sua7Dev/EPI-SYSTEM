@@ -21,17 +21,17 @@ def filtrar_por_fechas(df, columna_fecha='fecha_registro_formulario'):
         st.subheader(":material/calendar_clock: Filtrar por Fechas", anchor=False)
         
        
-        fecha_min_datos = df[columna_fecha].min().date() if not df.empty else datetime.date(2000, 1, 1)
-        fecha_max_datos = df[columna_fecha].max().date() if not df.empty else datetime.date(2050, 12, 31)
+        fecha_min_datos = df[columna_fecha].min().date() if not df.empty else datetime.date.today()
+        fecha_max_datos = df[columna_fecha].max().date() if not df.empty else datetime.date.today()
         fecha_min = datetime.date(2000, 1, 1)
-        fecha_max = datetime.date(2050, 12, 31)
+        fecha_max = datetime.date.today()
         
         col1, col2 = st.columns(2)
         with col1:
             fecha_inicio = st.date_input(
                 ":material/date_range: Fecha de Inicio",
                 value=fecha_min_datos,
-                min_value=fecha_min,
+                min_value=fecha_min_datos,
                 max_value=fecha_max,
                 format=DATE_FORMAT,
                 key=f"fecha_inicio_filtro_{columna_fecha}"
@@ -40,7 +40,7 @@ def filtrar_por_fechas(df, columna_fecha='fecha_registro_formulario'):
             fecha_fin = st.date_input(
                 ":material/date_range: Fecha de Fin",
                 value=fecha_max_datos,
-                min_value=fecha_min,
+                min_value=fecha_min_datos,
                 max_value=fecha_max,
                 format=DATE_FORMAT,
                 key=f"fecha_fin_filtro_{columna_fecha}"
