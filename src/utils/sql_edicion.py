@@ -11,8 +11,8 @@ def obtener_usuarios():
     query = """
     SELECT 
         u.id_usuario,
-        p.nombre_apellido AS 'Nombre y Apellido',
         p.CI AS 'Cédula',
+        p.nombre_apellido AS 'Nombre y Apellido',
         u.rol AS 'Rol',
         c.correo AS 'Correo'
     FROM usuario u

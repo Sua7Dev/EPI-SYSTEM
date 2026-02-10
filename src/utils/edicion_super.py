@@ -130,7 +130,7 @@ def mostrar_modo_normal():
     
     rol_usuario = info_usuario["rol"]
     if rol_usuario == "Administrador (a)":
-        st.subheader(":material/demography: Tablas de usuarios", anchor=False)
+        st.subheader(":material/demography: Tabla de usuarios", anchor=False)
         df = obtener_usuarios()
         if df.empty:
             st.warning("No hay usuarios registrados con roles de 'doctor' o 'secretaria'.", icon=":material/person_off:")
