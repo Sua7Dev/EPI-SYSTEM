@@ -6,6 +6,7 @@ import pandas as pd
 from io import BytesIO
 from descargas.descarga_morbilidad import exportar_pdf_morbilidad_extensa
 from pages.historial import registrar_actividad_duradera
+from utils.botones import ver_btn
 
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 
@@ -218,17 +219,23 @@ def formulario_reporte_general_morbilidad():
                     else pdf_buffer
                 )
 
-                st.download_button(
-                    label="Descargar Reporte",
-                    data=content,
-                    file_name=f"Reporte_Morbilidad_General_{fecha_hora_str}.pdf",
-                    mime="application/pdf",
-                    icon=":material/download:",
-                    use_container_width=True,
-                    type="primary",
-                    on_click=registrar_actividad_duradera,
-                    args=("DESCARGA PDF", "Reportes Denuncias Obligatorias")
-                )
+                col_ver, col_descargar = st.columns(2)
+                # TODO agregar logica aqui
+                with col_ver:
+                    ver_btn(key_btn="ver_reporte_general_morbilidad")
+
+                with col_descargar:
+                    descargar = st.download_button(
+                        label="Descargar Reporte",
+                        data=content,
+                        file_name=f"Reporte_Morbilidad_General_{fecha_hora_str}.pdf",
+                        mime="application/pdf",
+                        icon=":material/download:",
+                        use_container_width=True,
+                        type="primary",
+                        on_click=registrar_actividad_duradera,
+                        args=("DESCARGA PDF", "Reportes Denuncias Obligatorias")
+                    )
 
             else:
                 st.error(

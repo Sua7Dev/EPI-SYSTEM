@@ -178,7 +178,7 @@ def formulario_natalidad():
                 col_ver, col_guardar, col_descargar, col_sel, col_eliminar = st.columns(5)
 
                 with col_ver:
-                    ver_btn()
+                    ver_btn(key_btn="ver_btn_natalidad")
 
                 with col_guardar:
                     guardar = st.button(

@@ -8,7 +8,7 @@ from descargas.descarga_natalidad import _exportar_pdf_natalidad
 from pages.historial import registrar_actividad_duradera
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = "DD/MM/YYYY"
-
+from utils.botones import ver_btn
 
 # ===============================================================
 # CONSULTAS PRINCIPALES
@@ -261,17 +261,23 @@ def formulario_reporte_general_natalidad():
                     else pdf_buffer
                 )
 
-                st.download_button(
-                    label="Descargar Reporte",
-                    data=content,
-                    file_name=f"Reporte_Natalidad_General_{fecha_hora_str}.pdf",
-                    mime="application/pdf",
-                    icon=":material/download:",
-                    use_container_width=True,
-                    type="primary",
-                    on_click=registrar_actividad_duradera,
-                    args=("DESCARGA PDF", "Reportes Natalidad")
-                )
+                col_ver, col_descargar = st.columns(2)
+                # TODO agregar logica aqui
+                with col_ver:
+                    ver_btn(key_btn="ver_reporte_general_natalidad")
+
+                with col_descargar:
+                    descargar = st.download_button(
+                        label="Descargar Reporte",
+                        data=content,
+                        file_name=f"Reporte_Natalidad_General_{fecha_hora_str}.pdf",
+                        mime="application/pdf",
+                        icon=":material/download:",
+                        use_container_width=True,
+                        type="primary",
+                        on_click=registrar_actividad_duradera,
+                        args=("DESCARGA PDF", "Reportes Natalidad")
+                    )
 
             else:
                 st.error(

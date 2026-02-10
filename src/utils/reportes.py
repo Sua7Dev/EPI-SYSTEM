@@ -5,6 +5,7 @@ import os
 from reportes.morta_general import exportar_pdf_mortalidad_general
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 from pages.historial import registrar_actividad_duradera
+from utils.botones import ver_btn
 
 def formulario_reporte_general():
     st.subheader(":material/description: General de Mortalidad", anchor=False)
@@ -130,18 +131,24 @@ def formulario_reporte_general():
             meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
             fecha_hora_str = f"{fecha_str}_{hora_str}_{meridiano}"
 
-            st.download_button(
-                label="Descargar Reporte",
-                data=pdf_buffer,
-                file_name=f"Reporte_Mortalidad_General_{fecha_hora_str}.pdf",
-                mime="application/pdf",
-                icon=":material/download:",
-                key=f"download_general_{fecha_hora_str}_reporte",
-                use_container_width=True,
-                type="primary",
-                on_click=registrar_actividad_duradera,
-                args=("DESCARGA PDF", "Reportes Mortalidad")
-            )
+            col_ver, col_descargar = st.columns(2)
+            # TODO agregar logica aqui
+            with col_ver:
+                ver_btn(key_btn="ver_reporte_general_morta")
+
+            with col_descargar:
+                descargar = st.download_button(
+                    label="Descargar Reporte",
+                    data=pdf_buffer,
+                    file_name=f"Reporte_Mortalidad_General_{fecha_hora_str}.pdf",
+                    mime="application/pdf",
+                    icon=":material/download:",
+                    key=f"download_general_{fecha_hora_str}_reporte",
+                    use_container_width=True,
+                    type="primary",
+                    on_click=registrar_actividad_duradera,
+                    args=("DESCARGA PDF", "Reportes Mortalidad")
+                )
 
         else:
             st.error(

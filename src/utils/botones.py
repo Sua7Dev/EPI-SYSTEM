@@ -30,8 +30,10 @@ def guadar_btn_2(funcion_receptora=None, variable_1=None, variable_2=None):
         # aqui va la funcion receptora
         return funcion_receptora(variable_1, variable_2)
     
-def ver_btn():
-    ver = st.button("Ver reporte", icon=":material/visibility:", width="stretch", type="primary")
+def ver_btn(key_btn=None):
+    ver = st.button("Ver reporte", icon=":material/visibility:",
+                     width="stretch", type="primary",
+                     key=key_btn)
     
     if ver:
         st.switch_page("pages/ver_reportes.py")

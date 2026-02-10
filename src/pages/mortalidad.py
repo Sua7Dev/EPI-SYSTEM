@@ -195,7 +195,7 @@ def formulario_neonatal(db=DB_PATH):
                 col_ver, col_guardar, col_desc, col_desc_sel, col_eliminar = st.columns(5)
 
                 with col_ver:
-                    ver_btn()
+                    ver_btn(key_btn="ver_btn_neonatal")
 
                 with col_guardar:
                     guardar = st.button(
@@ -732,7 +732,7 @@ def formulario_infantil(db=DB_PATH):
                 col_ver, col_guardar, col_descargar, col_desc_sel, col_eliminar = st.columns(5)
 
                 with col_ver:
-                    ver_btn()
+                    ver_btn(key_btn="ver_btn_infantil")
 
                 with col_guardar:
                     guardar = st.button(
@@ -1163,7 +1163,7 @@ def formulario_materna(db=DB_PATH):
                 col_ver, col_guardar, col_descargar, col_desc_sel, col_eliminar = st.columns(5)
 
                 with col_ver:
-                    ver_btn()
+                    ver_btn(key_btn="ver_btn_materna")
 
                 with col_guardar:
                     guardar = st.button(

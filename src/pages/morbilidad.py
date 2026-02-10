@@ -122,7 +122,7 @@ def formulario_morb_extenso(db=DB_PATH):
             has_selection = edited_df[' '].any()
 
             with col_ver:
-                ver_btn()
+                ver_btn(key_btn="ver_btn_morbilidad")
 
             with col_guardar:
                 guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")   
