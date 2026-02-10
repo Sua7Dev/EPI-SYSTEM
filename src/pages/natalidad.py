@@ -10,7 +10,7 @@ from pages.menu import menu
 import time
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_natalidad
-from utils.botones import confirmar_eliminar, guadar_btn
+from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import procesar_guardado_cambios_natalidad
 configurar_pagina_espanol()
 from reportes.natalidad_general import formulario_reporte_general_natalidad
@@ -175,7 +175,10 @@ def formulario_natalidad():
 
             if not df_filtrado.empty:
                 has_selection = edited_df[' '].any()
-                col_guardar, col_descargar, col_sel, col_eliminar = st.columns(4)
+                col_ver, col_guardar, col_descargar, col_sel, col_eliminar = st.columns(5)
+
+                with col_ver:
+                    ver_btn()
 
                 with col_guardar:
                     guardar = st.button(

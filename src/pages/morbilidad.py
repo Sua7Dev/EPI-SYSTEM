@@ -11,7 +11,7 @@ from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_morb_extenso
 from utils.validaciones import val_diagnostico, validar_texto, val_texynum, val_notas, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
-from utils.botones import confirmar_eliminar, guadar_btn
+from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import procesar_guardado_morb_extenso
 from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
 configurar_pagina_espanol()
@@ -118,8 +118,11 @@ def formulario_morb_extenso(db=DB_PATH):
             df = filtrar_por_fechas(df, 'fecha_registro_formulario')
             edited_df = data_editor_morb_extenso(df)
 
-            col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(4)
+            col_ver, col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(5)
             has_selection = edited_df[' '].any()
+
+            with col_ver:
+                ver_btn()
 
             with col_guardar:
                 guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")   

@@ -16,6 +16,7 @@ def paginas():
             st.Page("pages/olvido_contraseña.py", title="Olvido de contraseña", icon=":material/lock_reset:"),
             st.Page("pages/configuracion.py", title="Configuracion", icon=":material/settings:"),
             st.Page("pages/manual_usuario.py", title="Manual de Usuario", icon=":material/developer_guide:"),
+            st.Page("pages/ver_reportes.py", title="Reporte", icon=":material/docs:"),
         ],
         "Menu": [
             st.Page("pages/inicio.py", title="Dashboard", icon=":material/home:"),
