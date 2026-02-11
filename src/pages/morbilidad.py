@@ -7,7 +7,7 @@ from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, co
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
 from dateutil.relativedelta import relativedelta
-from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados
+from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados, ver_pdf
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_morb_extenso
 from utils.validaciones import val_diagnostico, validar_texto, val_texynum, val_notas, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
@@ -15,6 +15,9 @@ from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import procesar_guardado_morb_extenso
 from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
 configurar_pagina_espanol()
+if "previous_page" not in st.session_state:
+    st.session_state["previous_page"] = "pages/inicio.py"
+st.session_state["previous_page"] = "pages/morbilidad.py"
 
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
@@ -118,23 +121,21 @@ def formulario_morb_extenso(db=DB_PATH):
             df = filtrar_por_fechas(df, 'fecha_registro_formulario')
             edited_df = data_editor_morb_extenso(df)
 
-            col_ver, col_guardar, col_descargar, col_descargar_seleccionado, col_eliminar = st.columns(5)
+            col_ver, col_guardar, col_descargar, col_eliminar = st.columns(4)
             has_selection = edited_df[' '].any()
+            df_sel = edited_df[edited_df[' '] == True] if has_selection else None
+            df_to_use = df_sel if has_selection else edited_df
 
             with col_ver:
-                ver_btn(key_btn="ver_btn_morbilidad")
+                ver_pdf(df_to_use, "morbilidad_extensa", key_btn="ver_btn_morbilidad")
 
             with col_guardar:
-                guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", type="primary")   
-                #guadar_btn(procesar_guardado_morb_extenso, edited_df)
+                guardar = st.button("Guardar cambios", icon=":material/save:", width="stretch", 
+                                    type="primary")   
 
             with col_descargar:
-                descargar_pdf(edited_df, "morbilidad_extensa")
-
-            with col_descargar_seleccionado:
-                df_sel = edited_df[edited_df[' '] == True]
-                descargar_registros_seleccionados(edited_df, "morbilidad_extensa")
-                descargar_pdf(df_sel, "morbilidad_extensa_seleccionado", label="Descargar Selección", disabled=not has_selection)
+                label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                descargar_pdf(df_to_use, "morbilidad_extensa", label=label_descarga)
 
             with col_eliminar:
                 btn_eliminar = st.button(
@@ -149,6 +150,8 @@ def formulario_morb_extenso(db=DB_PATH):
                     confirmar_eliminar(eliminar_registros_morb_extenso, edited_df)
             if guardar:
                 procesar_guardado_morb_extenso(edited_df)
+                time.sleep(1)
+                st.rerun()
 
     st.subheader(":material/new_label: Registrar Morbilidad", anchor=False)
     st.components.v1.html("""
@@ -321,9 +324,12 @@ def formulario_morb_extenso(db=DB_PATH):
             if not all([nombres_apellidos, diagnostico, direccion_exacta_hogar]):
                 st.error("Por favor completa todos los campos obligatorios", icon=":material/error:")
                 return
-            if not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"): return
-            if not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"): return
-            if not val_diagnostico(diagnostico, "El", "diagnóstico"): return
+            if not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"): 
+                return
+            if not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"): 
+                return
+            if not val_diagnostico(diagnostico, "El", "diagnóstico"): 
+                return
 
             datos_registro = {
                 "rol_usuario": rol_usuario,

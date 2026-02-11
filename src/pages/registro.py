@@ -17,6 +17,9 @@ from utils.validaciones import bloquear_caracteres
 
 # ------------------- Configuración -------------------
 configurar_pagina_espanol()
+if "previous_page" not in st.session_state:
+    st.session_state["previous_page"] = "pages/inicio.py"
+st.session_state["previous_page"] = "pages/registro.py"
 
 def get_project_root() -> Path:
     """Devuelve la raíz del proyecto, incluso empaquetado con PyInstaller."""
@@ -170,7 +173,8 @@ def registro_formulario():
             # Botones
             col_registro, col_volver, col_nuevo = st.columns(3)
             with col_registro:
-                registrar_btn = st.form_submit_button(label="Registrar", type="primary", width="stretch", icon=":material/person_add:")
+                registrar_btn = st.form_submit_button(label="Registrar", type="primary", width="stretch", 
+                                                      icon=":material/person_add:")
             with col_volver:
                 volver_btn = st.form_submit_button(label="Volver atrás", type="secondary", width="stretch", icon=":material/arrow_back:",
                                                    help="Vuelve a la página de configuración")

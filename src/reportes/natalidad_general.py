@@ -1,6 +1,8 @@
 import streamlit as st
 import datetime
+import datetime
 import sqlite3
+import time
 import os
 import pandas as pd
 from io import BytesIO
@@ -18,14 +20,7 @@ def _consultar_natalidad(year=None, specific_date=None, start_date=None, end_dat
     """Consulta los registros de natalidad, calcula semanas ISO y filtra según los parámetros"""
     try:
         with sqlite3.connect(DB_PATH) as conn:
-            fecha_iso_expr = """
-                CASE
-                    WHEN instr(fecha, '/') > 0 AND length(fecha) >= 8
-                        THEN substr(fecha, 7, 4) || '-' || substr(fecha, 4, 2) || '-' || substr(fecha, 1, 2)
-                    ELSE fecha
-                END
-            """
-            query = f"""
+            query = """
                 SELECT
                     id_nata AS id,
                     fecha,
@@ -37,18 +32,16 @@ def _consultar_natalidad(year=None, specific_date=None, start_date=None, end_dat
                     mto,
                     partos_extrahospitalarios,
                     id_doctor,
-                    fecha_registro_formulario,
-                    {fecha_iso_expr} AS fecha_iso
+                    fecha_registro_formulario
                 FROM natalidad
-                ORDER BY date({fecha_iso_expr}) DESC, id_nata DESC
             """
             df = pd.read_sql_query(query, conn)
 
         if df.empty:
             return df
 
-        # Convertir fecha a datetime
-        df["fecha_iso"] = pd.to_datetime(df["fecha_iso"], errors="coerce")
+        # Convertir fecha a datetime usando pandas directamente (más robusto)
+        df["fecha_iso"] = pd.to_datetime(df["fecha"], dayfirst=True, errors="coerce")
 
         # Calcular semana y año ISO
         df["iso_year"] = df["fecha_iso"].dt.isocalendar().year
@@ -147,11 +140,16 @@ def formulario_reporte_general_natalidad():
             # ----------------------------
             # FILTRO POR AÑO
             # ----------------------------
+            pdf_df = None
+
+            # ----------------------------
+            # FILTRO POR AÑO
+            # ----------------------------
             if timeframe == "Año":
                 year = obtener_anios_disponibles()
                 if not year:
                     return
-                pdf_buffer = exportar_pdf_natalidad_general(year=year)
+                pdf_df = _consultar_natalidad(year=year)
 
             # ----------------------------
             # FILTRO POR AÑO + SEMANA ISO
@@ -174,7 +172,7 @@ def formulario_reporte_general_natalidad():
                     semanas,
                     key="semana_iso"
                 )
-                pdf_buffer = exportar_pdf_natalidad_general(
+                pdf_df = _consultar_natalidad(
                     year=year,
                     iso_week=iso_week
                 )
@@ -186,9 +184,10 @@ def formulario_reporte_general_natalidad():
                 specific_date = st.date_input(
                     "Fecha",
                     value=datetime.date.today(),
-                    format=DATE_FORMAT
+                    format=DATE_FORMAT,
+                    max_value=datetime.date.today()
                 )
-                pdf_buffer = exportar_pdf_natalidad_general(
+                pdf_df = _consultar_natalidad(
                     specific_date=specific_date
                 )
 
@@ -224,13 +223,15 @@ def formulario_reporte_general_natalidad():
                     start_date = st.date_input(
                         "Fecha Inicio",
                         value=min_fecha,
-                        format=DATE_FORMAT
+                        format=DATE_FORMAT,
+                        max_value=datetime.date.today()
                     )
                 with col_end:
                     end_date = st.date_input(
                         "Fecha Fin",
                         value=max_fecha,
-                        format=DATE_FORMAT
+                        format=DATE_FORMAT,
+                        max_value=datetime.date.today()
                     )
 
                 if end_date < start_date:
@@ -240,44 +241,22 @@ def formulario_reporte_general_natalidad():
                     )
                     return
 
-                pdf_buffer = exportar_pdf_natalidad_general(
+                pdf_df = _consultar_natalidad(
                     start_date=start_date,
                     end_date=end_date
                 )
 
             # ----------------------------
-            # BOTÓN DESCARGA PDF
+            # BOTONES LAZY (PDF)
             # ----------------------------
-            if pdf_buffer:
-                fecha_actual = datetime.datetime.now()
-                fecha_str = fecha_actual.strftime("%d-%m-%Y")
-                hora_str = fecha_actual.strftime("%I-%M-%S")
-                meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
-                fecha_hora_str = f"{fecha_str}_{hora_str}_{meridiano}"
-
-                content = (
-                    pdf_buffer.getvalue()
-                    if hasattr(pdf_buffer, "getvalue")
-                    else pdf_buffer
-                )
-
+            if pdf_df is not None and not pdf_df.empty:
+                from utils.filtro import ver_pdf, descargar_pdf
                 col_ver, col_descargar = st.columns(2)
-                # TODO agregar logica aqui
                 with col_ver:
-                    ver_btn(key_btn="ver_reporte_general_natalidad")
+                    ver_pdf(pdf_df, "natalidad_general", key_btn="ver_reporte_general_natalidad")
 
                 with col_descargar:
-                    descargar = st.download_button(
-                        label="Descargar Reporte",
-                        data=content,
-                        file_name=f"Reporte_Natalidad_General_{fecha_hora_str}.pdf",
-                        mime="application/pdf",
-                        icon=":material/download:",
-                        use_container_width=True,
-                        type="primary",
-                        on_click=registrar_actividad_duradera,
-                        args=("DESCARGA PDF", "Reportes Natalidad")
-                    )
+                    descargar_pdf(pdf_df, "natalidad_general", label="Descargar Reporte")
 
             else:
                 st.error(

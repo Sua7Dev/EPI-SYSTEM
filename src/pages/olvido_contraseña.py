@@ -77,11 +77,13 @@ def nueva_contra():
 
         if btn_verificar:
             if not nueva_contra or not confirmar_contra:
+
                 st.error("Ambos campos son obligatorios.", icon=":material/error:")
             elif nueva_contra != confirmar_contra:
+
                 st.error("Las contraseñas no coinciden.", icon=":material/error:")
             elif not validar_contraseña(nueva_contra):
-                return
+                pass
             else:
                 usuario = st.session_state.get("olvido_usuario_id")
                 if not usuario:
@@ -94,9 +96,9 @@ def nueva_contra():
                 
                 contrasena_actual = obtener_contrasena_actual(usuario, DB_PATH)
                 if contrasena_actual is None:
-                    return
-
-                if verifi_contra_hasheada(nueva_contra, contrasena_actual):
+                    pass
+                elif verifi_contra_hasheada(nueva_contra, contrasena_actual):
+    
                     st.error("La contraseña es igual a la actual.", icon=":material/error:")
                     return
 
@@ -104,6 +106,7 @@ def nueva_contra():
                 exito = cambiar_contrasena(nueva_contra_hash, usuario, DB_PATH)
 
                 if exito:
+                    st.session_state["btn_deshabilitado"] = False
                     st.success("Contraseña actualizada correctamente.", icon=":material/check_circle:")
                     time.sleep(1)
                     st.success("Volviendo a inicio de sesión...", icon=":material/check_circle:")
@@ -112,6 +115,7 @@ def nueva_contra():
                     st.session_state["pagina_actual"] = "verificacion"
                     st.switch_page("pages/inicio_sesion.py")
                 else:
+                    st.session_state["btn_deshabilitado"] = False
                     st.error("Error al actualizar la contraseña en la base de datos.", icon=":material/error:")
 
     if btn_cancelar:
@@ -148,7 +152,8 @@ def P_Seguridad():
 
         col_verificar, col_cancelar = st.columns(2)
         with col_verificar:
-            btn_verificar = st.form_submit_button("Verificar", type="primary", width="stretch", icon=":material/verified_user:")
+            btn_verificar = st.form_submit_button("Verificar", type="primary", width="stretch", 
+                                                  icon=":material/verified_user:")
         with col_cancelar:
             btn_cancelar = st.form_submit_button("Cancelar", type="secondary", width="stretch", icon=":material/cancel:")
 
@@ -168,6 +173,7 @@ def P_Seguridad():
             )
             if ok:
                 st.session_state["pagina_actual"] = "nueva_contra"
+                time.sleep(1)
                 st.rerun()
 
         if btn_cancelar:
@@ -283,7 +289,8 @@ def formulario_verificacion():
 
         col_verificar, col_volver = st.columns(2)
         with col_verificar:    
-            verificar = st.form_submit_button("Verificar", type="primary", width="stretch", icon=":material/lock:")
+            verificar = st.form_submit_button("Verificar", type="primary", width="stretch", 
+                                              icon=":material/lock:")
         with col_volver:    
             volver = st.form_submit_button("Volver al inicio de sesión", type="secondary", width="stretch", icon=":material/arrow_back:")
 
@@ -293,23 +300,25 @@ def formulario_verificacion():
             st.warning("Por favor, completa todos los campos.", icon=":material/warning:")
             return
         elif not validar_nombre_usuario(nombre_usuario):
-            return
-        try:
-            if verificar_usuario_cedula(nombre_usuario, ci, DB_PATH):
-                preguntas = obtener_preguntas_usuario(nombre_usuario, DB_PATH)
-                if not preguntas:
-                    st.error("Este usuario no tiene preguntas de seguridad registradas.", icon=":material/error:")
-                    #if st.button("Volver", key="volver_sin_preg"):
-                    #    st.session_state["pagina_actual"] = "verificacion"
-                    #    st.session_state["olvido_usuario_id"] = None
-                    #    st.rerun()
-                    return
-                st.session_state["olvido_usuario_id"] = nombre_usuario
-                st.session_state["olvido_preguntas"] = preguntas
-                st.session_state["pagina_actual"] = "seguridad"
-                st.rerun()
-        except Exception as e:
-            st.error(f"Error al verificar: {str(e)}. Contacta al admin.", icon=":material/error:")
+            pass
+        else:
+            try:
+                res = verificar_usuario_cedula(nombre_usuario, ci, DB_PATH)
+                if res:
+                    preguntas = obtener_preguntas_usuario(nombre_usuario, DB_PATH)
+                    if not preguntas:
+                        st.error("Este usuario no tiene preguntas de seguridad registradas.", icon=":material/error:")
+                    else:
+                        st.session_state["olvido_usuario_id"] = nombre_usuario
+                        st.session_state["olvido_preguntas"] = preguntas
+                        st.session_state["pagina_actual"] = "seguridad"
+                        time.sleep(1)
+                        st.rerun()
+            except Exception as e:
+                st.error(f"Error al verificar: {str(e)}. Contacta al admin.", icon=":material/error:")
+        
+        # Pausa global
+        time.sleep(1)
 
     if volver:
         st.session_state["olvido_usuario_id"] = None

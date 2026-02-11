@@ -143,14 +143,20 @@ def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
 
 
                 # === INSERTAR EL REGISTRO ===
+                # Formatear fecha antes de insertar para asegurar consistencia
+                try:
+                    fecha_str = fecha.strftime("%d/%m/%Y")
+                except AttributeError:
+                    fecha_str = str(fecha)
+
                 cursor.execute("""
                     INSERT INTO natalidad (
                         fecha, partos, cesareas, varones, hembras, gemelar, 
                         mto, partos_extrahospitalarios, id_doctor, fecha_registro_formulario
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    fecha, partos, cesareas, varones, hembras, gemelar, 
-                    mto, partos_extrahospitalarios, id_doctor_atendi, datetime.date.today()
+                    fecha_str, partos, cesareas, varones, hembras, gemelar, 
+                    mto, partos_extrahospitalarios, id_doctor_atendi, datetime.date.today().strftime("%Y-%m-%d")
                 ))
 
                 # Obtener el ID del nuevo registro
@@ -214,7 +220,7 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, db=DB_PATH):
                                 ),
                                 ', ,', ','
                             )
-                        ) AS direccion
+                        ) AS direccion_hogar
                     FROM morbilidad m
                     JOIN persona_paciente pp ON m.id_paciente = pp.id_paciente
                     LEFT JOIN direccion d ON m.id_direccion_hogar = d.id_direccion

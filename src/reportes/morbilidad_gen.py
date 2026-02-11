@@ -1,5 +1,6 @@
 import streamlit as st
 import datetime
+import time
 import sqlite3
 import os
 import pandas as pd
@@ -51,8 +52,7 @@ def _consultar_morbilidad(year=None, specific_date=None, start_date=None, end_da
                     COALESCE(c.nombre || ', ', '') ||
                     COALESCE(mu.nombre || ', ', '') ||
                     COALESCE(par.nombre || ', ', '') ||
-                    COALESCE(d.descripcion, '') AS direccion_hogar,
-                    date({fecha_iso_expr}) AS fecha_iso
+                    COALESCE(d.descripcion, '') AS direccion_hogar
                 FROM morbilidad m
                 LEFT JOIN direccion d ON m.id_direccion_hogar = d.id_direccion
                 LEFT JOIN parroquia par ON d.id_parroquia = par.id_parroquia
@@ -62,14 +62,22 @@ def _consultar_morbilidad(year=None, specific_date=None, start_date=None, end_da
                 LEFT JOIN pais p ON e.id_pais = p.id_pais
                 LEFT JOIN persona_paciente pp ON m.id_paciente = pp.id_paciente
                 {where_sql}
-                ORDER BY 
-                    COALESCE(fecha_iso, '') DESC,
-                    m.id_morb DESC
+                ORDER BY m.id_morb DESC
             """
             df = pd.read_sql_query(query, conn, params=params)
 
-            if 'fecha_iso' in df.columns:
-                df['fecha_iso'] = pd.to_datetime(df['fecha_iso'], errors='coerce')
+            # Convertir a datetime usando pandas robusto (detecta DD/MM/YYYY)
+            if 'fecha_registro_formulario' in df.columns:
+                 df['fecha_iso'] = pd.to_datetime(df['fecha_registro_formulario'], dayfirst=True, errors='coerce')
+            
+            # Re-filtrar por fechas usando pandas si es necesario (ya que SQL podría no haber filtrado bien sin conversión)
+            if start_date and end_date:
+                df = df[(df['fecha_iso'].dt.date >= start_date) & (df['fecha_iso'].dt.date <= end_date)]
+            if specific_date:
+                 df = df[df['fecha_iso'].dt.date == specific_date]
+            if year:
+                 df = df[df['fecha_iso'].dt.year == int(year)]
+
             return df
     except Exception:
         return pd.DataFrame()
@@ -108,29 +116,20 @@ def formulario_reporte_general_morbilidad():
             specific_date = None
             start_date = None
             end_date = None
-            pdf_buffer = None
+            pdf_df = None
 
             # ------------------ AÑO ------------------
             if timeframe == "Año":
                 try:
                     with sqlite3.connect(DB_PATH) as conn:
-                        cur = conn.cursor()
-                        cur.execute("""
-                            SELECT DISTINCT strftime('%Y', date(
-                                CASE
-                                    WHEN instr(fecha_registro_formulario, '/') > 0
-                                         AND length(fecha_registro_formulario) >= 8
-                                    THEN substr(fecha_registro_formulario, 7, 4)
-                                         || '-' || substr(fecha_registro_formulario, 4, 2)
-                                         || '-' || substr(fecha_registro_formulario, 1, 2)
-                                    ELSE fecha_registro_formulario
-                                END
-                            )) AS yr
-                            FROM morbilidad
-                            WHERE fecha_registro_formulario IS NOT NULL
-                            ORDER BY yr DESC
-                        """)
-                        available_years = [int(r[0]) for r in cur.fetchall() if r[0]]
+                        df_years = pd.read_sql_query("SELECT fecha_registro_formulario FROM morbilidad", conn)
+                    
+                    if df_years.empty:
+                         available_years = []
+                    else:
+                        df_years['fecha_iso'] = pd.to_datetime(df_years['fecha_registro_formulario'], dayfirst=True, errors='coerce')
+                        available_years = sorted(df_years['fecha_iso'].dt.year.dropna().unique().astype(int), reverse=True)
+                        
                 except Exception:
                     available_years = []
 
@@ -139,7 +138,7 @@ def formulario_reporte_general_morbilidad():
                     return
 
                 year = st.selectbox("Año", available_years, key="year_general_reporte")
-                pdf_buffer = exportar_pdf_morbilidad_general(year=year)
+                pdf_df = _consultar_morbilidad(year=year)
 
             elif timeframe == "Fecha Específica":
                 specific_date = st.date_input(
@@ -147,10 +146,10 @@ def formulario_reporte_general_morbilidad():
                     value=datetime.date.today(),
                     format="DD/MM/YYYY",
                     min_value=datetime.date(2000, 1, 1),
-                    max_value=datetime.date(2050, 12, 31),
+                    max_value=datetime.date.today(),
                     key="specific_date_general_reporte"
                 )
-                pdf_buffer = exportar_pdf_morbilidad_general(
+                pdf_df = _consultar_morbilidad(
                     specific_date=specific_date
                 )
             else:
@@ -183,6 +182,7 @@ def formulario_reporte_general_morbilidad():
                         "Fecha Inicio",
                         value=min_fecha,
                         format="DD/MM/YYYY",
+                        max_value=datetime.date.today(),
                         key="start_date_general_reporte"
                     )
                 with col_end:
@@ -190,6 +190,7 @@ def formulario_reporte_general_morbilidad():
                         "Fecha Fin",
                         value=max_fecha,
                         format="DD/MM/YYYY",
+                        max_value=datetime.date.today(),
                         key="end_date_general_reporte"
                     )
 
@@ -200,42 +201,20 @@ def formulario_reporte_general_morbilidad():
                     )
                     return
 
-                pdf_buffer = exportar_pdf_morbilidad_general(
+                pdf_df = _consultar_morbilidad(
                     start_date=start_date,
                     end_date=end_date
                 )
 
 
-            if pdf_buffer:
-                fecha_actual = datetime.datetime.now()
-                fecha_str = fecha_actual.strftime("%d-%m-%Y")
-                hora_str = fecha_actual.strftime("%I-%M-%S")
-                meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
-                fecha_hora_str = f"{fecha_str}_{hora_str}_{meridiano}"
-
-                content = (
-                    pdf_buffer.getvalue()
-                    if hasattr(pdf_buffer, "getvalue")
-                    else pdf_buffer
-                )
-
+            if pdf_df is not None and not pdf_df.empty:
+                from utils.filtro import ver_pdf, descargar_pdf
                 col_ver, col_descargar = st.columns(2)
-                # TODO agregar logica aqui
                 with col_ver:
-                    ver_btn(key_btn="ver_reporte_general_morbilidad")
+                    ver_pdf(pdf_df, "morbilidad", key_btn="ver_reporte_general_morbilidad")
 
                 with col_descargar:
-                    descargar = st.download_button(
-                        label="Descargar Reporte",
-                        data=content,
-                        file_name=f"Reporte_Morbilidad_General_{fecha_hora_str}.pdf",
-                        mime="application/pdf",
-                        icon=":material/download:",
-                        use_container_width=True,
-                        type="primary",
-                        on_click=registrar_actividad_duradera,
-                        args=("DESCARGA PDF", "Reportes Denuncias Obligatorias")
-                    )
+                    descargar_pdf(pdf_df, "morbilidad", label="Descargar Reporte")
 
             else:
                 st.error(

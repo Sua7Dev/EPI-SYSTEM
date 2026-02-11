@@ -1,5 +1,6 @@
 import streamlit as st
 import datetime
+import time
 import pandas as pd
 from pathlib import Path
 from utils.sql_control import operaciones_sql_neonatal, eliminar_registros_neonatal, operaciones_sql_infantil, eliminar_registros_infantil, operaciones_sql_materna, eliminar_registros_materna
@@ -7,7 +8,7 @@ from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, co
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
 from dateutil.relativedelta import relativedelta
-from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados
+from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados, ver_pdf
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_materna, limpiar_campos_infantil, limpiar_campos_neonatal
 from utils.validaciones import validar_texto, val_diagnostico, val_texynum, val_notas, val_num_espacios, validar_cinco_espacios, validar_pais
@@ -20,6 +21,9 @@ import os
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
 configurar_pagina_espanol()
+if "previous_page" not in st.session_state:
+    st.session_state["previous_page"] = "pages/inicio.py"
+st.session_state["previous_page"] = "pages/mortalidad.py"
 import sys
 from utils.validaciones import bloquear_caracteres
 
@@ -177,46 +181,35 @@ def formulario_neonatal(db=DB_PATH):
             df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
             edited_df = data_editor_neonatal(df_filtrado, rol_usuario)
             has_selection = edited_df[' '].any()
+            df_sel = edited_df[edited_df[' '] == True] if has_selection else None
 
             if rol_usuario == "Secretario (a)":
                 col1, col2 = st.columns(2)
                 with col1:
-                    descargar_pdf(edited_df, "mortalidad_neonatal")
+                    df_to_use = df_sel if has_selection else edited_df
+                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                    descargar_pdf(df_to_use, "mortalidad_neonatal", label=label_descarga)
+                    ver_pdf(df_to_use, "mortalidad_neonatal", key_btn="ver_btn_neonatal_sec")
                 with col2:
-                    df_sel = edited_df[edited_df[' '] == True]
-                    descargar_registros_seleccionados(edited_df, "mortalidad_neonatal")
-                    descargar_pdf(
-                        df_sel,
-                        "mortalidad_neonatal_seleccionado",
-                        label="Descargar Selección",
-                        disabled=not has_selection
-                    )
+                    pass # redundant call removed
             else:
-                col_ver, col_guardar, col_desc, col_desc_sel, col_eliminar = st.columns(5)
+                col_ver, col_guardar, col_desc, col_eliminar = st.columns(4)
 
                 with col_ver:
-                    ver_btn(key_btn="ver_btn_neonatal")
+                    df_to_use = df_sel if has_selection else edited_df
+                    ver_pdf(df_to_use, "mortalidad_neonatal", key_btn="ver_btn_neonatal")
 
                 with col_guardar:
                     guardar = st.button(
                         "Guardar cambios",
                         icon=":material/save:",
                         type="primary",
-                        width="stretch"
+                        width="stretch",
                     )
 
                 with col_desc:
-                    descargar_pdf(edited_df, "mortalidad_neonatal")
-
-                with col_desc_sel:
-                    df_sel = edited_df[edited_df[' '] == True]
-                    descargar_registros_seleccionados(edited_df, "mortalidad_neonatal")
-                    descargar_pdf(
-                        df_sel,
-                        "mortalidad_neonatal_seleccionado",
-                        label="Descargar Selección",
-                        disabled=not has_selection
-                    )
+                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                    descargar_pdf(df_to_use, "mortalidad_neonatal", label=label_descarga)
 
                 with col_eliminar:
                     btn_eliminar = st.button(
@@ -230,6 +223,8 @@ def formulario_neonatal(db=DB_PATH):
 
                 if guardar:
                     procesar_guardado_cambios_mortalidad_neonatal(edited_df)
+                    time.sleep(1)
+                    st.rerun()
 
     st.components.v1.html("""
                 <script>
@@ -319,7 +314,7 @@ def formulario_neonatal(db=DB_PATH):
 
             # variables de rangos de fechas posibles
             fecha_minima = datetime.date.today() - relativedelta(months=1)
-            fecha_maxima = datetime.date.today() + relativedelta(months=1)
+            fecha_maxima = datetime.date.today()
             fecha_maxima_hoy = datetime.date.today()
             fecha_minimi_1935 = datetime.date(1935, 1, 1)
 
@@ -704,62 +699,36 @@ def formulario_infantil(db=DB_PATH):
             df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
             edited_df = data_editor_infantil(df_filtrado, rol_usuario)
             has_selection = edited_df[' '].any()
+            df_sel = edited_df[edited_df[' '] == True] if has_selection else None
 
             # -------- ACCIONES ----------
             if rol_usuario == "Secretario (a)":
                 col1, col2 = st.columns(2)
-
                 with col1:
-                    descargar_pdf(
-                        edited_df,
-                        "mortalidad_infantil",
-                        label="Descargar PDF"
-                    )
-
+                    df_to_use = df_sel if has_selection else edited_df
+                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                    descargar_pdf(df_to_use, "mortalidad_infantil", label=label_descarga)
+                    ver_pdf(df_to_use, "mortalidad_infantil", key_btn="ver_btn_infantil_sec")
                 with col2:
-                    df_sel = edited_df[edited_df[' '] == True]
-                    descargar_registros_seleccionados(
-                        edited_df,
-                        "mortalidad_infantil"
-                    )
-                    descargar_pdf(
-                        df_sel,
-                        "mortalidad_infantil_seleccionado",
-                        label="Descargar Selección",
-                        disabled=not has_selection
-                    )
+                    pass
             else:
-                col_ver, col_guardar, col_descargar, col_desc_sel, col_eliminar = st.columns(5)
+                col_ver, col_guardar, col_desc, col_eliminar = st.columns(4)
 
                 with col_ver:
-                    ver_btn(key_btn="ver_btn_infantil")
+                    df_to_use = df_sel if has_selection else edited_df
+                    ver_pdf(df_to_use, "mortalidad_infantil", key_btn="ver_btn_infantil")
 
                 with col_guardar:
                     guardar = st.button(
                         "Guardar cambios",
                         icon=":material/save:",
                         width="stretch",
-                        type="primary"
+                        type="primary",
                     )
 
-                with col_descargar:
-                    descargar_pdf(
-                        edited_df,
-                        "mortalidad_infantil"
-                    )
-
-                with col_desc_sel:
-                    df_sel = edited_df[edited_df[' '] == True]
-                    descargar_registros_seleccionados(
-                        edited_df,
-                        "mortalidad_infantil"
-                    )
-                    descargar_pdf(
-                        df_sel,
-                        "mortalidad_infantil_seleccionado",
-                        label="Descargar Selección",
-                        disabled=not has_selection
-                    )
+                with col_desc:
+                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                    descargar_pdf(df_to_use, "mortalidad_infantil", label=label_descarga)
 
                 with col_eliminar:
                     btn_eliminar = st.button(
@@ -778,6 +747,8 @@ def formulario_infantil(db=DB_PATH):
 
                 if guardar:
                     procesar_guardado_cambios_mortalidad_infantil(edited_df)
+                    time.sleep(1)
+                    st.rerun()
 
     st.components.v1.html("""
                 <script>
@@ -866,7 +837,7 @@ def formulario_infantil(db=DB_PATH):
             
             fecha_minima = datetime.date.today() - relativedelta(months=1)
             fecha_minima_7_anos = datetime.date.today() - relativedelta(years=7)
-            fecha_maxima = datetime.date.today() + relativedelta(months=1)
+            fecha_maxima = datetime.date.today()
             fecha_maxima_hoy = datetime.date.today()
             fecha_minimi_1935 = datetime.date(1935, 1, 1)
             col_hc, col_nombres, col_madre = st.columns(3)
@@ -1133,37 +1104,24 @@ def formulario_materna(db=DB_PATH):
             df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
             edited_df = data_editor_materna(df_filtrado, rol_usuario)
             has_selection = edited_df[' '].any()
+            df_sel = edited_df[edited_df[' '] == True] if has_selection else None
 
             # -------- ACCIONES ----------
             if rol_usuario == "Secretario (a)":
                 col1, col2 = st.columns(2)
-
                 with col1:
-                    descargar_pdf(
-                        edited_df,
-                        "mortalidad_materna",
-                        label="Descargar PDF",
-                        #key_f="descargar_pdf_materna_f"
-                    )
-
+                    df_to_use = df_sel if has_selection else edited_df
+                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                    descargar_pdf(df_to_use, "mortalidad_materna", label=label_descarga)
+                    ver_pdf(df_to_use, "mortalidad_materna", key_btn="ver_btn_materna_sec")
                 with col2:
-                    df_sel = edited_df[edited_df[' '] == True]
-                    descargar_registros_seleccionados(
-                        edited_df,
-                        "mortalidad_materna"
-                    )
-                    descargar_pdf(
-                        df_sel,
-                        "mortalidad_materna_seleccionado",
-                        label="Descargar Selección",
-                        disabled=not has_selection,
-                        #key_f="descargar_pdf_materna_seleccionado_f"
-                    )
+                    pass
             else:
-                col_ver, col_guardar, col_descargar, col_desc_sel, col_eliminar = st.columns(5)
+                col_ver, col_guardar, col_desc, col_eliminar = st.columns(4)
 
                 with col_ver:
-                    ver_btn(key_btn="ver_btn_materna")
+                    df_to_use = df_sel if has_selection else edited_df
+                    ver_pdf(df_to_use, "mortalidad_materna", key_btn="ver_btn_materna")
 
                 with col_guardar:
                     guardar = st.button(
@@ -1173,24 +1131,9 @@ def formulario_materna(db=DB_PATH):
                         type="primary"
                     )
 
-                with col_descargar:
-                    descargar_pdf(
-                        edited_df,
-                        "mortalidad_materna"
-                    )
-
-                with col_desc_sel:
-                    df_sel = edited_df[edited_df[' '] == True]
-                    descargar_registros_seleccionados(
-                        edited_df,
-                        "mortalidad_materna"
-                    )
-                    descargar_pdf(
-                        df_sel,
-                        "mortalidad_materna_seleccionado",
-                        label="Descargar Selección",
-                        disabled=not has_selection
-                    )
+                with col_desc:
+                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                    descargar_pdf(df_to_use, "mortalidad_materna", label=label_descarga)
 
                 with col_eliminar:
                     btn_eliminar = st.button(
@@ -1209,6 +1152,8 @@ def formulario_materna(db=DB_PATH):
 
                 if guardar:
                     procesar_guardado_cambios_mortalidad_materna(edited_df)
+                    time.sleep(1)
+                    st.rerun()
 
     st.components.v1.html("""
                 <script>
@@ -1295,7 +1240,7 @@ def formulario_materna(db=DB_PATH):
                 </style>
                 """, unsafe_allow_html=True)
             fecha_minima = datetime.date.today() - relativedelta(months=1)
-            fecha_maxima = datetime.date.today() + relativedelta(months=1)
+            fecha_maxima = datetime.date.today()
             fecha_maxima_hoy = datetime.date.today()
             fecha_minimi_1935 = datetime.date(1935, 1, 1)
             col_hc, col_nombres = st.columns(2)

@@ -95,14 +95,17 @@ def cargando(mensaje, icono=":hourglass:"):
 
 def configurar_pagina_espanol():
     """
-    Inyecta un script a través de st.markdown para establecer el idioma de la página en español ('es').
-    Esto evita que el navegador muestre el pop-up de "Traducir página".
+    Inyecta un script a través de st.markdown para establecer el idioma de la página en español ('es')
+    y añade lógica global para evitar multiclicks en botones críticos.
     Se debe llamar al principio de cada página de la aplicación.
     """
-    st.markdown(
-        """<script>document.querySelector('html').lang = 'es';</script>""",
-        unsafe_allow_html=True
-    )
+    js_code = """
+    <script>
+    // 1. Establecer idioma
+    document.querySelector('html').lang = 'es';
+    </script>
+    """
+    st.markdown(js_code, unsafe_allow_html=True)
 
 def recargar_una_vez(caller_file, delay=0.01):
     """

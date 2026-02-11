@@ -53,6 +53,7 @@ def exportar_pdf_mortalidad_general(year=None, specific_date=None, start_date=No
     else:
         format_spanish_date = lambda m: datetime.datetime.strptime(m, '%Y-%m').strftime('%B %Y')
 
+def consultar_mortalidad_general(year=None, specific_date=None, start_date=None, end_date=None):
     try:
         with sqlite3.connect(DB_PATH) as conn:
             base_query = """
@@ -133,10 +134,11 @@ def exportar_pdf_mortalidad_general(year=None, specific_date=None, start_date=No
 
             query = base_query.format(where_clause=where_clause)
             df = pd.read_sql_query(query, conn, params=params)
-
+            return df
     except sqlite3.Error:
-        df = pd.DataFrame()
+        return pd.DataFrame()
 
+def exportar_pdf_mortalidad_general_df(df, year=None, specific_date=None, start_date=None, end_date=None):
     time_frame = "General"
     if year:
         time_frame = f"Año {year}"

@@ -95,17 +95,18 @@ def recuperar_usuario():
                                     help="Tiene que ser de la cédula asociada al correo.")
         colsi, colno = st.columns(2)
         with colsi:    
-            si = st.form_submit_button("Verificar", icon=":material/conditions:", width="stretch", type="primary")        
+            si = st.form_submit_button("Verificar", icon=":material/conditions:", width="stretch", 
+                                       type="primary")        
         with colno:    
             no = st.form_submit_button("Cancelar", icon=":material/cancel:", width="stretch")
         if si:
             if not correo or not ci:
                 st.warning("Por favor, completa todos los campos.", icon=":material/warning:")
-                return
             elif not val_mail(correo):
-                return
+                pass
             else:
-                if verificar_correo_cedula(correo, ci, DB_PATH=DB_PATH):
+                res = verificar_correo_cedula(correo, ci, DB_PATH=DB_PATH)
+                if res:
                     obtener_nombre_usuario(correo, ci, DB_PATH=DB_PATH)
         if no:
             st.rerun()  
@@ -179,15 +180,21 @@ def iniciar_sesion():
                     if verificar_usuario(nombre_usuario, contrasena, DB_PATH=DB_PATH):
                         info_usuario = obtener_info_usuario(nombre_usuario, DB_PATH=DB_PATH)
                         if not info_usuario:
-                            st.error("No se pudo obtener la información del usuario.", icon=":material/error:")
-                            return          
+
+                            st.error("No se pudo obtener la información del usuario.", icon=":material/error:")          
                         registrar_actividad_duradera("LOGIN", "Sistema")  
+                        registrar_actividad_duradera("LOGIN", "Sistema")
                         if verificar_preguntas_guardadas(nombre_usuario, DB_PATH=DB_PATH):
+                            time.sleep(1)
                             st.switch_page("pages/inicio.py")
                         else:
                             if bienvenida(nombre_usuario):
+                                time.sleep(1)
                                 st.switch_page("pages/inicio.py")
+                    else:
+                        pass
                 else:
+                    pass
                     st.warning("Por favor, ingresa tu usuario y contraseña para iniciar sesión.")    
 
     _, col_olvido, col_olvido_usuario = st.columns([2.1, 4.5, 5], vertical_alignment="bottom", gap=None)

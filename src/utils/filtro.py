@@ -1,7 +1,9 @@
 import streamlit as st
 import pandas as pd
 import datetime
+import time
 import os
+import base64
 from descargas.descarga_natalidad import _exportar_pdf_natalidad
 from descargas.descarga_morbilidad import exportar_pdf_morbilidad_extensa
 from descargas.descarga_mortalidad import _exportar_pdf_mortalidad
@@ -56,51 +58,111 @@ def filtrar_por_fechas(df, columna_fecha='fecha_registro_formulario'):
         st.error(f"Error al filtrar por fechas: {e}", icon=":material/error:")
         return df
 
-### esta se queda aqui
-def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False):#, key_f=None
-    fecha_actual = datetime.datetime.now()
-    fecha_str = fecha_actual.strftime("%d-%m-%Y")
-    hora_str = fecha_actual.strftime("%I-%M-%S")
-    meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
-    fecha_hora_str = f"{fecha_str}_{hora_str}_{meridiano}"
+def obtener_area(nombre_base):
+    if nombre_base.lower() in ["natalidad", "natalidad_seleccionado"]:
+        return "Natalidad"
+    elif nombre_base.lower() in ["morbilidad_extensa", "morbilidad_extensa_seleccionado"]:
+        return "Denuncias Obligatorias"
+    elif nombre_base.lower().startswith("mortalidad_neonatal"):
+        return "Mortalidad Neonatal"
+    elif nombre_base.lower().startswith("mortalidad_infantil"):
+        return "Mortalidad Infantil"
+    elif nombre_base.lower().startswith("mortalidad_materna"):
+        return "Mortalidad Materna"
+    return nombre_base.capitalize()
 
-    output = None
-    area_descargada = None
+def generar_pdf_segun_tipo(df, nombre_base):
+    if df.empty: return None
+    
+    nm_lower = nombre_base.lower()
+    if nm_lower in ["natalidad", "natalidad_seleccionado", "natalidad_general"]:
+        from descargas.descarga_natalidad import _exportar_pdf_natalidad
+        return _exportar_pdf_natalidad(df, nombre_base)
+    elif nm_lower in ["morbilidad_extensa", "morbilidad_extensa_seleccionado", "morbilidad"]:
+        from descargas.descarga_morbilidad import exportar_pdf_morbilidad_extensa
+        return exportar_pdf_morbilidad_extensa(df, "denuncias obligatorias" if "extensa" in nm_lower else "Morbilidad")
+    elif "mortalidad_neonatal" in nm_lower:
+        from descargas.descarga_mortalidad import _exportar_pdf_mortalidad
+        return _exportar_pdf_mortalidad(df, nombre_base)
+    elif "mortalidad_infantil" in nm_lower:
+        from descargas.descarga_mortalidad import _exportar_pdf_mortalidad
+        return _exportar_pdf_mortalidad(df, nombre_base)
+    elif "mortalidad_materna" in nm_lower:
+        from descargas.descarga_mortalidad import _exportar_pdf_mortalidad
+        return _exportar_pdf_mortalidad(df, nombre_base)
+    elif nm_lower == "mortalidad_general":
+        from reportes.morta_general import exportar_pdf_mortalidad_general_df
+        return exportar_pdf_mortalidad_general_df(df)
+    return None
 
-    if not df.empty:
-        if nombre_base.lower() in ["natalidad", "natalidad_seleccionado"]:
-            output = _exportar_pdf_natalidad(df, nombre_base)
-            area_descargada = "Natalidad"
-        elif nombre_base.lower() in ["morbilidad_extensa", "morbilidad_extensa_seleccionado"]:
-            output = exportar_pdf_morbilidad_extensa(df, "denuncias obligatorias")
-            area_descargada = "Denuncias Obligatorias"
-        elif nombre_base.lower() in ["mortalidad_neonatal", "mortalidad_neonatal_seleccionado"]:
-            output = _exportar_pdf_mortalidad(df, nombre_base)
-            area_descargada = "Mortalidad Neonatal"
-        elif nombre_base.lower() in ["mortalidad_infantil", "mortalidad_infantil_seleccionado"]:
-            output = _exportar_pdf_mortalidad(df, nombre_base)
-            area_descargada = "Mortalidad Infantil"
-        elif nombre_base.lower() in ["mortalidad_materna", "mortalidad_materna_seleccionado"]:
-            output = _exportar_pdf_mortalidad(df, nombre_base)
-            area_descargada = "Mortalidad Materna"
+def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False):
+    # from utils.botones import bloquear_botones
 
-    if not area_descargada:
-        area_descargada = nombre_base.capitalize()
+    
+    key = f"btn_descarga_{nombre_base}_{abs(hash(str(df.index)))}"
+    
+    # Combinar el estado de deshabilitado pasado
+    is_disabled = disabled or df.empty
+    
+    btn = st.button(label=label, icon=":material/download:", 
+                    disabled=is_disabled, 
+                    use_container_width=True, key=key, 
+                    type="primary" if label == "Descargar Reporte" else "secondary")
+    
+    if btn:
+            output = generar_pdf_segun_tipo(df, nombre_base)
+            # Resetear estado después de generar
+            
+            if output:
+                # Ensure we have raw bytes
+                content = output.getvalue() if hasattr(output, "getvalue") else output
+                
+                area_descargada = obtener_area(nombre_base)
+                fecha_actual = datetime.datetime.now()
+                fecha_str = fecha_actual.strftime("%d-%m-%Y")
+                hora_str = fecha_actual.strftime("%I-%M-%S")
+                meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
+                nombre_archivo = f"{area_descargada}_{fecha_str}_{hora_str}_{meridiano}.pdf"
+                
+                b64 = base64.b64encode(content).decode()
+                # JS trigger for download
+                js = f"""
+                    <script>
+                    const link = window.parent.document.createElement('a');
+                    link.href = 'data:application/pdf;base64,{b64}';
+                    link.download = '{nombre_archivo}';
+                    link.click();
+                    </script>
+                """
+                st.components.v1.html(js, height=0)
+                registrar_actividad_duradera("DESCARGA PDF", f"Reportes {area_descargada}")
+                time.sleep(1)
+                st.rerun()  # Reactivar botón después de descarga
+                
+            else:
+                st.error("No se pudo generar el PDF.")
+                st.rerun()  # Reactivar botón incluso si falla
 
-    nombre_archivo = f"{area_descargada}_{fecha_hora_str}.pdf"
-
-    st.download_button(
-        label=label,
-        data=output if output else b"",
-        file_name=nombre_archivo,
-        mime="application/pdf",
-        icon=":material/download:",
-        disabled=disabled or df.empty,
-        use_container_width=True,
-        on_click=registrar_actividad_duradera,
-        args=("DESCARGA PDF", f"Reportes {area_descargada}"),
-        key=f"key_f_{nombre_base}_pdf"
-    )
+def ver_pdf(df, nombre_base="datos", key_btn=None, disabled=False):
+    # from utils.botones import bloquear_botones
+    
+    key = key_btn if key_btn else f"btn_ver_{nombre_base}_{abs(hash(str(df.index)))}"
+    is_disabled = disabled or df.empty
+    
+    btn = st.button("Ver reporte", icon=":material/visibility:", width="stretch", 
+                    type="primary", key=key, 
+                    disabled=is_disabled)
+    
+    if btn:
+            output = generar_pdf_segun_tipo(df, nombre_base)
+            
+            if output:
+                content = output.getvalue() if hasattr(output, "getvalue") else output
+                st.session_state["pdf_buffer"] = content
+                st.switch_page("pages/ver_reportes.py")
+            else:
+                st.error("No se pudo generar el reporte.")
+                st.rerun()  # Reactivar botón si falla
 
 def detectar_columna_id(df):
     posibles = [col for col in df.columns if (col.lower().startswith("id") or col.lower().endswith("_id") or col.lower() == "hc") and col != " "]

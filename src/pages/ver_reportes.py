@@ -25,18 +25,16 @@ def boton_volver():
     # TODO hacer que te devuelva a la pagina que viniste
     volver_btn = st.button(label="Volver atras", type="primary", icon=":material/arrow_back:")
     if volver_btn:
-        st.switch_page("pages/inicio.py")
+        st.switch_page(st.session_state.get("previous_page", "pages/inicio.py"))
         st.rerun()
     
 def mostrar_pdf():
-    # TODO aqui va la logica de como se genera el pdf y al final se pasa a ruta_pdf
-    ruta_pdf = None
+    pdf_buffer = st.session_state.get("pdf_buffer")
 
-    if ruta_pdf:
-        # pdf_viewer puede manejar objetos Path directamente
-        pdf_viewer(ruta_pdf)
+    if pdf_buffer:
+        pdf_viewer(pdf_buffer)
     else:
-        st.error("No se encontró el reporte o el archivo no existe.", icon=":material/error:")
+        st.error("No se encontró el reporte para mostrar.", icon=":material/error:")
 
 def ver_reportes():
     logo_bandera = ASSETS_DIR / "imagebanderanueva2.png"

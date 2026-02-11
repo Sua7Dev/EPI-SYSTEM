@@ -2,7 +2,7 @@ import streamlit as st
 import datetime
 import sqlite3
 import os
-from reportes.morta_general import exportar_pdf_mortalidad_general
+from reportes.morta_general import consultar_mortalidad_general
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 from pages.historial import registrar_actividad_duradera
 from utils.botones import ver_btn
@@ -45,11 +45,12 @@ def formulario_reporte_general():
             if result and result[0]
             else datetime.date.today()
         )
-        max_fecha = (
+        max_fecha_db = (
             datetime.datetime.strptime(result[1], "%Y-%m-%d").date()
             if result and result[1]
             else datetime.date.today()
         )
+        max_fecha = min(max_fecha_db, datetime.date.today())
 
         if timeframe == "Año":
             conn = sqlite3.connect(DB_PATH)
@@ -75,7 +76,7 @@ def formulario_reporte_general():
                 index=available_years.index(default_year),
                 key="year_general_reporte"
             )
-            pdf_buffer = exportar_pdf_mortalidad_general(year=year)
+            pdf_df = consultar_mortalidad_general(year=year)
 
         elif timeframe == "Fecha Específica":
             specific_date = st.date_input(
@@ -86,7 +87,7 @@ def formulario_reporte_general():
                 format="DD/MM/YYYY",
                 key="specific_date_general_reporte"
             )
-            pdf_buffer = exportar_pdf_mortalidad_general(
+            pdf_df = consultar_mortalidad_general(
                 specific_date=specific_date
             )
 
@@ -118,37 +119,20 @@ def formulario_reporte_general():
                 )
                 return
 
-            pdf_buffer = exportar_pdf_mortalidad_general(
+            pdf_df = consultar_mortalidad_general(
                 start_date=start_date,
                 end_date=end_date
             )
 
-        # ------------------ DESCARGA PDF ------------------
-        if pdf_buffer:
-            fecha_actual = datetime.datetime.now()
-            fecha_str = fecha_actual.strftime("%d-%m-%Y")
-            hora_str = fecha_actual.strftime("%I-%M-%S")
-            meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
-            fecha_hora_str = f"{fecha_str}_{hora_str}_{meridiano}"
-
+        # ------------------ BOTONES LAZY (PDF) ------------------
+        if pdf_df is not None and not pdf_df.empty:
+            from utils.filtro import ver_pdf, descargar_pdf
             col_ver, col_descargar = st.columns(2)
-            # TODO agregar logica aqui
             with col_ver:
-                ver_btn(key_btn="ver_reporte_general_morta")
+                ver_pdf(pdf_df, "mortalidad_general", key_btn="ver_reporte_general_morta")
 
             with col_descargar:
-                descargar = st.download_button(
-                    label="Descargar Reporte",
-                    data=pdf_buffer,
-                    file_name=f"Reporte_Mortalidad_General_{fecha_hora_str}.pdf",
-                    mime="application/pdf",
-                    icon=":material/download:",
-                    key=f"download_general_{fecha_hora_str}_reporte",
-                    use_container_width=True,
-                    type="primary",
-                    on_click=registrar_actividad_duradera,
-                    args=("DESCARGA PDF", "Reportes Mortalidad")
-                )
+                descargar_pdf(pdf_df, "mortalidad_general", label="Descargar Reporte")
 
         else:
             st.error(

@@ -4,7 +4,7 @@ from pathlib import Path
 from utils.sql_control import operaciones_sql_natalidad, eliminar_registros_natalidad
 from dateutil.relativedelta import relativedelta
 from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
-from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados
+from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados, ver_pdf
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
 import time
@@ -13,6 +13,9 @@ from utils.limpieza import limpiar_campos_natalidad
 from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import procesar_guardado_cambios_natalidad
 configurar_pagina_espanol()
+if "previous_page" not in st.session_state:
+    st.session_state["previous_page"] = "pages/inicio.py"
+st.session_state["previous_page"] = "pages/natalidad.py"
 from reportes.natalidad_general import formulario_reporte_general_natalidad
 import sys
 
@@ -142,20 +145,15 @@ def formulario_natalidad():
 
         if not df_filtrado.empty:
             has_selection = edited_df[' '].any()
+            df_sel = edited_df[edited_df[' '] == True] if has_selection else None
             col1, col2 = st.columns(2)
 
             with col1:
-                descargar_pdf(edited_df, "natalidad", label="Descargar PDF")
+                descargar_pdf(edited_df if not has_selection else df_sel, "natalidad", label="Descargar PDF" if not has_selection else "Descargar Selección")
+                ver_pdf(edited_df if not has_selection else df_sel, "natalidad", key_btn="ver_btn_natalidad_sec")
 
             with col2:
-                df_sel = edited_df[edited_df[' '] == True]
                 descargar_registros_seleccionados(edited_df, "natalidad")
-                descargar_pdf(
-                    df_sel,
-                    "natalidad_seleccionado",
-                    label="Descargar Selección",
-                    disabled=not has_selection
-                )
 
         return  
 
@@ -175,31 +173,25 @@ def formulario_natalidad():
 
             if not df_filtrado.empty:
                 has_selection = edited_df[' '].any()
-                col_ver, col_guardar, col_descargar, col_sel, col_eliminar = st.columns(5)
+                df_sel = edited_df[edited_df[' '] == True] if has_selection else None
+                col_ver, col_guardar, col_descargar, col_eliminar = st.columns(4)
 
                 with col_ver:
-                    ver_btn(key_btn="ver_btn_natalidad")
+                    df_to_use = df_sel if has_selection else edited_df
+                    ver_pdf(df_to_use, "natalidad", key_btn="ver_btn_natalidad")
 
                 with col_guardar:
                     guardar = st.button(
                         "Guardar cambios",
                         icon=":material/save:",
                         width="stretch",
-                        type="primary"
+                        type="primary",
                     )
 
                 with col_descargar:
-                    descargar_pdf(edited_df, "natalidad")
-
-                with col_sel:
-                    df_sel = edited_df[edited_df[' '] == True]
-                    descargar_registros_seleccionados(edited_df, "natalidad")
-                    descargar_pdf(
-                        df_sel,
-                        "natalidad_seleccionado",
-                        label="Descarga selección",
-                        disabled=not has_selection
-                    )
+                    # Use a single adaptive download button
+                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                    descargar_pdf(df_to_use, "natalidad", label=label_descarga)
 
                 with col_eliminar:
                     btn_eliminar = st.button(
@@ -213,6 +205,8 @@ def formulario_natalidad():
 
                 if guardar:
                     procesar_guardado_cambios_natalidad(edited_df)
+                    time.sleep(1)
+                    st.rerun()
 
         st.components.v1.html("""
             <script>
@@ -277,7 +271,7 @@ def formulario_natalidad():
 
             with col_fecha:
                 fecha_minima = datetime.datetime.now().date() - relativedelta(months=1)
-                fecha_maxima = datetime.date.today() + relativedelta(months=1)
+                fecha_maxima = datetime.date.today()
                 fecha = st.date_input(
                     "Fecha",
                     format="DD/MM/YYYY",
