@@ -1,4 +1,4 @@
-# 01_Morbilidad_Preparacion_Geografica.py
+# 01_Morbilidad_Preparacion_Geografica.py > 01_Morbilidad_Preparacion_Geografica.sql
 import random
 from datetime import date, timedelta
 import sys
@@ -11,11 +11,8 @@ sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 ID_CIUDAD = 1 
 
 MUNICIPIOS_DATA = {
-    "Simón Rodríguez": ["Edmundo Barrios", "Miguel Otero Silva", "Atapirire"],
-    "Guanipa": ["San José de Guanipa", "El Chaparro", "San José de Anaco"],
-    "Independencia": ["Ciudad Orinoco", "Mamo", "Soledad"],
-    "Miranda": ["Clarines", "Boca de Uchire", "San Pablo"],
-    "José Gregorio Monagas": ["Mapire", "Piar", "Santa Cruz del Orinoco"]
+    "Simón Rodríguez": ["Edmundo Barrios", "Miguel Otero Silva"],
+    "Guanipa": ["San José de Guanipa"]
 }
 
 # ----------------------------------------------------
