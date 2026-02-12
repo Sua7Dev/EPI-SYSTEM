@@ -36,7 +36,7 @@ def obtener_totales_por_anio():
                         ELSE strftime('%Y', fecha)
                     END AS anio,
                     0 AS total_mortalidad,
-                    SUM(varones + hembras) AS total_natalidad,
+                    SUM(varones + hembras + mto) AS total_natalidad,
                     0 AS total_morbilidad
                 FROM natalidad
                 WHERE fecha IS NOT NULL
@@ -81,7 +81,7 @@ def obtener_top_areas_registro(top_n=3):
             cursor.execute("SELECT COUNT(*) FROM mortalidad")
             total_mortalidad = cursor.fetchone()[0] or 0
 
-            cursor.execute("SELECT SUM(varones + hembras) FROM natalidad")
+            cursor.execute("SELECT SUM(varones + hembras + mto) FROM natalidad")
             total_natalidad = cursor.fetchone()[0] or 0
 
             cursor.execute("SELECT COUNT(*) FROM morbilidad")
@@ -109,7 +109,7 @@ def obtener_totales():
             cursor.execute("SELECT COUNT(*) FROM mortalidad")
             total_mortalidad = cursor.fetchone()[0] or 0
 
-            cursor.execute("SELECT SUM(varones + hembras) FROM natalidad")
+            cursor.execute("SELECT SUM(varones + hembras + mto) FROM natalidad")
             total_natalidad = cursor.fetchone()[0] or 0
 
             cursor.execute("SELECT COUNT(*) FROM morbilidad")

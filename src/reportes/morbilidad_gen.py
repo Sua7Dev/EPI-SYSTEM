@@ -167,8 +167,16 @@ def formulario_reporte_general_morbilidad():
                             dayfirst=True,
                             errors="coerce"
                         )
-                        min_fecha = df_fechas["fecha_iso"].min().date()
-                        max_fecha = df_fechas["fecha_iso"].max().date()
+                        # Filtrar fechas muy lejanas en el futuro (error de parseo real)
+                        umbral_futuro = pd.Timestamp.now() + pd.Timedelta(days=1)
+                        df_fechas = df_fechas[df_fechas["fecha_iso"] <= umbral_futuro]
+
+                        if not df_fechas.empty:
+                            min_fecha = df_fechas["fecha_iso"].min().date()
+                            max_fecha = df_fechas["fecha_iso"].max().date()
+                        else:
+                            min_fecha = datetime.date.today() - datetime.timedelta(days=30)
+                            max_fecha = datetime.date.today()
                     else:
                         min_fecha = datetime.date.today() - datetime.timedelta(days=30)
                         max_fecha = datetime.date.today()

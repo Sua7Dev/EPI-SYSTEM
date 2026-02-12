@@ -29,6 +29,12 @@ def obtener_rango_fechas_mortalidad():
         if df.empty:
             return datetime.date.today() - datetime.timedelta(days=30), datetime.date.today()
         df['fecha_iso'] = pd.to_datetime(df['fecha_registro_formulario'], dayfirst=True, errors='coerce')
+        # Filtrar fechas futuras inválidas que podrían venir de errores de parseo previos
+        df = df[df['fecha_iso'] <= pd.Timestamp.now()]
+        
+        if df.empty:
+            return datetime.date.today() - datetime.timedelta(days=30), datetime.date.today()
+            
         min_fecha = df['fecha_iso'].min().date()
         max_fecha = df['fecha_iso'].max().date()
         return min_fecha, max_fecha
@@ -150,76 +156,112 @@ def exportar_pdf_mortalidad_general_df(df, year=None, specific_date=None, start_
     if year:
         time_frame = f"Año {year}"
     elif specific_date:
-        time_frame = f"Fecha {specific_date.strftime('%d/%m/%Y')}"
+        if isinstance(specific_date, datetime.date):
+             time_frame = f"Fecha {specific_date.strftime('%d/%m/%Y')}"
+        else:
+             time_frame = f"Fecha {specific_date}"
     elif start_date and end_date:
         time_frame = f"Desde {start_date.strftime('%d/%m/%Y')} hasta {end_date.strftime('%d/%m/%Y')}"
 
-    pdf = CustomPDF(orientation='P', unit='mm', format='A4')
-    pdf.set_margins(left=15, top=30, right=15)
+    # Letter Portrait: ~215.9mm x 279.4mm. Útil: ~190mm
+    pdf = CustomPDF(orientation='P', unit='mm', format='Letter')
+    pdf.alias_nb_pages()
+    pdf.set_margins(left=12.7, top=15, right=12.7)
     pdf.add_page()
+    page_width = pdf.w - 25.4
 
+    # --- TÍTULO ---
     pdf.set_font("Arial", 'B', 14)
-    pdf.cell(0, 8, f"Reporte General de Mortalidad ({time_frame})", ln=1, align='J')
-    pdf.ln(6)
+    pdf.set_text_color(0, 51, 102)
+    pdf.cell(0, 10, f"REPORTE GENERAL DE MORTALIDAD", ln=1, align='C')
+    pdf.set_font("Arial", 'B', 10)
+    pdf.cell(0, 8, f"Período: {time_frame}", ln=1, align='C')
+    pdf.ln(2)
+    pdf.set_text_color(0, 0, 0)
 
-    pdf.set_font("Arial", '', 12)
-    line_height = pdf.font_size * 1.3
+    # --- RESUMEN (Uniforme) ---
+    pdf.set_font("Arial", 'B', 10)
+    pdf.cell(0, 8, "RESUMEN ESTADÍSTICO", border=0, ln=1, align='L')
+    
+    counts = df['tipo'].value_counts()
+    neonatal_count = counts.get('Neonatal', 0)
+    infantil_count = counts.get('Infantil', 0)
+    materna_count = counts.get('Materna', 0)
+    total_count = len(df)
 
-    tipos = [('Neonatal', 'Muerte Neonatal'), ('Infantil', 'Muerte Infantil'), ('Materna', 'Muerte Materna')]
+    box_w = page_width / 4
+    pdf.set_font("Arial", '', 9)
+    pdf.cell(box_w, 10, f"Neonatal: {neonatal_count}", border=1, align='C')
+    pdf.cell(box_w, 10, f"Infantil: {infantil_count}", border=1, align='C')
+    pdf.cell(box_w, 10, f"Materna: {materna_count}", border=1, align='C')
+    pdf.set_font("Arial", 'B', 9)
+    pdf.cell(box_w, 10, f"TOTAL: {total_count}", border=1, align='C')
+    pdf.ln(15)
+
+    # --- DATOS DETALLADOS ---
+    tipos = [('Neonatal', 'MORTALIDAD NEONATAL'), ('Infantil', 'MORTALIDAD INFANTIL'), ('Materna', 'MORTALIDAD MATERNA')]
+    
     for tipo_db, tipo_nombre in tipos:
         sub_df = df[df['tipo'] == tipo_db]
-        pdf.set_font("Arial", 'B', 12)
-        pdf.cell(0, 6, f"--- {tipo_nombre} ---", ln=1, align='J')
-        pdf.set_font("Arial", '', 12)
-
         if sub_df.empty:
-            pdf.multi_cell(0, line_height, "NO HUBO CASOS", align='J')
-            pdf.ln(line_height * 0.5)
-        else:
-            for idx, row in sub_df.iterrows():
-                fields = [
-                    f"Historia: {limpiar_dato(row['historia_clinica'])}",
-                    f"Nombre: {limpiar_dato(row['nombres_apellidos'])}",
-                    f"Edad: {limpiar_dato(row['edad'])}",
-                    f"Fecha Nac.: {limpiar_dato(row['fecha_nacimiento'])}",
-                    f"Fecha Def.: {limpiar_dato(row['fecha_defuncion'])}",
-                    f"Hora Def.: {limpiar_dato(row['hora_defuncion'])}",
-                    f"IDX Ingreso: {limpiar_dato(row['idx_ingreso'])}",
-                    f"IDX Defunción: {limpiar_dato(row['idx_defuncion'])}"
-                ]
-                if tipo_db == 'Neonatal':
-                    if pd.notnull(row['hora_nacimiento']):
-                        fields.append(f"Hora Nac.: {limpiar_dato(row['hora_nacimiento'])}")
-                    if pd.notnull(row['nombre_madre']):
-                        fields.append(f"Nombre Madre: {limpiar_dato(row['nombre_madre'])}")
-                    if pd.notnull(row['semanas_gestacion']):
-                        fields.append(f"Sem. Gest.: {limpiar_dato(row['semanas_gestacion'])}")
-                    if pd.notnull(row['peso']):
-                        fields.append(f"Peso: {limpiar_dato(row['peso'])} kg")
-                    if pd.notnull(row['talla']):
-                        fields.append(f"Talla: {limpiar_dato(row['talla'])} cm")
-                elif tipo_db == 'Infantil':
-                    if pd.notnull(row['nombre_madre']):
-                        fields.append(f"Nombre Madre: {limpiar_dato(row['nombre_madre'])}")
+            continue
+            
+        pdf.set_font("Arial", 'B', 11)
+        pdf.set_text_color(0, 51, 102)
+        pdf.cell(0, 10, f"{tipo_nombre}", ln=1)
+        pdf.set_text_color(0, 0, 0)
+        
+        # Diseño consolidado para no perder info en Portrait
+        if tipo_db == 'Neonatal':
+            headers = ["PACIENTE / NACIMIENTO", "DATOS MATERNOS/CLÍN.", "DEFUNCIÓN / DIAGNÓSTICOS", "DIRECCIÓN"]
+            widths = [48, 45, 50, 47] # Ajuste de anchos para Portrait Letter (Total ~190)
+        elif tipo_db == 'Infantil':
+            headers = ["PACIENTE / NACIMIENTO", "DATOS MATERNOS", "DEFUNCIÓN / DIAGNÓSTICOS", "DIRECCIÓN"]
+            widths = [48, 45, 50, 47]
+        else: # Materna
+            headers = ["PACIENTE / NACIMIENTO", "DEFUNCIÓN / DIAGNÓSTICOS", "DIRECCIÓN"]
+            widths = [55, 70, 65]
 
-                direccion = limpiar_dato(row['direccion'])
-                if direccion:
-                    componentes = [comp.strip() for comp in direccion.split(',')]
-                    componentes_validos = [comp for comp in componentes if comp and comp != "No disponible"]
-                    direccion_limpia = ", ".join(componentes_validos) if componentes_validos else None
-                    if direccion_limpia:
-                        fields.append(f"Dirección: {direccion_limpia}")
+        pdf.draw_table_header(headers, widths)
+        
+        pdf.set_font("Arial", '', 8.5)
+        fill = False
+        for _, row in sub_df.iterrows():
+            if tipo_db == 'Neonatal':
+                col1 = f"Historia Clínica: {row['historia_clinica']}\nNombre: {row['nombres_apellidos']}\nEdad: {row['edad']} días\nNacimiento: {row['fecha_nacimiento']} ({row['hora_nacimiento']})"
+                col2 = f"Madre: {row['nombre_madre']}\nSemanas Gest.: {row['semanas_gestacion']}\nPeso: {row['peso']} kg\nTalla: {row['talla']} cm"
+                col3 = f"Defunción: {row['fecha_defuncion']} ({row['hora_defuncion']})\nDiag. Ingreso: {row['idx_ingreso']}\nDiag. Defunción: {row['idx_defuncion']}"
+                col4 = f"Dirección:\n{row['direccion']}"
+                vals = [col1, col2, col3, col4]
+            elif tipo_db == 'Infantil':
+                col1 = f"Historia Clínica: {row['historia_clinica']}\nNombre: {row['nombres_apellidos']}\nEdad: {row['edad']} meses\nNacimiento: {row['fecha_nacimiento']}"
+                col2 = f"Madre: {row['nombre_madre']}"
+                col3 = f"Defunción: {row['fecha_defuncion']} ({row['hora_defuncion']})\nDiag. Ingreso: {row['idx_ingreso']}\nDiag. Defunción: {row['idx_defuncion']}"
+                col4 = f"Dirección:\n{row['direccion']}"
+                vals = [col1, col2, col3, col4]
+            else: # Materna
+                col1 = f"Historia Clínica: {row['historia_clinica']}\nNombre: {row['nombres_apellidos']}\nEdad: {row['edad']} años\nNacimiento: {row['fecha_nacimiento']}"
+                col2 = f"Defunción: {row['fecha_defuncion']} ({row['hora_defuncion']})\nDiag. Ingreso: {row['idx_ingreso']}\nDiag. Defunción: {row['idx_defuncion']}"
+                col3 = f"Dirección:\n{row['direccion']}"
+                vals = [col1, col2, col3]
+            
+            res = pdf.draw_tabular_row([limpiar_dato(v) for v in vals], widths, fill=fill)
+            
+            if not res:
+                pdf.draw_table_header(headers, widths)
+                pdf.draw_tabular_row([limpiar_dato(v) for v in vals], widths, fill=fill)
+            
+            fill = not fill
+            
+        pdf.ln(10)
 
-                text = ", ".join([f for f in fields if f])
-                pdf.multi_cell(0, line_height, text, align='J')
-                pdf.ln(line_height * 0.5)
-
-        pdf.ln(line_height)
-
-    pdf.set_title(f"Reporte_Mortalidad_General_{datetime.datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}")
+    pdf.set_title(f"Reporte_Mortalidad_{datetime.datetime.now().strftime('%d-%m-%Y')}")
     pdf.set_author("EPI-SYSTEM")
+    
     buffer = BytesIO()
-    pdf_output = pdf.output(dest='S').encode('latin1')
-    buffer.write(pdf_output)
+    # fpdf2 uses output(dest='S') or output() returns bytes depending on version
+    # Here we use the standard way for this codebase
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    buffer.write(pdf_bytes)
     buffer.seek(0)
     return buffer

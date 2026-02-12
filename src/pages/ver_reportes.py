@@ -54,6 +54,14 @@ def ver_reportes():
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__) 
     logo(tamano="70%")
+    if "autenticado_usuario" not in st.session_state:
+        st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
+        return
+    nombre_usuario = st.session_state["autenticado_usuario"]
+    info_usuario = obtener_info_usuario(nombre_usuario)
+    if not info_usuario:
+        st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
+        return
     mostrar_pdf()
     
     st.markdown("######")

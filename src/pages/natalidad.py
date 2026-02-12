@@ -12,12 +12,15 @@ from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_natalidad
 from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import procesar_guardado_cambios_natalidad
+import pandas as pd
 configurar_pagina_espanol()
 if "previous_page" not in st.session_state:
     st.session_state["previous_page"] = "pages/inicio.py"
 st.session_state["previous_page"] = "pages/natalidad.py"
 from reportes.natalidad_general import formulario_reporte_general_natalidad
 import sys
+import streamlit as st
+import streamlit.components.v1 as components
 
 
 def get_project_root() -> Path:
@@ -133,6 +136,11 @@ def formulario_natalidad():
     df = operaciones_sql_natalidad("cargar")
     if df is None:
         return
+
+    # Asegurar que las fechas se carguen como objetos datetime para que st.data_editor las muestre bien (DD/MM/YYYY)
+    if not df.empty:
+        df['fecha'] = pd.to_datetime(df['fecha'], dayfirst=True, errors='coerce')
+        df['fecha_registro_formulario'] = pd.to_datetime(df['fecha_registro_formulario'], dayfirst=True, errors='coerce')
 
     if rol_usuario == "Secretario (a)":
         if df.empty:
@@ -322,13 +330,20 @@ def formulario_natalidad():
 
             if registrar:
 
+                if partos_extrahospitalarios > partos:
+                    st.error(
+                        f"**Error de validación**: Los partos extrahospitalarios ({partos_extrahospitalarios}) "
+                        f"no pueden ser mayores que el total de partos ({partos}).",
+                        icon=":material/error:"
+                    )
+                    st.stop()
+
                 if sexo_gemelar == "No aplica" and gemelar > 0:
                     st.warning(
-                        "Al seleccionar 'No aplica', la cantidad de gemelares se ajusta automáticamente y se registra a 0.",
+                        "Al seleccionar 'No aplica', la cantidad de gemelares se ajusta automáticamente a 0.",
                         icon=":material/info:"
                     )
                     gemelar = 0
-                    return
 
                 varones_aj = varones
                 hembras_aj = hembras
@@ -339,13 +354,14 @@ def formulario_natalidad():
                 elif sexo_gemelar == "Mixto":
                     varones_aj += gemelar
                     hembras_aj += gemelar
-                    
+
                 total_nacidos = varones_aj + hembras_aj + mto
                 total_eventos = partos + cesareas
 
                 if total_nacidos != total_eventos:
                     st.error(
-                        "La suma de Hembras, Varones y MTO debe coincidir con el total de Partos y Cesáreas.",
+                        f"La suma de nacidos vivos + MTO ({total_nacidos}) no coincide "
+                        f"con el total de partos + cesáreas ({total_eventos}).",
                         icon=":material/error:"
                     )
                     st.stop()
@@ -360,10 +376,9 @@ def formulario_natalidad():
 
                 if operaciones_sql_natalidad("registrar", datos_registro=datos_registro):
                     st.success("Registro guardado correctamente.", icon=":material/check_circle:")
+                    time.sleep(1)
                     st.rerun()
 
-import streamlit as st
-import streamlit.components.v1 as components
 
 def text_input_max_3_con_mensaje(label: str, key: str):
     valor = st.text_input(label, key=key)

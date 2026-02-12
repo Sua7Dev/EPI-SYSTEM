@@ -120,6 +120,7 @@ def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
                     SELECT id_nata AS id, fecha, partos, cesareas, varones, hembras, gemelar, 
                            mto, partos_extrahospitalarios, id_doctor, fecha_registro_formulario
                     FROM natalidad
+                    ORDER BY id_nata DESC
                 """
                 return pd.read_sql_query(query, conn)
 
@@ -143,20 +144,18 @@ def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
 
 
                 # === INSERTAR EL REGISTRO ===
-                # Formatear fecha antes de insertar para asegurar consistencia
-                try:
-                    fecha_str = fecha.strftime("%d/%m/%Y")
-                except AttributeError:
-                    fecha_str = str(fecha)
+                # Mantener formato DD/MM/YYYY para consistencia con legado, 
+                # la robustez se maneja al leer con dayfirst=True
 
+                fecha_formateada = fecha.strftime("%d-%m-%y")
                 cursor.execute("""
                     INSERT INTO natalidad (
                         fecha, partos, cesareas, varones, hembras, gemelar, 
                         mto, partos_extrahospitalarios, id_doctor, fecha_registro_formulario
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    fecha_str, partos, cesareas, varones, hembras, gemelar, 
-                    mto, partos_extrahospitalarios, id_doctor_atendi, datetime.date.today().strftime("%Y-%m-%d")
+                    fecha_formateada, partos, cesareas, varones, hembras, gemelar, 
+                    mto, partos_extrahospitalarios, id_doctor_atendi, datetime.date.today().strftime("%d/%m/%Y")
                 ))
 
                 # Obtener el ID del nuevo registro
@@ -467,6 +466,7 @@ def operaciones_sql_neonatal(accion, datos_registro=None, db=DB_PATH):
                     LEFT JOIN ciudad c ON mu.id_ciudad = c.id_ciudad
                     LEFT JOIN estado e ON c.id_estado = e.id_estado
                     LEFT JOIN pais p ON e.id_pais = p.id_pais
+                    ORDER BY m.id_m DESC
                 """
                 return pd.read_sql_query(query, conn)
             elif accion == "registrar" and datos_registro:
@@ -521,9 +521,6 @@ def operaciones_sql_neonatal(accion, datos_registro=None, db=DB_PATH):
                 else:
                     fecha_formateada_defuncion = str(fecha_defuncion)   
 
-                #fecha_formateada_nacimiento = fecha_nacimiento.strftime("%d/%m/%Y")
-                #fecha_formateada_ingreso = fecha_ingreso.strftime("%d/%m/%Y")
-                #fecha_formateada_defuncion = fecha_defuncion.strftime("%d/%m/%Y")
                 cursor.execute("""
                     INSERT INTO mortalidad (
                         id_paciente, id_direccion, historia_clinica, nombres_apellidos, 
@@ -533,7 +530,7 @@ def operaciones_sql_neonatal(accion, datos_registro=None, db=DB_PATH):
                 """, (
                     id_paciente, id_direccion, historia_clinica, nombres_apellidos, 
                     fecha_formateada_nacimiento, fecha_formateada_ingreso, hora_ingreso, fecha_formateada_defuncion, hora_defuncion, 
-                    idx_ingreso, idx_defuncion, datetime.date.today()
+                    idx_ingreso, idx_defuncion, datetime.date.today().strftime("%d/%m/%Y")
                 ))
                 id_m = cursor.lastrowid
                 
@@ -673,7 +670,8 @@ def operaciones_sql_infantil(accion, datos_registro=None, db=DB_PATH):
                         LEFT JOIN municipio mu ON par.id_municipio = mu.id_municipio
                         LEFT JOIN ciudad c ON mu.id_ciudad = c.id_ciudad
                         LEFT JOIN estado e ON c.id_estado = e.id_estado
-                        LEFT JOIN pais p ON e.id_pais = p.id_pais;
+                        LEFT JOIN pais p ON e.id_pais = p.id_pais
+                        ORDER BY m.id_m DESC;
 
                 """
                 return pd.read_sql_query(query, conn)
@@ -726,9 +724,6 @@ def operaciones_sql_infantil(accion, datos_registro=None, db=DB_PATH):
                 else:
                     fecha_formateada_defuncion = str(fecha_defuncion)   
 
-                #fecha_formateada_nacimiento = fecha_nacimiento.strftime("%d/%m/%Y")
-                #fecha_formateada_ingreso = fecha_ingreso.strftime("%d/%m/%Y")
-                #fecha_formateada_defuncion = fecha_defuncion.strftime("%d/%m/%Y")
                 cursor.execute("""
                     INSERT INTO mortalidad (
                         id_paciente, id_direccion, historia_clinica, nombres_apellidos, 
@@ -738,7 +733,7 @@ def operaciones_sql_infantil(accion, datos_registro=None, db=DB_PATH):
                 """, (
                     id_paciente, id_direccion, historia_clinica, nombres_apellidos, 
                     fecha_formateada_nacimiento, fecha_formateada_ingreso, hora_ingreso, fecha_formateada_defuncion, hora_defuncion, 
-                    idx_ingreso, idx_defuncion, datetime.date.today()
+                    idx_ingreso, idx_defuncion, datetime.date.today().strftime("%d/%m/%Y")
                 ))
                 id_m = cursor.lastrowid
                 cursor.execute("INSERT INTO mortalidad_infantil (id_m, nombre_madre) VALUES (?, ?)", (id_m, nombre_madre))
@@ -862,7 +857,8 @@ def operaciones_sql_materna(accion, datos_registro=None, db=DB_PATH):
                     LEFT JOIN municipio mu ON par.id_municipio = mu.id_municipio
                     LEFT JOIN ciudad c ON mu.id_ciudad = c.id_ciudad
                     LEFT JOIN estado e ON c.id_estado = e.id_estado
-                    LEFT JOIN pais p ON e.id_pais = p.id_pais;
+                    LEFT JOIN pais p ON e.id_pais = p.id_pais
+                    ORDER BY m.id_m DESC;
 
                 """
                 return pd.read_sql_query(query, conn)
@@ -914,9 +910,6 @@ def operaciones_sql_materna(accion, datos_registro=None, db=DB_PATH):
                 else:
                     fecha_formateada_defuncion = str(fecha_defuncion)   
 
-                #fecha_formateada_nacimiento = fecha_nacimiento.strftime("%d/%m/%Y")
-                #fecha_formateada_ingreso = fecha_ingreso.strftime("%d/%m/%Y")
-                #fecha_formateada_defuncion = fecha_defuncion.strftime("%d/%m/%Y")
                 cursor.execute("""
                     INSERT INTO mortalidad (
                         id_paciente, id_direccion, historia_clinica, nombres_apellidos, 
@@ -926,7 +919,7 @@ def operaciones_sql_materna(accion, datos_registro=None, db=DB_PATH):
                 """, (
                     id_paciente, id_direccion, historia_clinica, nombres_apellidos, 
                     fecha_formateada_nacimiento, fecha_formateada_ingreso, hora_ingreso, fecha_formateada_defuncion, hora_defuncion, 
-                    idx_ingreso, idx_defuncion, datetime.date.today()
+                    idx_ingreso, idx_defuncion, datetime.date.today().strftime("%d/%m/%Y")
                 ))
                 id_m = cursor.lastrowid
                 cursor.execute("INSERT INTO mortalidad_materna (id_m) VALUES (?)", (id_m,))

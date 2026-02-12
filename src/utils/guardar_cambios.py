@@ -485,12 +485,17 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
 
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
+
         for _, row in edited_df.iterrows():
+            # ─────────────────────────────────────────────────────────────
+            # 1. Obtener y convertir valores
+            # ─────────────────────────────────────────────────────────────
             sexo_gemelar = row.get('sexo_gemelar', '') or ''
             gemelar = int(row.get('gemelar', 0)) if pd.notna(row.get('gemelar', 0)) else 0
             varones = int(row.get('varones', 0)) if pd.notna(row.get('varones', 0)) else 0
             hembras = int(row.get('hembras', 0)) if pd.notna(row.get('hembras', 0)) else 0
 
+            # Ajuste por gemelares
             if sexo_gemelar == "Varones":
                 varones += gemelar * 2
             elif sexo_gemelar == "Hembras":
@@ -499,19 +504,44 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
                 varones += gemelar
                 hembras += gemelar
 
-            fecha_display = row.get('fecha_display', '')
+            # Fecha
+            fecha_display = row.get('fecha_display', row.get('fecha', ''))
+            if not fecha_display:
+                st.error("No se pudo determinar la fecha del registro.", icon=":material/error:")
+                return  # Detener todo el guardado
+
             fecha_db = pd.to_datetime(fecha_display, format='%d/%m/%Y', errors='coerce')
             if pd.isna(fecha_db):
-                fecha_db = pd.Timestamp('2025-01-01')
+                st.error(
+                    f"Formato de fecha inválido: '{fecha_display}'. "
+                    "Use el formato dd/mm/yyyy.",
+                    icon=":material/error:"
+                )
+                return  # No guardar nada si hay fecha inválida
+
             fecha_db_str = fecha_db.strftime('%d/%m/%Y')
 
+            # Valores numéricos
             partos = int(row.get("partos", 0)) if pd.notna(row.get("partos", 0)) else 0
             cesareas = int(row.get("cesareas", 0)) if pd.notna(row.get("cesareas", 0)) else 0
             mto = int(row.get("mto", 0)) if pd.notna(row.get("mto", 0)) else 0
-            partos_extra = int(row.get("partos_extra", 0)) if pd.notna(row.get("partos_extra", 0)) else 0
+            partos_extra = int(row.get("partos_extrahospitalarios", 0)) if pd.notna(row.get("partos_extrahospitalarios", 0)) else 0
 
+            # ─────────────────────────────────────────────────────────────
+            # 2. Validación clave: PEH no puede ser mayor que partos
+            # ─────────────────────────────────────────────────────────────
+            if partos_extra > partos:
+                st.error(
+                    f"**Error de validación**: Los partos extrahospitalarios ({partos_extra}) "
+                    f"no pueden ser mayores que el total de partos ({partos}).",
+                    icon=":material/error:"
+                )
+                return  # ← Importante: detiene todo el proceso de guardado
+
+            # ─────────────────────────────────────────────────────────────
+            # 3. Guardar el registro
+            # ─────────────────────────────────────────────────────────────
             registro_id = row.get('id')
-            ultimo_id = registro_id
 
             if pd.notna(registro_id):
                 cursor.execute(
@@ -540,12 +570,10 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
 
     if hubo_cambios:
         registrar_actividad_duradera("EDITADO", "Natalidad", ultimo_id, usuario)
-        #
+        notificacion_cambios()
         st.rerun()
     else:
         st.info("No se detectaron cambios para guardar.", icon=":material/info:")
-
-
 def procesar_guardado_morb_extenso(edited_df, DB_PATH=DB_PATH):
     usuario = st.session_state.get("autenticado_usuario", "Desconocido")
     hubo_cambios = False

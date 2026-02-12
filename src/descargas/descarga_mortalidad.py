@@ -84,78 +84,86 @@ def _exportar_pdf_mortalidad(df, nombre_archivo):
                 lambda x: f"{x:.2f}" if pd.notnull(x) else ""
             )
 
-    pdf = CustomPDF(orientation='P', unit='mm', format='A4')
-    pdf.set_margins(left=10, top=30, right=10)
+    # Forzar Portrait Letter
+    pdf = CustomPDF(orientation='P', unit='mm', format='Letter')
+    pdf.alias_nb_pages()
+    pdf.set_margins(left=12.7, top=15, right=12.7)
+    page_width = pdf.w - 25.4
 
     if df_filtered.empty:
         pdf.add_page()
         pdf.set_font("Arial", 'B', size=14)
-        pdf.cell(0, 12, title, ln=1, align='C')
+        pdf.set_text_color(0, 51, 102)
+        pdf.cell(0, 12, title.upper(), ln=1, align='C')
         pdf.ln(8)
-        pdf.set_font("Arial", size=14)
-        pdf.multi_cell(0, 8, f"{tipo}: No hubo casos.", align='J')
+        pdf.set_font("Arial", size=11)
+        pdf.set_text_color(0, 0, 0)
+        pdf.multi_cell(0, 8, f"{tipo}: No se encontraron casos registrados para este periodo.", align='C')
 
     else:
-        column_width = 95
-        line_height = 8
-        columns = 2
+        pdf.add_page()
+        pdf.set_font("Arial", 'B', 14)
+        pdf.set_text_color(0, 51, 102)
+        pdf.cell(0, 10, title.upper(), ln=1, align='C')
+        pdf.ln(2)
+        pdf.set_text_color(0, 0, 0)
 
-        for idx, (_, row) in enumerate(df_filtered.iterrows(), start=1):
-            pdf.add_page()
-            pdf.set_font("Arial", 'B', size=14)
-            pdf.cell(0, 12, title, ln=1, align='C')
-            pdf.ln(6)
-            pdf.set_font("Arial", size=12)
+        # --- RESUMEN ---
+        pdf.set_font("Arial", 'B', 10)
+        pdf.cell(0, 8, "RESUMEN DEL REPORTE", border=0, ln=1, align='L')
+        pdf.set_font("Arial", '', 9)
+        pdf.cell(page_width, 10, f"Total de Registros de {tipo}: {len(df_filtered)}", border=1, ln=1, align='C')
+        pdf.ln(10)
 
-            fields = []
-            for col in df_filtered.columns:
-                value = str(row[col]) if pd.notnull(row[col]) else ""
+        # Determinar cabeceras segun tipo
+        if "neonatal" in nombre_archivo.lower():
+            headers = ["PACIENTE / NACIMIENTO", "DATOS MATERNOS/CLÍN.", "DEFUNCIÓN / DIAGNÓSTICOS", "DIRECCIÓN"]
+            widths = [48, 45, 50, 47]
+        elif "infantil" in nombre_archivo.lower():
+            headers = ["PACIENTE / NACIMIENTO", "DATOS MATERNOS", "DEFUNCIÓN / DIAGNÓSTICOS", "DIRECCIÓN"]
+            widths = [48, 45, 50, 47]
+        else: # materna
+            headers = ["PACIENTE / NACIMIENTO", "DEFUNCIÓN / DIAGNÓSTICOS", "DIRECCIÓN"]
+            widths = [55, 70, 65]
 
-                if col == 'direccion':
-                    if value.lower() in ["no disponible", "no disponible."]:
-                        continue
+        pdf.draw_table_header(headers, widths)
+        pdf.set_font("Arial", '', 8.5)
+        
+        fill = False
+        for _, row in df_filtered.iterrows():
+            if "neonatal" in nombre_archivo.lower():
+                col1 = f"Historia Clínica: {row.get('historia_clinica','')}\nNombre: {row.get('nombres_apellidos','')}\nEdad: {row.get('edad','')} días\nNacimiento: {row.get('fecha_nacimiento','')} ({row.get('hora_nacimiento','')})"
+                col2 = f"Madre: {row.get('nombre_madre','')}\nSemanas Gest.: {row.get('semanas_gestacion','')}\nPeso: {row.get('peso','')} kg\nTalla: {row.get('talla','')} cm"
+                col3 = f"Defunción: {row.get('fecha_defuncion','')} ({row.get('hora_defuncion','')})\nDiag. Ingreso: {row.get('idx_ingreso','')}\nDiag. Defunción: {row.get('idx_defuncion','')}"
+                col4 = f"Dirección:\n{row.get('direccion','')}"
+                vals = [col1, col2, col3, col4]
+            elif "infantil" in nombre_archivo.lower():
+                col1 = f"Historia Clínica: {row.get('historia_clinica','')}\nNombre: {row.get('nombres_apellidos','')}\nEdad: {row.get('edad','')} meses\nNacimiento: {row.get('fecha_nacimiento','')}"
+                col2 = f"Madre: {row.get('nombre_madre','')}"
+                col3 = f"Defunción: {row.get('fecha_defuncion','')} ({row.get('hora_defuncion','')})\nDiag. Ingreso: {row.get('idx_ingreso','')}\nDiag. Defunción: {row.get('idx_defuncion','')}"
+                col4 = f"Dirección:\n{row.get('direccion','')}"
+                vals = [col1, col2, col3, col4]
+            else: # materna
+                col1 = f"Historia Clínica: {row.get('historia_clinica','')}\nNombre: {row.get('nombres_apellidos','')}\nEdad: {row.get('edad','')} años\nNacimiento: {row.get('fecha_nacimiento','')}"
+                col2 = f"Defunción: {row.get('fecha_defuncion','')} ({row.get('hora_defuncion','')})\nDiag. Ingreso: {row.get('idx_ingreso','')}\nDiag. Defunción: {row.get('idx_defuncion','')}"
+                col3 = f"Dirección:\n{row.get('direccion','')}"
+                vals = [col1, col2, col3]
 
-                    cleaned_value = re.sub(
-                        r'\bNo disponible\b(?:,\s*|$)',
-                        '',
-                        value,
-                        flags=re.IGNORECASE
-                    ).strip(', ').strip()
-
-                    if not cleaned_value:
-                        continue
-
-                    value = cleaned_value
-
-                if value:
-                    label = LABELS.get(col, col.replace('_', ' ').title()) + ":"
-                    fields.append(f"{label} {value}")
-
-            if fields:
-                fields_per_column = (len(fields) + columns - 1) // columns
-                col1_fields = fields[:fields_per_column]
-                col2_fields = fields[fields_per_column:]
-
-                start_y = pdf.get_y()
-
-                pdf.set_x(10)
-                for field in col1_fields:
-                    pdf.multi_cell(column_width, line_height, field, align='J')
-                    pdf.set_x(10)
-
-                if col2_fields:
-                    pdf.set_xy(10 + column_width + 5, start_y)
-                    for field in col2_fields:
-                        pdf.multi_cell(column_width, line_height, field, align='J')
-                        pdf.set_xy(10 + column_width + 5, pdf.get_y())
-
-                pdf.ln(8)
+            def limpiar_string(v): return str(v) if pd.notnull(v) else ""
+            res = pdf.draw_tabular_row([limpiar_string(v) for v in vals], widths, fill=fill)
+            if not res:
+                pdf.draw_table_header(headers, widths)
+                pdf.draw_tabular_row([limpiar_string(v) for v in vals], widths, fill=fill)
+            fill = not fill
 
     pdf.set_title(nombre_archivo)
     pdf.set_author("EPI-SYSTEM")
 
     buffer = BytesIO()
-    pdf_output = pdf.output(dest='S').encode('latin1')
-    buffer.write(pdf_output)
+    # fpdf2 compatible output
+    pdf_bytes = pdf.output(dest='S')
+    if isinstance(pdf_bytes, str):
+        pdf_bytes = pdf_bytes.encode('latin1')
+    buffer.write(pdf_bytes)
     buffer.seek(0)
     return buffer
