@@ -109,39 +109,57 @@ def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False
                     use_container_width=True, key=key, 
                     type="primary" if label == "Descargar Reporte" else "secondary")
     
-    if btn:
-            output = generar_pdf_segun_tipo(df, nombre_base)
-            # Resetear estado después de generar
-            
-            if output:
-                # Ensure we have raw bytes
-                content = output.getvalue() if hasattr(output, "getvalue") else output
-                
-                area_descargada = obtener_area(nombre_base)
-                fecha_actual = datetime.datetime.now()
-                fecha_str = fecha_actual.strftime("%d-%m-%Y")
-                hora_str = fecha_actual.strftime("%I-%M-%S")
-                meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
-                nombre_archivo = f"{area_descargada}_{fecha_str}_{hora_str}_{meridiano}.pdf"
-                
-                b64 = base64.b64encode(content).decode()
-                # JS trigger for download
-                js = f"""
-                    <script>
-                    const link = window.parent.document.createElement('a');
-                    link.href = 'data:application/pdf;base64,{b64}';
-                    link.download = '{nombre_archivo}';
-                    link.click();
-                    </script>
-                """
-                st.components.v1.html(js, height=0)
-                registrar_actividad_duradera("DESCARGA PDF", f"Reportes {area_descargada}")
-                time.sleep(1)
-                st.rerun()  # Reactivar botón después de descarga
-                
-            else:
-                st.error("No se pudo generar el PDF.")
-                st.rerun()  # Reactivar botón incluso si falla
+def generar_nombre_archivo_pdf(nombre_base):
+    area_descargada = obtener_area(nombre_base)
+    fecha_actual = datetime.datetime.now()
+    fecha_str = fecha_actual.strftime("%Y-%m-%d")
+    hora_str = fecha_actual.strftime("%I-%M-%S")
+    meridiano = "PM" if fecha_actual.hour >= 12 else "AM"
+    return f"{area_descargada}_{fecha_str}_{hora_str}_{meridiano}.pdf"
+
+def ejecutar_descarga_pdf(content, nombre_archivo, area_descargada):
+    b64 = base64.b64encode(content).decode()
+    js = f"""
+        <script>
+        const link = window.parent.document.createElement('a');
+        link.href = 'data:application/pdf;base64,{b64}';
+        link.download = '{nombre_archivo}';
+        link.click();
+        </script>
+    """
+    st.components.v1.html(js, height=0)
+    registrar_actividad_duradera("DESCARGA PDF", f"Reportes {area_descargada}")
+    time.sleep(1)
+    st.rerun()
+
+def descargar_pdf_desde_buffer(content, nombre_base, label="Descargar PDF", key=None):
+    if not content:
+        st.error("No hay contenido para descargar.")
+        return
+
+    if st.button(label=label, icon=":material/download:", use_container_width=True, key=key, type="primary"):
+        nombre_archivo = generar_nombre_archivo_pdf(nombre_base)
+        area_descargada = obtener_area(nombre_base)
+        ejecutar_descarga_pdf(content, nombre_archivo, area_descargada)
+
+def descargar_pdf(df, nombre_base="datos", label="Descargar PDF", disabled=False):
+    key = f"btn_descarga_{nombre_base}_{abs(hash(str(df.index)))}"
+    is_disabled = disabled or df.empty
+    
+    if st.button(label=label, icon=":material/download:", 
+                    disabled=is_disabled, 
+                    use_container_width=True, key=key, 
+                    type="primary" if label == "Descargar Reporte" else "secondary"):
+        
+        output = generar_pdf_segun_tipo(df, nombre_base)
+        if output:
+            content = output.getvalue() if hasattr(output, "getvalue") else output
+            nombre_archivo = generar_nombre_archivo_pdf(nombre_base)
+            area_descargada = obtener_area(nombre_base)
+            ejecutar_descarga_pdf(content, nombre_archivo, area_descargada)
+        else:
+            st.error("No se pudo generar el PDF.")
+            st.rerun()
 
 def ver_pdf(df, nombre_base="datos", key_btn=None, disabled=False):
     # from utils.botones import bloquear_botones
@@ -159,6 +177,7 @@ def ver_pdf(df, nombre_base="datos", key_btn=None, disabled=False):
             if output:
                 content = output.getvalue() if hasattr(output, "getvalue") else output
                 st.session_state["pdf_buffer"] = content
+                st.session_state["pdf_nombre_base"] = nombre_base
                 st.switch_page("pages/ver_reportes.py")
             else:
                 st.error("No se pudo generar el reporte.")

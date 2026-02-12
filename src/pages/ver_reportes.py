@@ -6,6 +6,7 @@ from utils.verificaciones import obtener_info_usuario
 from pathlib import Path
 configurar_pagina_espanol()
 import sys
+import datetime
 
 
 def get_project_root() -> Path:
@@ -23,27 +24,38 @@ PDF_DIR = PROJECT_ROOT / "static" / "assets" / "pdf"
 
 def boton_volver():
     # TODO hacer que te devuelva a la pagina que viniste
-    volver_btn = st.button(label="Volver atras", type="primary", icon=":material/arrow_back:")
+    volver_btn = st.button(label="Volver atras", type="primary", icon=":material/arrow_back:", use_container_width=True)
     if volver_btn:
         st.switch_page(st.session_state.get("previous_page", "pages/inicio.py"))
         st.rerun()
     
 def mostrar_pdf():
     pdf_buffer = st.session_state.get("pdf_buffer")
+    nombre_base = st.session_state.get("pdf_nombre_base", "Reporte")
 
     if pdf_buffer:
         pdf_viewer(pdf_buffer)
+        
+        
+        col_volver, col_descargar = st.columns([1, 1])
+        with col_volver:
+            boton_volver()
+        with col_descargar:
+            from utils.filtro import descargar_pdf_desde_buffer
+            descargar_pdf_desde_buffer(pdf_buffer, nombre_base, label="Descargar PDF", key="descargar_ver_reporte")
+            
     else:
         st.error("No se encontró el reporte para mostrar.", icon=":material/error:")
+        boton_volver()
 
 def ver_reportes():
     logo_bandera = ASSETS_DIR / "imagebanderanueva2.png"
     logo_base64 = img_a_base64(logo_bandera)
     st.set_page_config(layout="wide", page_icon=logo_bandera)
-    recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
+    recargar_una_vez(__file__) 
     logo(tamano="70%")
     mostrar_pdf()
-    boton_volver()
+    
     st.markdown("######")
     st.markdown("######")
     copyright_footer_dos("Equipo Investigador", margin_right="0px")

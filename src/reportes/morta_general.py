@@ -60,6 +60,7 @@ def consultar_mortalidad_general(year=None, specific_date=None, start_date=None,
                 SELECT m.historia_clinica, m.nombres_apellidos, pp.edad, m.fecha_nacimiento,
                        m.fecha_defuncion, m.hora_defuncion, mn.nombre_madre, mn.hora_nacimiento,
                        mn.semanas_gestacion, mn.peso, mn.talla, m.idx_ingreso, m.idx_defuncion,
+                       m.fecha_registro_formulario,
                        COALESCE(p.nombre || ', ', '') || 
                        COALESCE(e.nombre || ', ', '') || 
                        COALESCE(c.nombre || ', ', '') || 
@@ -81,6 +82,7 @@ def consultar_mortalidad_general(year=None, specific_date=None, start_date=None,
                        m.fecha_defuncion, m.hora_defuncion, mi.nombre_madre, NULL AS hora_nacimiento,
                        NULL AS semanas_gestacion, NULL AS peso, NULL AS talla,
                        m.idx_ingreso, m.idx_defuncion,
+                       m.fecha_registro_formulario,
                        COALESCE(p.nombre || ', ', '') || 
                        COALESCE(e.nombre || ', ', '') || 
                        COALESCE(c.nombre || ', ', '') || 
@@ -102,6 +104,7 @@ def consultar_mortalidad_general(year=None, specific_date=None, start_date=None,
                        m.fecha_defuncion, m.hora_defuncion, NULL AS nombre_madre, NULL AS hora_nacimiento,
                        NULL AS semanas_gestacion, NULL AS peso, NULL AS talla,
                        m.idx_ingreso, m.idx_defuncion,
+                       m.fecha_registro_formulario,
                        COALESCE(p.nombre || ', ', '') || 
                        COALESCE(e.nombre || ', ', '') || 
                        COALESCE(c.nombre || ', ', '') || 
@@ -121,19 +124,23 @@ def consultar_mortalidad_general(year=None, specific_date=None, start_date=None,
             """
 
             params = []
-            where_clause = ""
-            if year:
-                where_clause = "WHERE strftime('%Y', m.fecha_registro_formulario) = ?"
-                params = [str(year)] * 3
-            elif specific_date:
-                where_clause = "WHERE m.fecha_registro_formulario = ?"
-                params = [specific_date] * 3
-            elif start_date and end_date:
-                where_clause = "WHERE m.fecha_registro_formulario BETWEEN ? AND ?"
-                params = [start_date, end_date] * 3
+            # Traemos todo y filtramos en Pandas para evitar problemas con formatos de fecha en SQLite
+            df = pd.read_sql_query(base_query.format(where_clause=""), conn)
 
-            query = base_query.format(where_clause=where_clause)
-            df = pd.read_sql_query(query, conn, params=params)
+            if df.empty:
+                return df
+                
+            # Convertir a datetime
+            df['fecha_iso'] = pd.to_datetime(df['fecha_defuncion'], dayfirst=True, errors='coerce')
+
+            if year:
+                df = df[df['fecha_iso'].dt.year == int(year)]
+            elif specific_date:
+                df = df[df['fecha_iso'].dt.date == specific_date]
+            elif start_date and end_date:
+                df = df[(df['fecha_iso'].dt.date >= start_date) & 
+                        (df['fecha_iso'].dt.date <= end_date)]
+            
             return df
     except sqlite3.Error:
         return pd.DataFrame()

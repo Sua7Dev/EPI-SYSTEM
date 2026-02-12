@@ -6,6 +6,7 @@ from reportes.morta_general import consultar_mortalidad_general
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 from pages.historial import registrar_actividad_duradera
 from utils.botones import ver_btn
+from utils.filtro import ver_pdf, descargar_pdf
 
 def formulario_reporte_general():
     st.subheader(":material/description: General de Mortalidad", anchor=False)
@@ -26,45 +27,35 @@ def formulario_reporte_general():
         year, specific_date, start_date, end_date = None, None, None, None
         pdf_buffer = None
 
-        # Conexión a DB para obtener fechas de registros
+        # Conexión a DB para obtener fechas de registros y calcular min/max/años de forma robusta
+        import pandas as pd
         conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT MIN(fecha_registro_formulario),
-                   MAX(fecha_registro_formulario)
-            FROM mortalidad
-            WHERE fecha_registro_formulario IS NOT NULL
-            """
-        )
-        result = cursor.fetchone()
-        conn.close()
-
-        min_fecha = (
-            datetime.datetime.strptime(result[0], "%Y-%m-%d").date()
-            if result and result[0]
-            else datetime.date.today()
-        )
-        max_fecha_db = (
-            datetime.datetime.strptime(result[1], "%Y-%m-%d").date()
-            if result and result[1]
-            else datetime.date.today()
-        )
-        max_fecha = min(max_fecha_db, datetime.date.today())
-
-        if timeframe == "Año":
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT DISTINCT strftime('%Y', fecha_registro_formulario)
-                FROM mortalidad
-                ORDER BY 1 DESC
-                """
-            )
-            available_years = [int(row[0]) for row in cursor.fetchall() if row[0]]
+        try:
+            df_dates = pd.read_sql_query("SELECT fecha_defuncion FROM mortalidad WHERE fecha_defuncion IS NOT NULL", conn)
+        finally:
             conn.close()
 
+        if not df_dates.empty:
+            # Convertir a datetime usando pandas (detecta DD/MM/YYYY o YYYY-MM-DD)
+            df_dates["fecha_iso"] = pd.to_datetime(df_dates["fecha_defuncion"], dayfirst=True, errors="coerce")
+            
+            # Eliminar NaT
+            valid_dates = df_dates["fecha_iso"].dropna()
+            
+            if not valid_dates.empty:
+                min_fecha = valid_dates.min().date()
+                max_fecha = valid_dates.max().date()
+                available_years = sorted(valid_dates.dt.year.unique().astype(int), reverse=True)
+            else:
+                 min_fecha = datetime.date.today()
+                 max_fecha = datetime.date.today()
+                 available_years = []
+        else:
+            min_fecha = datetime.date.today()
+            max_fecha = datetime.date.today()
+            available_years = []
+
+        if timeframe == "Año":
             if not available_years:
                 st.error("Sin datos registrados.", icon=":material/error:")
                 return
@@ -126,7 +117,7 @@ def formulario_reporte_general():
 
         # ------------------ BOTONES LAZY (PDF) ------------------
         if pdf_df is not None and not pdf_df.empty:
-            from utils.filtro import ver_pdf, descargar_pdf
+            
             col_ver, col_descargar = st.columns(2)
             with col_ver:
                 ver_pdf(pdf_df, "mortalidad_general", key_btn="ver_reporte_general_morta")

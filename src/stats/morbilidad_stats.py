@@ -12,7 +12,6 @@ DB_PATH = os.getenv("hospital.db", "hospital.db")
 def convertir_fecha_df(df, columna):
     df[columna] = pd.to_datetime(
         df[columna],
-        format="%d/%m/%Y",
         errors="coerce"
     )
     return df
