@@ -147,4 +147,3 @@ def limpiar_campos_morb_extenso():
     st.session_state.cuidad_hogar_morb_extenso = ""
     st.session_state.direccion_exacta_hogar_morb_extenso = ""
 
-

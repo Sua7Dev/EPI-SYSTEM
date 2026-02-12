@@ -2,7 +2,7 @@
 ![Logo](https://i.imgur.com/SAHxoGy.png)
 
 
-# EPI-SYSTEM
+# Sistema de Estadísticas Epidemiológicas (SEE) (before EPI-SYSTEM)
 
 The developed system is a web-based epidemiological surveillance environment for the Dr. Felipe Guevara Rojas Hospital. Its purpose is to digitize and optimize the recording, analysis, and query of epidemiological data, replacing manual paper-based processes with an efficient, secure, and accessible technological tool.
 

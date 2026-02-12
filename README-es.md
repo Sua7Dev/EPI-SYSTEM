@@ -2,7 +2,7 @@
 ![Logo](https://i.imgur.com/SAHxoGy.png)
 
 
-# EPI-SYSTEM
+# Sistema de Estadísticas Epidemiológicas (SEE) (antes EPI-SYSTEM)
 
 El sistema desarrollado es un entorno web de vigilancia epidemiológica orientada al Hospital Dr. Felipe Guevara Rojas. Su propósito es digitalizar y optimizar el registro, análisis y consulta de datos epidemiológicos, sustituyendo los procesos manuales en papel por una herramienta tecnológica eficiente, segura y accesible.
 

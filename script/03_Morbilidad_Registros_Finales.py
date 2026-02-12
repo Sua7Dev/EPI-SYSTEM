@@ -1,4 +1,4 @@
-# 03_Morbilidad_Registros_Finales.py
+# 03_Morbilidad_Registros_Finales.py > 03_Morbilidad_Registros_Finales.sql
 import json
 import sys
 import codecs

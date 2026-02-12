@@ -1,4 +1,4 @@
-# 07_Mortalidad_Materna_Inserts_Multitabla.py
+# 07_Mortalidad_Materna_Inserts_Multitabla.py > 07_Mortalidad_Materna_Inserts_Multitabla.sql
 import random
 from datetime import date, timedelta
 from faker import Faker
@@ -10,7 +10,7 @@ import codecs
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
 
 fake = Faker('es_ES')
-NUM_REGISTROS = 37 # Generaremos 100 registros de Mortalidad Materna
+NUM_REGISTROS = 37 # Generaremos 37 registros de Mortalidad Materna
 
 # --- Listas de Datos (Reutilizadas y Adaptadas) ---
 NOMBRES_MUJER = [
@@ -63,11 +63,8 @@ APELLIDOS = [
 
 # Datos Geográficos (Reutilizados de Morbilidad)
 MUNICIPIOS_DATA = {
-    "Simón Rodríguez": ["Edmundo Barrios", "Miguel Otero Silva", "Atapirire"],
-    "Guanipa": ["San José de Guanipa", "El Chaparro", "San José de Anaco"],
-    "Independencia": ["Ciudad Orinoco", "Mamo", "Soledad"],
-    "Miranda": ["Clarines", "Boca de Uchire", "San Pablo"],
-    "José Gregorio Monagas": ["Mapire", "Piar", "Santa Cruz del Orinoco"]
+    "Simón Rodríguez": ["Edmundo Barrios", "Miguel Otero Silva"],
+    "Guanipa": ["San José de Guanipa"],
 }
 PARROQUIAS_LISTA = [p for subs in MUNICIPIOS_DATA.values() for p in subs]
 
@@ -115,16 +112,13 @@ def generar_nombre_completo(es_mujer=True):
 def generar_direccion_exacta(municipio):
     # [Función copiada de SCRIPT 06]
     sectores = {
-        "Simón Rodríguez": ["Pueblo Nuevo Sur", "Campo Alegre", "Casco Central", "Vía San Tomé"],
-        "Guanipa": ["Barrio Simón Bolívar", "Los Olivos", "Centro", "El Palomar"],
-        "Independencia": ["El Centro", "La Esperanza", "Km 55"],
-        "Miranda": ["Las Malvinas", "El Casco", "Vía Clarines"],
-        "José Gregorio Monagas": ["Sector Las Vegas", "El Centro", "Punta de Mata"]
+        "Simón Rodríguez": ["Pueblo Nuevo Sur", "Campo Alegre", "Casco Central", "Las Villas", "Pedro Camejo", "Los Ángeles", "San José", "Paraíso 1", "Paraíso 2", "Campo Oficina"],
+        "Guanipa": ["Barrio Blanco", "Las Malvinas", "Bicentenario", "19 de Marzo", "Central", "Colinas", "Cementerio", "Simón Bolívar", "La Floresta", "Valmore Rodríguez"],
     }
     tipo_via = random.choice(["Calle", "Carrera", "Avenida"])
     num_via = random.randint(1, 100)
     sector = random.choice(sectores.get(municipio, ["Sector Genérico"]))
-    return f"{tipo_via} {num_via}, Sector {sector}, cerca del CDI. ({municipio})"
+    return f"{tipo_via} {num_via}, Sector {sector}."
 
 def generar_datos_ingreso_defuncion():
     """Genera la relación idx_defuncion (clave) : idx_ingreso (valor)"""

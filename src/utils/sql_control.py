@@ -1032,8 +1032,8 @@ def crear_superusuario(db='hospital.db'):
         nacimiento = "1980-01-01"
         nacionalidad = "N/A"
         rol = "Administrador (a)"
-        nombre_usuario = "EPI.admin"
-        contrasena = "EPI@hgdfgr2025"
+        nombre_usuario = "SEE.admin"
+        contrasena = "SEE@2026"
         correo = f"admin_{secrets.token_hex(4)}@epi.hospital"
 
         caracteres = string.ascii_letters + string.digits + string.punctuation
