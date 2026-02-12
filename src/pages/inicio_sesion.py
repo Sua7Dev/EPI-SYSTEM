@@ -86,12 +86,11 @@ def recuperar_usuario():
             </style>
                 """, unsafe_allow_html=True)
         correo = st.text_input("Ingresa tu correo electrónico", max_chars=35, icon=":material/email:",
+                               key="correo_recuperar_usuario",
                                help="Tiene que ser un correo registrado en el sistema.", placeholder='Ejemplo: Juan@gmail.com')
-        ci = st.number_input("Primeros 4 dígitos de la cédula",
-                                    value=None, step=1,
-                                    max_value=9999, min_value=1,
+        ci = st.text_input("Primeros 4 dígitos de la cédula",
                                     placeholder="Ejemplo: 1234", 
-                                    key="ci_recuperar_usuario", icon=":material/contact_mail:", format= "%d",
+                                    key="ci_recuperar_usuario", icon=":material/contact_mail:",
                                     help="Tiene que ser de la cédula asociada al correo.")
         colsi, colno = st.columns(2)
         with colsi:    
