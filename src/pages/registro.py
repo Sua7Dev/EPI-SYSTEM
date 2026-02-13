@@ -55,78 +55,31 @@ def registro_formulario():
             st.error("Acceso denegado. Solo el administrador puede acceder a este formulario.", icon=":material/lock:")
             return
 
-        st.components.v1.html("""
-            <script>
-            const setupLogic = () => {
-                const doc = window.parent.document;
-                const inputs = doc.querySelectorAll('input[type="number"]');
-                
-                inputs.forEach(input => {
-                    if (!input.dataset.listenerActive) {
-                        // Bloqueo por teclado (Keydown)
-                        input.addEventListener('keydown', (e) => {
-                            const prohibidas = ['e', 'E', '+', '-', '.', ','];
-                            const esControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', "Enter"].includes(e.key);
-                            
-                            // 1. Bloquear caracteres especiales
-                            if (prohibidas.includes(e.key)) {
-                                e.preventDefault();
-                            }
-                            
-                            // 2. Bloquear si supera 8 caracteres (y no es tecla de borrar/mover)
-                            if (input.value.length >= 8 && !esControl) {
-                                e.preventDefault();
-                            }
-                        });
-
-                        // Bloqueo por pegado o arrastre (Input event)
-                        input.addEventListener('input', (e) => {
-                            if (input.value.length > 8) {
-                                input.value = input.value.slice(0, 8);
-                            }
-                        });
-
-                        input.dataset.listenerActive = "true";
-                    }
-                });
-            };
-
-            setupLogic();
-            setInterval(setupLogic, 700);
-            </script>
-            """, height=0)
-
         st.header(':material/group_add: Registro De Usuarios', divider='gray', anchor=False)
         with st.form(key='registro_form'):
-            st.markdown("""
-                <style>
-                /* Ocultar los botones de + y - de todos los st.number_input */
-                button[data-testid="stNumberInputStepDown"], 
-                button[data-testid="stNumberInputStepUp"] {
-                    display: none !important;
-                }
-                iframe {
-                    display: none !important;
-                    height: 0 !important;
-                    margin: 0 !important;
-                }
-                }
-                </style>
-                    """, unsafe_allow_html=True)
             # Primera fila
             col_ci, col_nombre,  = st.columns(2)
             with col_ci:
-                ci = st.number_input("Cédula de identidad", #max_chars=8, 
-                                    value=None, step=1,
-                                    max_value=99999999, min_value=1,
+                ci = st.text_input("Cédula de identidad", max_chars=10, 
                                     placeholder="Ejemplo: 12345678", 
-                                    key="ci", icon=":material/contact_mail:", format= "%d")            
+                                    key="ci", icon=":material/contact_mail:")       
+                bloquear_caracteres(
+                    caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
+                    tipo_de_input="text",
+                    max_chars=10,
+                    label="Cédula de identidad"
+                )
             with col_nombre:
                 nombre = st.text_input('Nombres y Apellidos', 
                                        max_chars=40, 
                                        placeholder='Ejemplo: Juan Pérez', 
                                        key="nombre", icon=":material/person:")
-
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Nombres y Apellidos"
+                )
             # Segunda fila
             col_sexo, col_nacional = st.columns(2)
             with col_sexo:
@@ -152,12 +105,22 @@ def registro_formulario():
                 correo = st.text_input('Correo electrónico', max_chars=35, 
                                        placeholder='Ejemplo: Juan@gmail.com', 
                                        key="correo", icon=":material/mail:") 
-         
+                bloquear_caracteres(
+                    caracteres=list(" \"'()<>:;,/\\|{}[]`~¡¿!?#^°+=•"),  # bloquea espacios y caracteres no permitidos
+                    tipo_de_input="text",
+                    max_chars=35,
+                    label="Correo electrónico"
+                )  
             with col_usuario:
                 nombre_usuario = st.text_input('Nombre de usuario', max_chars=16, 
                                                placeholder='Ejemplo: Juan33', 
                                                key="nombre_usuario", icon=":material/person_check:")
-
+                bloquear_caracteres(
+                    caracteres=list(" !@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),  # bloquea todos los símbolos y espacios
+                    tipo_de_input="text",
+                    max_chars=16,
+                    label="Nombre de usuario"
+                )
             # Quinta fila
             col_contra, col_confirmar = st.columns(2)
             with col_contra:
@@ -227,25 +190,6 @@ def registro_formulario():
                 st.switch_page("pages/configuracion.py")
                 st.rerun()
 
-            # area de bloqueos
-            bloquear_caracteres(
-                caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
-                tipo_de_input="text",
-                max_chars=40,
-                label="Nombres y Apellidos"
-            )
-            bloquear_caracteres(
-                caracteres=list(" \"'()<>:;,/\\|{}[]`~¡¿!?#^°+=•"),  # bloquea espacios y caracteres no permitidos
-                tipo_de_input="text",
-                max_chars=35,
-                label="Correo electrónico"
-            )  
-            bloquear_caracteres(
-                caracteres=list(" !@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),  # bloquea todos los símbolos y espacios
-                tipo_de_input="text",
-                max_chars=16,
-                label="Nombre de usuario"
-            )
 
     except sqlite3.IntegrityError as e:
         error_message = str(e).lower()
@@ -268,6 +212,9 @@ def registro():
     logo(tamano="70%")
     if "autenticado_usuario" not in st.session_state:
             st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
+            salir = st.button("Volver a inicio de sesión", icon=":material/arrow_back:", type="primary",
+                      )
+            if salir: st.switch_page("pages/inicio_sesion.py")
             return
     _, col_centro, _ = st.columns([3, 6, 3])
     with col_centro:    
