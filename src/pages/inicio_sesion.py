@@ -32,59 +32,7 @@ DB_PATH = os.getenv("hospital.db", "hospital.db")
 
 @st.dialog(":material/data_loss_prevention: Recupera tu usuario")
 def recuperar_usuario():
-    st.components.v1.html("""
-        <script>
-        const setupLogic = () => {
-            const doc = window.parent.document;
-            const inputs = doc.querySelectorAll('input[type="number"]');
-            
-            inputs.forEach(input => {
-                if (!input.dataset.listenerActive) {
-                    // Bloqueo por teclado (Keydown)
-                    input.addEventListener('keydown', (e) => {
-                        const prohibidas = ['e', 'E', '+', '-', '.', ','];
-                        const esControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', "Enter"].includes(e.key);
-                        
-                        // 1. Bloquear caracteres especiales
-                        if (prohibidas.includes(e.key)) {
-                            e.preventDefault();
-                        }
-                        
-                        // 2. Bloquear si supera 4 caracteres (y no es tecla de borrar/mover)
-                        if (input.value.length >= 4 && !esControl) {
-                            e.preventDefault();
-                        }
-                    });
-                    // Bloqueo por pegado o arrastre (Input event)
-                    input.addEventListener('input', (e) => {
-                        if (input.value.length > 4) {
-                            input.value = input.value.slice(0, 4);
-                        }
-                    });
-                    input.dataset.listenerActive = "true";
-                }
-            });
-        };
-        setupLogic();
-        setInterval(setupLogic, 700);
-        </script>
-        """, height=0)
     with st.form(key='recuperar_usuario'):
-        st.markdown("""
-            <style>
-            /* Ocultar los botones de + y - de todos los st.number_input */
-            button[data-testid="stNumberInputStepDown"], 
-            button[data-testid="stNumberInputStepUp"] {
-                display: none !important;
-            }
-            iframe {
-                display: none !important;
-                height: 0 !important;
-                margin: 0 !important;
-            }
-            }
-            </style>
-                """, unsafe_allow_html=True)
         correo = st.text_input("Ingresa tu correo electrónico", max_chars=35, icon=":material/email:",
                                key="correo_recuperar_usuario",
                                help="Tiene que ser un correo registrado en el sistema.", placeholder='Ejemplo: Juan@gmail.com')
@@ -92,6 +40,12 @@ def recuperar_usuario():
                                     placeholder="Ejemplo: 1234", 
                                     key="ci_recuperar_usuario", icon=":material/contact_mail:",
                                     help="Tiene que ser de la cédula asociada al correo.")
+        bloquear_caracteres(
+            caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
+            tipo_de_input="text",
+            max_chars=4,
+            label="Primeros 4 dígitos de la cédula"
+        ) 
         colsi, colno = st.columns(2)
         with colsi:    
             si = st.form_submit_button("Verificar", icon=":material/conditions:", width="stretch", 
@@ -110,12 +64,7 @@ def recuperar_usuario():
         if no:
             st.rerun()  
 
-        bloquear_caracteres(
-            caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
-            tipo_de_input="text",
-            max_chars=4,
-            label="Primeros 4 dígitos de la cédula"
-        )     
+    
 
 
 def foto():

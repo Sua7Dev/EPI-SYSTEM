@@ -286,7 +286,12 @@ def formulario_verificacion():
                                     placeholder="Ejemplo: 1234", max_chars=4,
                                     key="ci", icon=":material/contact_mail:",
                                     help="Tiene que ser de la cédula asociada al usuario.")
-
+        bloquear_caracteres(
+            caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
+            tipo_de_input="text",
+            max_chars=4,
+            label="Últimos 4 dígitos de la cédula"
+        )
         col_verificar, col_volver = st.columns(2)
         with col_verificar:    
             verificar = st.form_submit_button("Verificar", type="primary", width="stretch", 
@@ -324,13 +329,7 @@ def formulario_verificacion():
         st.session_state["olvido_usuario_id"] = None
         st.session_state["pagina_actual"] = "verificacion"
         st.switch_page("pages/inicio_sesion.py")
-
-    bloquear_caracteres(
-        caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
-        tipo_de_input="text",
-        max_chars=4,
-        label="Últimos 4 dígitos de la cédula"
-    )
+        
 
 # ------------------- Control principal -------------------
 def mostrar_olvido():
