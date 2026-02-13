@@ -51,7 +51,7 @@ class CustomPDF(FPDF):
 
         self.cell(
             0, 10,
-            f"EPI-SYSTEM {version} | Generado: {fecha_hora} | Página {self.page_no()}/{{nb}}",
+            f"S.E.E {version} | Generado: {fecha_hora} | Página {self.page_no()}/{{nb}}",
             0, 0, "C"
         )
         # Reset para que lo siguiente no sea itálica

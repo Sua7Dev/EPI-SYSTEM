@@ -137,7 +137,7 @@ def _exportar_pdf_natalidad(df, nombre_archivo):
         render_block(group_clean, range_text)
 
     pdf.set_title(nombre_archivo)
-    pdf.set_author("EPI-SYSTEM")
+    pdf.set_author("S.E.E")
 
     buffer = BytesIO()
     pdf_output = pdf.output(dest='S').encode('latin1')

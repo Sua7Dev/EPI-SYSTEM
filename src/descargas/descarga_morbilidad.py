@@ -108,7 +108,7 @@ def exportar_pdf_morbilidad_extensa(df, nombre_archivo):
 
     buffer = BytesIO()
     pdf.set_title(nombre_archivo)
-    pdf.set_author("EPI-SYSTEM")
+    pdf.set_author("S.E.E")
     buffer.write(pdf.output(dest='S').encode('latin1'))
     buffer.seek(0)
     return buffer
