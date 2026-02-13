@@ -82,50 +82,17 @@ def crear_grafica_cumulativa_casos():
         df = df.dropna(subset=["fecha_registro_formulario"])
 
         df = df.sort_values("fecha_registro_formulario")
-        df["year"] = df["fecha_registro_formulario"].dt.year
-        df["mes"] = df["fecha_registro_formulario"].dt.strftime("%B %Y").str.capitalize()
 
-        opcion = st.selectbox(
-            "Seleccione el tipo de acumulado",
-            ["Mensual", "Anual", "Total general"],
-            key="selectbox_cumulativo_morbilidad"
+        chart = alt.Chart(df).transform_window(
+            cumulative_count="count()",
+            sort=[{"field": "fecha_registro_formulario"}]
+        ).mark_area().encode(
+            x=alt.X("fecha_registro_formulario:T", title="Fecha"),
+            y=alt.Y("cumulative_count:Q", title="Casos acumulados")
+        ).properties(
+            title="Total general",
+            width=600
         )
-
-        if opcion == "Mensual":
-            chart = alt.Chart(df).transform_window(
-                cumulative_count="count()",
-                sort=[{"field": "fecha_registro_formulario"}]
-            ).mark_area().encode(
-                x=alt.X("mes:O", title="Mes"),
-                y=alt.Y("cumulative_count:Q", title="Casos acumulados")
-            ).properties(
-                title="Conteo acumulativo mensual",
-                width=600
-            )
-
-        elif opcion == "Anual":
-            chart = alt.Chart(df).transform_window(
-                cumulative_count="count()",
-                sort=[{"field": "year"}]
-            ).mark_area().encode(
-                x=alt.X("year:O", title="Año"),
-                y=alt.Y("cumulative_count:Q", title="Casos acumulados")
-            ).properties(
-                title="Conteo acumulativo anual",
-                width=600
-            )
-
-        else:  # Total
-            chart = alt.Chart(df).transform_window(
-                cumulative_count="count()",
-                sort=[{"field": "fecha_registro_formulario"}]
-            ).mark_area().encode(
-                x=alt.X("fecha_registro_formulario:T", title="Fecha"),
-                y=alt.Y("cumulative_count:Q", title="Casos acumulados")
-            ).properties(
-                title="Total general de casos",
-                width=600
-            )
 
         return chart
 
@@ -175,7 +142,7 @@ def morbilidad_stats():
     col_year, _, col_mes = st.columns([4.9, 0.1, 4.9])
 
     with col_year:
-        st.subheader(":material/healing: Total", anchor=False, divider="gray")
+        st.subheader(":material/healing: Total general", anchor=False, divider="gray")
         chart_cumulativa = crear_grafica_cumulativa_casos()
         if chart_cumulativa:
             st.altair_chart(chart_cumulativa, use_container_width=True)
