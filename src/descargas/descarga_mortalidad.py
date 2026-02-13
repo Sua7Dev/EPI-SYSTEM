@@ -157,7 +157,7 @@ def _exportar_pdf_mortalidad(df, nombre_archivo):
             fill = not fill
 
     pdf.set_title(nombre_archivo)
-    pdf.set_author("S.E.E")
+    pdf.set_author("SEE")
 
     buffer = BytesIO()
     # fpdf2 compatible output

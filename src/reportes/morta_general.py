@@ -256,7 +256,7 @@ def exportar_pdf_mortalidad_general_df(df, year=None, specific_date=None, start_
         pdf.ln(10)
 
     pdf.set_title(f"Reporte_Mortalidad_{datetime.datetime.now().strftime('%d-%m-%Y')}")
-    pdf.set_author("S.E.E")
+    pdf.set_author("SEE")
     
     buffer = BytesIO()
     # fpdf2 uses output(dest='S') or output() returns bytes depending on version

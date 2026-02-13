@@ -2,7 +2,7 @@
 ![Logo](https://i.imgur.com/SAHxoGy.png)
 
 
-# Sistema de Estadísticas Epidemiológicas (SEE) (before S.E.E)
+# Sistema de Estadísticas Epidemiológicas (SEE) (before EPI-SYSTEM)
 
 The developed system is a web-based epidemiological surveillance environment for the Dr. Felipe Guevara Rojas Hospital. Its purpose is to digitize and optimize the recording, analysis, and query of epidemiological data, replacing manual paper-based processes with an efficient, secure, and accessible technological tool.
 
@@ -26,7 +26,7 @@ cd myproject
 ```
 ### - step 2. In your terminal, type to clone the repository:
 ```bash
-git clone https://github.com/Sua7Dev/S.E.E.git
+git clone https://github.com/Sua7Dev/EPI-SYSTEM.git
 ```
 
 ### - step 3. creates a virtual environment:
@@ -51,7 +51,7 @@ cd src
 
 ### - step 7. we compile to .exe:
 ```bash
-pyinstaller --clean --icon=../iconito.ico --onedir launcher.py --name S.E.E --collect-all streamlit --collect-all streamlit_extras --add-data "../static;static" --add-data "../.streamlit;.streamlit" --add-data "hospital.db;." --add-data "main.py;." --add-data "launcher.py;." --add-data "utils;utils" --add-data "db.py;." --add-data "pages;pages" --add-data "reportes;reportes" --add-data "descargas;descargas" --add-data "stats;stats" --hidden-import=streamlit.web.cli --hidden-import=importlib.metadata --hidden-import=fpdf --hidden-import=db --hidden-import=utils.sql_control --hidden-import=pandas --hidden-import=numpy --hidden-import=pyarrow --hidden-import=snowflake.connector --hidden-import=streamlit_extras --noupx --noconsole
+pyinstaller --clean --icon=../iconito.ico --onedir launcher.py --name SEE --collect-all streamlit --collect-all streamlit_extras --add-data "../static;static" --add-data "../.streamlit;.streamlit" --add-data "hospital.db;." --add-data "main.py;." --add-data "launcher.py;." --add-data "utils;utils" --add-data "db.py;." --add-data "pages;pages" --add-data "reportes;reportes" --add-data "descargas;descargas" --add-data "stats;stats" --hidden-import=streamlit.web.cli --hidden-import=importlib.metadata --hidden-import=fpdf --hidden-import=db --hidden-import=utils.sql_control --hidden-import=pandas --hidden-import=numpy --hidden-import=pyarrow --hidden-import=snowflake.connector --hidden-import=streamlit_extras --noupx --noconsole
 ```
 
 

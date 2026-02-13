@@ -47,11 +47,11 @@ class CustomPDF(FPDF):
 
         ahora = datetime.now()
         fecha_hora = ahora.strftime("%d/%m/%Y %I:%M %p")
-        version = "v1.2"
+        version = "v1.0"
 
         self.cell(
             0, 10,
-            f"S.E.E {version} | Generado: {fecha_hora} | Página {self.page_no()}/{{nb}}",
+            f"SEE {version} | Generado: {fecha_hora} | Página {self.page_no()}/{{nb}}",
             0, 0, "C"
         )
         # Reset para que lo siguiente no sea itálica
