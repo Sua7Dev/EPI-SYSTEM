@@ -194,7 +194,7 @@ def iniciar_sesion():
                         pass
                 else:
                     pass
-                    st.warning("Por favor, ingresa tu usuario y contraseña para iniciar sesión.")    
+                    st.warning("Por favor, ingresa tu usuario y contraseña para iniciar sesión.", icon=":material/warning:")    
 
     _, col_olvido, col_olvido_usuario = st.columns([2.1, 4.5, 5], vertical_alignment="bottom", gap=None)
     with col_olvido:

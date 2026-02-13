@@ -310,6 +310,17 @@ def bloquear_caracteres(caracteres, tipo_de_input, max_chars, label=None):
             input.dataset.listenerActive = "true";
         });
     };
+
+    // Intentar ocultar el contenedor padre inmediatamente
+    const frame = window.frameElement;
+    if (frame) {
+        // Subimos hasta el stElementContainer para ocultarlo
+        const container = frame.closest('.stElementContainer');
+        if (container) {
+            container.style.display = 'none';
+            container.style.position = 'absolute';
+        }
+    }
     setupLogic();
     setInterval(setupLogic, 700);
     </script>
