@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import time
 from utils.sql_control import operaciones_sql_morb_extenso, eliminar_registros_morb_extenso
 from pathlib import Path
 import pandas as pd 
@@ -69,14 +70,14 @@ def data_editor_morb_extenso(df):
             "Fecha registro", format="DD/MM/YYYY", disabled=True
         ),
         "direccion_hogar": st.column_config.TextColumn(
-            "Dirección del hogar", disabled=False), #
+            "Dirección del hogar", disabled=True), #
         "id": st.column_config.NumberColumn("ID", disabled=True),
     }
 
     # El resto solo lectura
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=False)
+            column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
     edited_df = st.data_editor(
         df,
@@ -272,7 +273,7 @@ def formulario_morb_extenso(db=DB_PATH):
         with col_pais:
             pais_hogar = st.text_input("País (Opcional)", max_chars=56, key="pais_hogar_morb_extenso", placeholder="Venezuela")
             bloquear_caracteres(
-                caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                 tipo_de_input="text",
                 max_chars=40,
                 label="País"
@@ -280,7 +281,7 @@ def formulario_morb_extenso(db=DB_PATH):
         with col_estado:
             estado_hogar = st.text_input("Estado (Opcional)", max_chars=56, key="estado_hogar_morb_extenso", placeholder="Anzoátegui")
             bloquear_caracteres(
-                caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                 tipo_de_input="text",
                 max_chars=40,
                 label="Estado (Opcional)"
@@ -288,7 +289,7 @@ def formulario_morb_extenso(db=DB_PATH):
         with col_muni:
             municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_morb_extenso", placeholder="Simón Rodríguez")
             bloquear_caracteres(
-                caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                 tipo_de_input="text",
                 max_chars=40,
                 label="Municipio (Opcional)"
@@ -297,7 +298,7 @@ def formulario_morb_extenso(db=DB_PATH):
         with col_parroquia:
             parroquia_hogar = st.text_input("Parroquia (Opcional)", max_chars=56, key="parroquia_hogar_morb_extenso", placeholder="Edmundo Barrios (zona norte)")
             bloquear_caracteres(
-                caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                 tipo_de_input="text",
                 max_chars=40,
                 label="Parroquia (Opcional)"
@@ -305,14 +306,14 @@ def formulario_morb_extenso(db=DB_PATH):
         with col_ciudad:
             ciudad_hogar = st.text_input("Ciudad (Opcional)", max_chars=56, key="cuidad_hogar_morb_extenso", placeholder="El Tigre")
             bloquear_caracteres(
-                caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                 tipo_de_input="text",
                 max_chars=40,
                 label="Ciudad (Opcional)"
             )
         direccion_exacta_hogar = st.text_area("Dirección", max_chars=150, key="direccion_exacta_hogar_morb_extenso", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
         bloquear_caracteres(
-            caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•"),  # caracteres prohibidos (excluye ' / - . , #)
+            caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•^"),  # caracteres prohibidos (excluye ' / - . , #)
             tipo_de_input="textarea",
             max_chars=150,
             label="Dirección"

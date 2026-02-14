@@ -154,13 +154,14 @@ def formulario_natalidad():
         if not df_filtrado.empty:
             has_selection = edited_df[' '].any()
             df_sel = edited_df[edited_df[' '] == True] if has_selection else None
-            col1, col2 = st.columns(2)
-
-            with col1:
-                descargar_pdf(edited_df if not has_selection else df_sel, "natalidad", label="Descargar PDF" if not has_selection else "Descargar Selección")
+            #col1, col2 = st.columns(2)
+            col_ver_secretaria, col_descargar_secretaria = st.columns(2)
+            with col_ver_secretaria:
                 ver_pdf(edited_df if not has_selection else df_sel, "natalidad", key_btn="ver_btn_natalidad_sec")
+            with col_descargar_secretaria:
+                descargar_pdf(edited_df if not has_selection else df_sel, "natalidad", label="Descargar PDF" if not has_selection else "Descargar Selección")
 
-            with col2:
+            with col_descargar_secretaria:
                 descargar_registros_seleccionados(edited_df, "natalidad")
 
         return  

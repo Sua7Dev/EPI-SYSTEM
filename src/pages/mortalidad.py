@@ -128,7 +128,7 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
             "Ciudad", disabled=(rol_usuario == "Secretario (a)")
         ),
         "direccion": st.column_config.TextColumn(
-            "Dirección", disabled=False
+            "Dirección", disabled=True
         ),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "registrado_por": st.column_config.TextColumn(
@@ -138,7 +138,7 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
 
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=False)
+            column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
     edited_df = st.data_editor(
         df_filtrado,
@@ -188,14 +188,13 @@ def formulario_neonatal(db=DB_PATH):
             df_sel = edited_df[edited_df[' '] == True] if has_selection else None
 
             if rol_usuario == "Secretario (a)":
-                col1, col2 = st.columns(2)
-                with col1:
-                    df_to_use = df_sel if has_selection else edited_df
-                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
-                    descargar_pdf(df_to_use, "mortalidad_neonatal", label=label_descarga)
+                df_to_use = df_sel if has_selection else edited_df
+                label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                col_ver_secretaria, col_descargar_secretaria = st.columns(2)
+                with col_ver_secretaria:
                     ver_pdf(df_to_use, "mortalidad_neonatal", key_btn="ver_btn_neonatal_sec")
-                with col2:
-                    pass # redundant call removed
+                with col_descargar_secretaria:
+                    descargar_pdf(df_to_use, "mortalidad_neonatal", label=label_descarga)
             else:
                 col_ver, col_guardar, col_desc, col_eliminar = st.columns(4)
 
@@ -229,6 +228,10 @@ def formulario_neonatal(db=DB_PATH):
                     procesar_guardado_cambios_mortalidad_neonatal(edited_df)
                     time.sleep(1)
                     st.rerun()
+
+    if rol_usuario == "Secretario (a)":
+        st.markdown("# ")
+        st.markdown("# ")
 
     st.components.v1.html("""
                 <script>
@@ -328,12 +331,12 @@ def formulario_neonatal(db=DB_PATH):
                 historia_clinica = st.text_input(
                     "Historia clínica",
                     key="historia_clinica_neonatal", 
-                    placeholder="Ej. 12345678",
+                    placeholder="Ej. 12345678", max_chars=8
                 )
             bloquear_caracteres(
                 caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
                 tipo_de_input="text",
-                max_chars=4,
+                max_chars=8,
                 label="Historia clínica"
             )
             st.markdown('</div>', unsafe_allow_html=True)
@@ -433,7 +436,7 @@ def formulario_neonatal(db=DB_PATH):
             with col_pais:
                 pais_hogar = st.text_input("País", max_chars=56, key="pais_hogar_neonatal", placeholder="Venezuela")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="País"
@@ -441,7 +444,7 @@ def formulario_neonatal(db=DB_PATH):
             with col_estado:
                 estado_hogar = st.text_input("Estado", max_chars=56, key="estado_hogar_neonatal", placeholder="Anzoátegui")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Estado"
@@ -450,7 +453,7 @@ def formulario_neonatal(db=DB_PATH):
                 municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_neonatal", 
                                                 placeholder="Simón Rodríguez")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Municipio (Opcional)"
@@ -459,7 +462,7 @@ def formulario_neonatal(db=DB_PATH):
             with col_parroquia:
                 parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_neonatal", placeholder="Edmundo Barrios (zona norte)")
                 bloquear_caracteres(
-                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Parroquia"
@@ -467,7 +470,7 @@ def formulario_neonatal(db=DB_PATH):
             with col_city:
                 ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="cuidad_hogar_neonatal", placeholder="El Tigre")
                 bloquear_caracteres(
-                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Ciudad"
@@ -646,7 +649,7 @@ def data_editor_infantil(df, rol_usuario):
             "Ciudad", disabled=(rol_usuario == "Secretario (a)")
         ),
         "direccion": st.column_config.TextColumn(
-            "Dirección", disabled=False
+            "Dirección", disabled=True
         ),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "registrado_por": st.column_config.TextColumn(
@@ -657,7 +660,7 @@ def data_editor_infantil(df, rol_usuario):
     # Cualquier otra columna → solo lectura
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=False)
+            column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
     edited_df = st.data_editor(
         df,
@@ -711,14 +714,15 @@ def formulario_infantil(db=DB_PATH):
 
             # -------- ACCIONES ----------
             if rol_usuario == "Secretario (a)":
-                col1, col2 = st.columns(2)
-                with col1:
-                    df_to_use = df_sel if has_selection else edited_df
-                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
-                    descargar_pdf(df_to_use, "mortalidad_infantil", label=label_descarga)
+                df_to_use = df_sel if has_selection else edited_df
+                label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                col_ver_secretaria, col_descargar_secretaria = st.columns(2)
+                with col_ver_secretaria:
                     ver_pdf(df_to_use, "mortalidad_infantil", key_btn="ver_btn_infantil_sec")
-                with col2:
-                    pass
+                with col_descargar_secretaria:
+                    descargar_pdf(df_to_use, "mortalidad_infantil", label=label_descarga)
+
+                
             else:
                 col_ver, col_guardar, col_desc, col_eliminar = st.columns(4)
 
@@ -757,6 +761,9 @@ def formulario_infantil(db=DB_PATH):
                     procesar_guardado_cambios_mortalidad_infantil(edited_df)
                     time.sleep(1)
                     st.rerun()
+    if rol_usuario == "Secretario (a)":
+        st.markdown("# ")
+        st.markdown("# ")
 
     st.components.v1.html("""
                 <script>
@@ -850,18 +857,19 @@ def formulario_infantil(db=DB_PATH):
             fecha_minimi_1935 = datetime.date(1935, 1, 1)
             col_hc, col_nombres, col_madre = st.columns(3)
             with col_hc:
-                historia_clinica = st.number_input("Historia clínica", 
-                    value=None,
-                    step=1,
-                    max_value=99999999,
-                    min_value=1, 
-                    placeholder="Ej. 12345678",
-                    format="%d",
+                historia_clinica = st.text_input("Historia clínica", 
+                    placeholder="Ej. 12345678", max_chars=8,
                     key="historia_clinica_infantil")
+                bloquear_caracteres(
+                    caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
+                    tipo_de_input="text",
+                    max_chars=8,
+                    label="Historia clínica"
+                )
             with col_nombres:
                 nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_infantil", placeholder="Ej. Juan Pérez")
                 bloquear_caracteres(
-                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Nombres y apellidos"
@@ -869,7 +877,7 @@ def formulario_infantil(db=DB_PATH):
             with col_madre:
                 nombre_madre = st.text_input("Nombre de la madre", max_chars=40, key="nombre_madre_infantil", placeholder="Ej. Maria Jimenez")
                 bloquear_caracteres(
-                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Nombre de la madre"
@@ -898,7 +906,7 @@ def formulario_infantil(db=DB_PATH):
             with col1:
                 idx_ingreso = st.text_area("IDX de ingreso", max_chars=150, key="idx_ingreso_infantil", placeholder="Descripción de la IDX de ingreso")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#^"),
                     tipo_de_input="textarea",
                     max_chars=150,
                     label="IDX de ingreso"
@@ -906,7 +914,7 @@ def formulario_infantil(db=DB_PATH):
             with col2:
                 idx_defuncion = st.text_area("IDX de defunción", max_chars=150, key="idx_defuncion_infantil", placeholder="Descripción de la IDX de defuncion")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#^"),
                     tipo_de_input="textarea",
                     max_chars=150,
                     label="IDX de defunción"
@@ -916,7 +924,7 @@ def formulario_infantil(db=DB_PATH):
             with col_pais:
                 pais_hogar = st.text_input("País", max_chars=56, key="pais_hogar_infantil", placeholder="Venezuela")
                 bloquear_caracteres(
-                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="País"
@@ -924,7 +932,7 @@ def formulario_infantil(db=DB_PATH):
             with col_estado:
                 estado_hogar = st.text_input("Estado", max_chars=56, key="estado_hogar_infantil", placeholder="Anzoátegui")
                 bloquear_caracteres(
-                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Estado"
@@ -932,7 +940,7 @@ def formulario_infantil(db=DB_PATH):
             with col_muni:
                 municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_infantil", placeholder="Simón Rodríguez")
                 bloquear_caracteres(
-                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Municipio (Opcional)"
@@ -941,7 +949,7 @@ def formulario_infantil(db=DB_PATH):
             with col_parroquia:
                 parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_infantil", placeholder="Edmundo Barrios (zona norte)")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Parroquia"
@@ -949,14 +957,14 @@ def formulario_infantil(db=DB_PATH):
             with col_city:
                 ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="ciudad_hogar_infantil", placeholder="El Tigre")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Ciudad"
                 )
             direccion_exacta_hogar = st.text_area("Dirección", max_chars=150, key="direccion_exacta_hogar_infantil", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
             bloquear_caracteres(
-                caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•"),  # caracteres prohibidos (excluye ' / - . , #)
+                caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•^"),  # caracteres prohibidos (excluye ' / - . , #)
                 tipo_de_input="textarea",
                 max_chars=150,
                 label="Dirección"
@@ -1060,7 +1068,7 @@ def data_editor_materna(df, rol_usuario):
         "parroquia_hogar": st.column_config.TextColumn("Parroquia", disabled=(rol_usuario == "Secretario (a)")),
         "ciudad_hogar": st.column_config.TextColumn("Ciudad", disabled=(rol_usuario == "Secretario (a)")),
         "direccion_exacta_hogar": st.column_config.TextColumn("Dirección", disabled=(rol_usuario == "Secretario (a)")),
-        "direccion": st.column_config.TextColumn("Dirección", disabled=False),
+        "direccion": st.column_config.TextColumn("Dirección", disabled=True),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "registrado_por": st.column_config.TextColumn("Registrado por", disabled=True),
     }
@@ -1068,7 +1076,7 @@ def data_editor_materna(df, rol_usuario):
     # Cualquier otra columna → solo lectura
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=False)
+            column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
     edited_df = st.data_editor(
         df,
@@ -1120,14 +1128,13 @@ def formulario_materna(db=DB_PATH):
 
             # -------- ACCIONES ----------
             if rol_usuario == "Secretario (a)":
-                col1, col2 = st.columns(2)
-                with col1:
-                    df_to_use = df_sel if has_selection else edited_df
-                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
-                    descargar_pdf(df_to_use, "mortalidad_materna", label=label_descarga)
+                df_to_use = df_sel if has_selection else edited_df
+                label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                col_ver_secretaria, col_descargar_secretaria = st.columns(2)
+                with col_ver_secretaria:
                     ver_pdf(df_to_use, "mortalidad_materna", key_btn="ver_btn_materna_sec")
-                with col2:
-                    pass
+                with col_descargar_secretaria:
+                    descargar_pdf(df_to_use, "mortalidad_materna", label=label_descarga)
             else:
                 col_ver, col_guardar, col_desc, col_eliminar = st.columns(4)
 
@@ -1166,6 +1173,10 @@ def formulario_materna(db=DB_PATH):
                     procesar_guardado_cambios_mortalidad_materna(edited_df)
                     time.sleep(1)
                     st.rerun()
+
+    if rol_usuario == "Secretario (a)":
+        st.markdown("# ")
+        st.markdown("# ")
 
     st.components.v1.html("""
                 <script>
@@ -1257,18 +1268,19 @@ def formulario_materna(db=DB_PATH):
             fecha_minimi_1935 = datetime.date(1935, 1, 1)
             col_hc, col_nombres = st.columns(2)
             with col_hc:
-                historia_clinica = st.number_input("Historia clínica", 
-                    value=None,
-                    step=1,
-                    max_value=99999999,
-                    min_value=1, 
-                    placeholder="Ej. 12345678",
-                    format="%d",
+                historia_clinica = st.text_input("Historia clínica", 
+                    placeholder="Ej. 12345678", max_chars=8,
                     key="historia_clinica_materna")
+                bloquear_caracteres(
+                    caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
+                    tipo_de_input="text",
+                    max_chars=8,
+                    label="Historia clínica"
+                )
             with col_nombres:
                 nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_materna", placeholder="Ej. Juan Pérez")
                 bloquear_caracteres(
-                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Nombres y apellidos"
@@ -1297,7 +1309,7 @@ def formulario_materna(db=DB_PATH):
             with col1:
                 idx_ingreso = st.text_area("IDX de ingreso", max_chars=150, key="idx_ingreso_materna", placeholder="Descripción de la IDX de ingreso")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#^"),
                     tipo_de_input="textarea",
                     max_chars=150,
                     label="IDX de ingreso"
@@ -1305,7 +1317,7 @@ def formulario_materna(db=DB_PATH):
             with col2:
                 idx_defuncion = st.text_area("IDX de defunción", max_chars=150, key="idx_defuncion_materna", placeholder="Descripción de la IDX de defuncion")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#^"),
                     tipo_de_input="textarea",
                     max_chars=150,
                     label="IDX de defunción"
@@ -1315,7 +1327,7 @@ def formulario_materna(db=DB_PATH):
             with col_pais:
                 pais_hogar = st.text_input("País", max_chars=56, key="pais_hogar_materna", placeholder="Venezuela")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="País"
@@ -1323,7 +1335,7 @@ def formulario_materna(db=DB_PATH):
             with col_estado:
                 estado_hogar = st.text_input("Estado", max_chars=56, key="estado_hogar_materna", placeholder="Anzoátegui")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Estado"
@@ -1331,7 +1343,7 @@ def formulario_materna(db=DB_PATH):
             with col_muni:
                 municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_materna", placeholder="Simón Rodríguez")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Municipio (Opcional)"
@@ -1340,7 +1352,7 @@ def formulario_materna(db=DB_PATH):
             with col_parroquia:
                 parroquia_hogar = st.text_input("Parroquia", max_chars=56, key="parroquia_hogar_materna", placeholder="Edmundo Barrios (zona norte)")
                 bloquear_caracteres(
-                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Parroquia"
@@ -1348,14 +1360,14 @@ def formulario_materna(db=DB_PATH):
             with col_city:
                 ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="ciudad_hogar_materna", placeholder="El Tigre")
                 bloquear_caracteres(
-                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—"),
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Ciudad"
                 )
             direccion_exacta_hogar = st.text_area("Dirección", max_chars=150, key="direccion_exacta_hogar_materna", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
             bloquear_caracteres(
-                caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•"),  # caracteres prohibidos (excluye ' / - . , #)
+                caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•^"),  # caracteres prohibidos (excluye ' / - . , #)
                 tipo_de_input="textarea",
                 max_chars=150,
                 label="Dirección"
