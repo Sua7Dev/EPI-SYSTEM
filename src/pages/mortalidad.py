@@ -128,7 +128,7 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
             "Ciudad", disabled=(rol_usuario == "Secretario (a)")
         ),
         "direccion": st.column_config.TextColumn(
-            "Dirección", disabled=False
+            "Dirección", disabled=True
         ),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "registrado_por": st.column_config.TextColumn(
@@ -138,7 +138,7 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
 
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=False)
+            column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
     edited_df = st.data_editor(
         df_filtrado,
@@ -184,14 +184,13 @@ def formulario_neonatal(db=DB_PATH):
             df_sel = edited_df[edited_df[' '] == True] if has_selection else None
 
             if rol_usuario == "Secretario (a)":
-                col1, col2 = st.columns(2)
-                with col1:
-                    df_to_use = df_sel if has_selection else edited_df
-                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
-                    descargar_pdf(df_to_use, "mortalidad_neonatal", label=label_descarga)
+                df_to_use = df_sel if has_selection else edited_df
+                label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                col_ver_secretaria, col_descargar_secretaria = st.columns(2)
+                with col_ver_secretaria:
                     ver_pdf(df_to_use, "mortalidad_neonatal", key_btn="ver_btn_neonatal_sec")
-                with col2:
-                    pass # redundant call removed
+                with col_descargar_secretaria:
+                    descargar_pdf(df_to_use, "mortalidad_neonatal", label=label_descarga)
             else:
                 col_ver, col_guardar, col_desc, col_eliminar = st.columns(4)
 
@@ -225,6 +224,10 @@ def formulario_neonatal(db=DB_PATH):
                     procesar_guardado_cambios_mortalidad_neonatal(edited_df)
                     time.sleep(1)
                     st.rerun()
+
+    if rol_usuario == "Secretario (a)":
+        st.markdown("# ")
+        st.markdown("# ")
 
     st.components.v1.html("""
                 <script>
@@ -642,7 +645,7 @@ def data_editor_infantil(df, rol_usuario):
             "Ciudad", disabled=(rol_usuario == "Secretario (a)")
         ),
         "direccion": st.column_config.TextColumn(
-            "Dirección", disabled=False
+            "Dirección", disabled=True
         ),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "registrado_por": st.column_config.TextColumn(
@@ -653,7 +656,7 @@ def data_editor_infantil(df, rol_usuario):
     # Cualquier otra columna → solo lectura
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=False)
+            column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
     edited_df = st.data_editor(
         df,
@@ -703,14 +706,15 @@ def formulario_infantil(db=DB_PATH):
 
             # -------- ACCIONES ----------
             if rol_usuario == "Secretario (a)":
-                col1, col2 = st.columns(2)
-                with col1:
-                    df_to_use = df_sel if has_selection else edited_df
-                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
-                    descargar_pdf(df_to_use, "mortalidad_infantil", label=label_descarga)
+                df_to_use = df_sel if has_selection else edited_df
+                label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                col_ver_secretaria, col_descargar_secretaria = st.columns(2)
+                with col_ver_secretaria:
                     ver_pdf(df_to_use, "mortalidad_infantil", key_btn="ver_btn_infantil_sec")
-                with col2:
-                    pass
+                with col_descargar_secretaria:
+                    descargar_pdf(df_to_use, "mortalidad_infantil", label=label_descarga)
+
+                
             else:
                 col_ver, col_guardar, col_desc, col_eliminar = st.columns(4)
 
@@ -749,6 +753,9 @@ def formulario_infantil(db=DB_PATH):
                     procesar_guardado_cambios_mortalidad_infantil(edited_df)
                     time.sleep(1)
                     st.rerun()
+    if rol_usuario == "Secretario (a)":
+        st.markdown("# ")
+        st.markdown("# ")
 
     st.components.v1.html("""
                 <script>
@@ -1053,7 +1060,7 @@ def data_editor_materna(df, rol_usuario):
         "parroquia_hogar": st.column_config.TextColumn("Parroquia", disabled=(rol_usuario == "Secretario (a)")),
         "ciudad_hogar": st.column_config.TextColumn("Ciudad", disabled=(rol_usuario == "Secretario (a)")),
         "direccion_exacta_hogar": st.column_config.TextColumn("Dirección", disabled=(rol_usuario == "Secretario (a)")),
-        "direccion": st.column_config.TextColumn("Dirección", disabled=False),
+        "direccion": st.column_config.TextColumn("Dirección", disabled=True),
         "id": st.column_config.TextColumn("ID", disabled=True),
         "registrado_por": st.column_config.TextColumn("Registrado por", disabled=True),
     }
@@ -1061,7 +1068,7 @@ def data_editor_materna(df, rol_usuario):
     # Cualquier otra columna → solo lectura
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=False)
+            column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
     edited_df = st.data_editor(
         df,
@@ -1109,14 +1116,13 @@ def formulario_materna(db=DB_PATH):
 
             # -------- ACCIONES ----------
             if rol_usuario == "Secretario (a)":
-                col1, col2 = st.columns(2)
-                with col1:
-                    df_to_use = df_sel if has_selection else edited_df
-                    label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
-                    descargar_pdf(df_to_use, "mortalidad_materna", label=label_descarga)
+                df_to_use = df_sel if has_selection else edited_df
+                label_descarga = "Descargar Selección" if has_selection else "Descargar PDF"
+                col_ver_secretaria, col_descargar_secretaria = st.columns(2)
+                with col_ver_secretaria:
                     ver_pdf(df_to_use, "mortalidad_materna", key_btn="ver_btn_materna_sec")
-                with col2:
-                    pass
+                with col_descargar_secretaria:
+                    descargar_pdf(df_to_use, "mortalidad_materna", label=label_descarga)
             else:
                 col_ver, col_guardar, col_desc, col_eliminar = st.columns(4)
 
@@ -1155,6 +1161,10 @@ def formulario_materna(db=DB_PATH):
                     procesar_guardado_cambios_mortalidad_materna(edited_df)
                     time.sleep(1)
                     st.rerun()
+
+    if rol_usuario == "Secretario (a)":
+        st.markdown("# ")
+        st.markdown("# ")
 
     st.components.v1.html("""
                 <script>

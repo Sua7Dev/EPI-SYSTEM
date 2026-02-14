@@ -70,14 +70,14 @@ def data_editor_morb_extenso(df):
             "Fecha registro", format="DD/MM/YYYY", disabled=True
         ),
         "direccion_hogar": st.column_config.TextColumn(
-            "Dirección del hogar", disabled=False), #
+            "Dirección del hogar", disabled=True), #
         "id": st.column_config.NumberColumn("ID", disabled=True),
     }
 
     # El resto solo lectura
     for col in columns_to_show:
         if col not in column_config and col != " ":
-            column_config[col] = st.column_config.TextColumn(col, disabled=False)
+            column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
     edited_df = st.data_editor(
         df,
