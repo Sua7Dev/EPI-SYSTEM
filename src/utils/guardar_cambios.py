@@ -527,19 +527,50 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
             mto = int(row.get("mto", 0)) if pd.notna(row.get("mto", 0)) else 0
             partos_extra = int(row.get("partos_extrahospitalarios", 0)) if pd.notna(row.get("partos_extrahospitalarios", 0)) else 0
 
-            # ─────────────────────────────────────────────────────────────
-            # 2. Validación clave: PEH no puede ser mayor que partos
-            # ─────────────────────────────────────────────────────────────
+
             if partos_extra > partos:
                 st.error(
                     f"**Error de validación**: Los partos extrahospitalarios ({partos_extra}) "
                     f"no pueden ser mayores que el total de partos ({partos}).",
                     icon=":material/error:"
                 )
-                return  # ← Importante: detiene todo el proceso de guardado
+                return
+
+         
+            if sexo_gemelar == "No aplica" and gemelar > 0:
+                st.warning(
+                    "Al seleccionar 'No aplica', la cantidad de gemelares se ajusta automáticamente a 0.",
+                    icon=":material/info:"
+                )
+                gemelar = 0
+
+            varones_aj = varones
+            hembras_aj = hembras
+            if sexo_gemelar == "Varones":
+                varones_aj += gemelar * 2
+            elif sexo_gemelar == "Hembras":
+                hembras_aj += gemelar * 2
+            elif sexo_gemelar == "Mixto":
+                varones_aj += gemelar
+                hembras_aj += gemelar
+
+            total_nacidos = varones_aj + hembras_aj + mto
+            total_eventos = partos + cesareas
+
+            if total_nacidos != total_eventos:
+                st.error(
+                    f"La suma de nacidos vivos + MTO ({total_nacidos}) no coincide "
+                    f"con el total de partos + cesáreas ({total_eventos}).",
+                    icon=":material/error:"
+                )
+                return
+
+            # Actualizamos varones y hembras con los valores ajustados para guardar en DB
+            varones = varones_aj
+            hembras = hembras_aj
 
             # ─────────────────────────────────────────────────────────────
-            # 3. Guardar el registro
+            # 4. Guardar el registro
             # ─────────────────────────────────────────────────────────────
             registro_id = row.get('id')
 

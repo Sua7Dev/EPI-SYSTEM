@@ -80,12 +80,17 @@ def menu():
             st.switch_page("pages/inicio.py")
             st.rerun()
         if mortalidad_logo or mortalidad_boton:
+            st.session_state["toggle_editor_neonatal"] = False
+            st.session_state["toggle_editor_infantil"] = False
+            st.session_state["toggle_editor_materna"] = False
             st.switch_page("pages/mortalidad.py")
             st.rerun()
         if natalidad_Logo or natalidad_boton:
+            st.session_state["toggle_editor_natalidad"] = False
             st.switch_page("pages/natalidad.py")
             st.rerun()
         if morbilidad_Logo or morbilidad_boton:
+            st.session_state["toggle_editor_morbilidadex"] = False
             st.switch_page("pages/morbilidad.py")
             st.rerun()
         if estadistica_Logo or estadistica_boton:

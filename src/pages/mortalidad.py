@@ -175,7 +175,11 @@ def formulario_neonatal(db=DB_PATH):
     if df.empty:
         st.info("No hay datos para mostrar.", icon=":material/info:")
     else:
-        mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_neonatal")
+        mostrar_editor = st.toggle(
+            "Mostrar datos de registros", 
+            value=st.session_state.get("toggle_editor_neonatal", False),
+            key="toggle_editor_neonatal"
+        )
 
         if mostrar_editor:
             df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
@@ -693,7 +697,11 @@ def formulario_infantil(db=DB_PATH):
     if df.empty:
         st.info("No hay datos para mostrar.", icon=":material/info:")
     else:
-        mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_infantil")
+        mostrar_editor = st.toggle(
+            "Mostrar datos de registros", 
+            value=st.session_state.get("toggle_editor_infantil", False),
+            key="toggle_editor_infantil"
+        )
 
         if mostrar_editor:
             df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
@@ -1098,7 +1106,11 @@ def formulario_materna(db=DB_PATH):
     if df.empty:
         st.info("No hay datos para mostrar.", icon=":material/info:")
     else:
-        mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_materna")
+        mostrar_editor = st.toggle(
+            "Mostrar datos de registros", 
+            value=st.session_state.get("toggle_editor_materna", False),
+            key="toggle_editor_materna"
+        )
 
         if mostrar_editor:
             df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')

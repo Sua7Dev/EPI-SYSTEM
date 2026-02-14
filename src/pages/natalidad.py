@@ -170,7 +170,7 @@ def formulario_natalidad():
     else:
         mostrar_editor = st.toggle(
             "Mostrar datos de registros",
-            value=False,
+            value=st.session_state.get("toggle_editor_natalidad", False),
             key="toggle_editor_natalidad"
         )
 

@@ -116,7 +116,11 @@ def formulario_morb_extenso(db=DB_PATH):
     if df.empty:
         st.info("No hay datos para mostrar.", icon=":material/info:")
     else:
-        mostrar_editor = st.toggle("Mostrar datos de registros", value=False, key="toggle_editor_morbilidadex")
+        mostrar_editor = st.toggle(
+            "Mostrar datos de registros", 
+            value=st.session_state.get("toggle_editor_morbilidadex", False),
+            key="toggle_editor_morbilidadex"
+        )
         if mostrar_editor:
             df = filtrar_por_fechas(df, 'fecha_registro_formulario')
             edited_df = data_editor_morb_extenso(df)
