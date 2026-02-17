@@ -1,4 +1,5 @@
 
+![SEE](https://i.imgur.com/GBdD7mx.png)
 ![Logo](https://i.imgur.com/SAHxoGy.png)
 
 
@@ -68,9 +69,9 @@ streamlit run main.py
 
 ## Screenshots
 - home page
-![App Screenshot](https://i.imgur.com/xkEl6EV.png)
+![iniciosesion](https://i.imgur.com/iq2mEc7.png)
 - dashboard page
-![App Screenshot](https://i.imgur.com/fFYzfB0.png)
+![dashboard](https://i.imgur.com/cf0mlHg.png)
 
 
 
