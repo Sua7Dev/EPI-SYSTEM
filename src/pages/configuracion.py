@@ -40,7 +40,7 @@ def configuracion():
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     logo(tamano="100%")
-    st.header(":material/admin_panel_settings: Configuración y extras del sistema", divider="gray", anchor=False)
+    st.header(":material/admin_panel_settings: Configuración y información del sistema", divider="gray", anchor=False)
     elementos()
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
