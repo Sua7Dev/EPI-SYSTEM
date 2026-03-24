@@ -52,11 +52,11 @@ def filtro_categorias_natalidad(df):
     
     df_filtrado = df.copy()
 
-    # Renderizar todos los filtros en grid de 4 columnas
+    # Renderizar todos los filtros en grid de 3 columnas
     cats = list(categorias_map.keys())
-    for i in range(0, len(cats), 4):
-        chunk = cats[i:i+4]
-        cols = st.columns(4)
+    for i in range(0, len(cats), 3):
+        chunk = cats[i:i+3]
+        cols = st.columns(3)
         for j, cat_nombre in enumerate(chunk):
             columna_df = categorias_map[cat_nombre]
             
@@ -88,7 +88,7 @@ def filtro_morbilidad(df):
 
     st.markdown("**:material/manage_search: Filtros por Categoría — Morbilidad**")
     
-    cols = st.columns(4)
+    cols = st.columns(3)
     
     with cols[0]:
         busqueda_nombre = st.text_input("Nombres y Apellidos", placeholder="Ej. Juan Pérez", max_chars=40, key="filtro_morb_nombre")
@@ -204,10 +204,10 @@ def filtro_muerte_neonatal(df):
             sort_elegido = st.selectbox("Ordenar por", opciones_orden, key="ord_neo")
         componentes.append(render_orden)
 
-    # Renderizar en grid de 4 columnas
-    for i in range(0, len(componentes), 4):
-        chunk = componentes[i:i+4]
-        cols = st.columns(4)
+    # Renderizar en grid de 3 columnas
+    for i in range(0, len(componentes), 3):
+        chunk = componentes[i:i+3]
+        cols = st.columns(3)
         for j, render_func in enumerate(chunk):
             with cols[j]:
                 render_func()
@@ -281,10 +281,10 @@ def filtro_muerte_infantil(df):
             sort_elegido = st.selectbox("Ordenar por", opciones_orden, key="ord_inf")
         componentes.append(render_orden)
 
-    # Renderizar en grid de 4 columnas
-    for i in range(0, len(componentes), 4):
-        chunk = componentes[i:i+4]
-        cols = st.columns(4)
+    # Renderizar en grid de 3 columnas
+    for i in range(0, len(componentes), 3):
+        chunk = componentes[i:i+3]
+        cols = st.columns(3)
         for j, render_func in enumerate(chunk):
             with cols[j]:
                 render_func()
@@ -360,10 +360,10 @@ def filtro_muerte_materna(df):
         edad_sel  = st.selectbox("Edad (en años)", ["Todos"] + valores_e, key="mat_edad_num")
     componentes.append(render_edad)
 
-    # Renderizar en grid de 4 columnas
-    for i in range(0, len(componentes), 4):
-        chunk = componentes[i:i+4]
-        cols  = st.columns(4)
+    # Renderizar en grid de 3 columnas
+    for i in range(0, len(componentes), 3):
+        chunk = componentes[i:i+3]
+        cols  = st.columns(3)
         for j, render_func in enumerate(chunk):
             with cols[j]:
                 render_func()
@@ -391,8 +391,6 @@ def filtro_muerte_materna(df):
         df_filtrado = df_filtrado[df_filtrado["idx_defuncion"].astype(str).apply(nrm).str.contains(bdd, na=False)]
     if "edad" in df_filtrado.columns and edad_sel != "Todos":
         df_filtrado = df_filtrado[df_filtrado["edad"].astype(str) == str(edad_sel)]
-    if "tiempo" in df_filtrado.columns and tiempo_sel != "Todos":
-        df_filtrado = df_filtrado[df_filtrado["tiempo"].str.contains(tiempo_sel, case=False, na=False)]
 
     st.divider()
     return df_filtrado
