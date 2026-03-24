@@ -590,11 +590,38 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
             # ─────────────────────────────────────────────────────────────
             # 1. Obtener y convertir valores para validación
             # ─────────────────────────────────────────────────────────────
-            # (Incluso si no se cambian, los necesitamos para la validación de sumas del registro completo)
             sexo_gemelar = row.get('sexo_gemelar', '') or ''
             gemelar = int(row.get('gemelar', 0)) if pd.notna(row.get('gemelar', 0)) else 0
             varones = int(row.get('varones', 0)) if pd.notna(row.get('varones', 0)) else 0
             hembras = int(row.get('hembras', 0)) if pd.notna(row.get('hembras', 0)) else 0
+
+            # Ajuste por gemelares
+            if sexo_gemelar == "Varones":
+                varones += gemelar * 2
+            elif sexo_gemelar == "Hembras":
+                hembras += gemelar * 2
+            elif sexo_gemelar == "Mixto":
+                varones += gemelar
+                hembras += gemelar
+
+            # Fecha
+            fecha_display = row.get('fecha_display', row.get('fecha', ''))
+            if not fecha_display:
+                st.error("No se pudo determinar la fecha del registro.", icon=":material/error:")
+                return  # Detener todo el guardado
+
+            fecha_db = pd.to_datetime(fecha_display, format='%d/%m/%Y', errors='coerce')
+            if pd.isna(fecha_db):
+                st.error(
+                    f"Formato de fecha inválido: '{fecha_display}'. "
+                    "Use el formato dd/mm/yyyy.",
+                    icon=":material/error:"
+                )
+                return  # No guardar nada si hay fecha inválida
+
+            fecha_db_str = fecha_db.strftime('%d/%m/%Y')
+
+            # Valores numéricos
             partos = int(row.get("partos", 0)) if pd.notna(row.get("partos", 0)) else 0
             cesareas = int(row.get("cesareas", 0)) if pd.notna(row.get("cesareas", 0)) else 0
             mto = int(row.get("mto", 0)) if pd.notna(row.get("mto", 0)) else 0
@@ -616,44 +643,61 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
 
             # Validaciones de integridad
             if partos_extra > partos:
-                st.error(f"Fila {idx}: Partos extra ({partos_extra}) > total partos ({partos})."); error_occured = True; continue
+                st.error(
+                    f"**Error de validación**: Los partos extrahospitalarios ({partos_extra}) "
+                    f"no pueden ser mayores que el total de partos ({partos}).",
+                    icon=":material/error:"
+                )
+                return
 
+         
             if sexo_gemelar == "No aplica" and gemelar > 0:
+                st.warning(
+                    "Al seleccionar 'No aplica', la cantidad de gemelares se ajusta automáticamente a 0.",
+                    icon=":material/info:"
+                )
                 gemelar = 0
 
-            v_aj, h_aj = varones, hembras
-            if sexo_gemelar == "Varones": v_aj += gemelar * 2
-            elif sexo_gemelar == "Hembras": h_aj += gemelar * 2
+            varones_aj = varones
+            hembras_aj = hembras
+            if sexo_gemelar == "Varones":
+                varones_aj += gemelar * 2
+            elif sexo_gemelar == "Hembras":
+                hembras_aj += gemelar * 2
             elif sexo_gemelar == "Mixto":
-                v_aj += gemelar; h_aj += gemelar
-            
-            if (v_aj + h_aj + mto) != (partos + cesareas):
-                st.error(f"Fila {idx}: La suma de nacidos no coincide con partos + cesáreas."); error_occured = True; continue
+                varones_aj += gemelar
+                hembras_aj += gemelar
 
-            if registro_id > 0:
-                # CONSTRUCCIÓN DINÁMICA DE LA CONSULTA UPDATE
-                # Mapeo de columnas internas a columnas de BD
-                BD_COLS = {
-                    'fecha': 'fecha', 'partos': 'partos', 'cesareas': 'cesareas',
-                    'varones': 'varones', 'hembras': 'hembras', 'gemelar': 'gemelar',
-                    'mto': 'mto', 'partos_extrahospitalarios': 'partos_extrahospitalarios',
-                    'sexo_gemelar': 'sexo_gemelar' # Si existe en la tabla
-                }
-                
-                fields_to_update = []
-                values_to_update = []
-                
-                for col in campos_cambiados:
-                    if col in BD_COLS:
-                        db_col = BD_COLS[col]
-                        val = row[col]
-                        if col == 'fecha': val = fecha_db_str
-                        fields_to_update.append(f"{db_col} = ?")
-                        values_to_update.append(val)
-                
-                if fields_to_update:
-                    query = f"UPDATE natalidad SET {', '.join(fields_to_update)} WHERE id_nata = ?"
-                    cursor.execute(query, tuple(values_to_update + [registro_id]))
+            total_nacidos = varones_aj + hembras_aj + mto
+            total_eventos = partos + cesareas
+
+            if total_nacidos != total_eventos:
+                st.error(
+                    f"La suma de nacidos vivos + MTO ({total_nacidos}) no coincide "
+                    f"con el total de partos + cesáreas ({total_eventos}).",
+                    icon=":material/error:"
+                )
+                return
+
+            # Actualizamos varones y hembras con los valores ajustados para guardar en DB
+            varones = varones_aj
+            hembras = hembras_aj
+
+            # ─────────────────────────────────────────────────────────────
+            # 4. Guardar el registro
+            # ─────────────────────────────────────────────────────────────
+            registro_id = row.get('id')
+
+            if pd.notna(registro_id):
+                cursor.execute(
+                    """UPDATE natalidad SET
+                       fecha = ?, partos = ?, cesareas = ?, varones = ?, hembras = ?,
+                       gemelar = ?, mto = ?, partos_extrahospitalarios = ?
+                       WHERE id_nata = ?""",
+                    (fecha_db_str, partos, cesareas, varones, hembras,
+                     gemelar, mto, partos_extra, registro_id)
+                )
+                if cursor.rowcount > 0:
                     hubo_cambios = True
             else:
                 cursor.execute(

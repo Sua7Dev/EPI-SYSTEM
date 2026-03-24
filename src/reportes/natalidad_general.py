@@ -154,7 +154,7 @@ def obtener_anios_disponibles():
             st.error("Sin datos válidos registrados.", icon=":material/error:")
             return None
 
-        return st.selectbox("Año", years, key="year_general_reporte_natalidad")
+        return st.selectbox("Año", years, key="nata_year")
 
     except Exception as e:
         st.error(f"Error al obtener años: {e}", icon=":material/error:")
@@ -197,7 +197,7 @@ def formulario_reporte_general_natalidad():
             timeframe = st.selectbox(
                 "Seleccionar período",
                 ["Año", "Año y Semana", "Fecha Específica", "Rango de Fechas"],
-                key="natalidad_timeframe"
+                key="nata_timeframe"
             )
 
             year = None
@@ -225,7 +225,7 @@ def formulario_reporte_general_natalidad():
                     st.error("No existen semanas con registros para este año.", icon=":material/error:")
                     return
 
-                iso_week = st.selectbox("Semana disponible", semanas, key="semana_iso")
+                iso_week = st.selectbox("Semana disponible", semanas, key="nata_semana_iso")
                 pdf_df = _consultar_natalidad(year=year, iso_week=iso_week)
 
             # FECHA ESPECÍFICA
@@ -234,7 +234,8 @@ def formulario_reporte_general_natalidad():
                     "Fecha",
                     value=datetime.date.today(),
                     format="DD/MM/YYYY",
-                    max_value=datetime.date.today()
+                    max_value=datetime.date.today(),
+                    key="nata_specific_date"
                 )
                 pdf_df = _consultar_natalidad(specific_date=specific_date)
 
@@ -269,14 +270,16 @@ def formulario_reporte_general_natalidad():
                         "Fecha Inicio",
                         value=min_fecha,
                         format="DD/MM/YYYY",
-                        max_value=datetime.date.today()
+                        max_value=datetime.date.today(),
+                        key="nata_start_date"
                     )
                 with col_end:
                     end_date = st.date_input(
                         "Fecha Fin",
                         value=max_fecha,
                         format="DD/MM/YYYY",
-                        max_value=datetime.date.today()
+                        max_value=datetime.date.today(),
+                        key="nata_end_date"
                     )
 
                 if end_date < start_date:

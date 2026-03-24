@@ -50,40 +50,30 @@ def filtro_categorias_natalidad(df):
 
     st.markdown("**:material/manage_search: Filtros por Categoría — Natalidad**")
     
-    opciones = ["Todas"] + list(categorias_map.keys())
-    
-    categorias_seleccionadas = st.multiselect(
-        "Seleccione las categorías",
-        options=opciones,
-        default=st.session_state.get("nat_categorias", ["Todas"]),
-        key="nat_categorias",
-        on_change=_on_change_cats
-    )
-
     df_filtrado = df.copy()
 
-    if "Todas" not in categorias_seleccionadas and categorias_seleccionadas:
-        for i in range(0, len(categorias_seleccionadas), 3):
-            chunk = categorias_seleccionadas[i:i+3]
-            cols = st.columns(3)
-            for j, cat_nombre in enumerate(chunk):
-                columna_df = categorias_map[cat_nombre]
+    # Renderizar todos los filtros en grid de 3 columnas
+    cats = list(categorias_map.keys())
+    for i in range(0, len(cats), 3):
+        chunk = cats[i:i+3]
+        cols = st.columns(3)
+        for j, cat_nombre in enumerate(chunk):
+            columna_df = categorias_map[cat_nombre]
+            
+            if pd.api.types.is_numeric_dtype(df[columna_df]):
+                valores_unicos = sorted([int(x) for x in df[columna_df].dropna().unique()])
+            else:
+                valores_unicos = sorted(df[columna_df].dropna().unique().tolist())
+            
+            with cols[j]:
+                valor_sel = st.selectbox(
+                    f"{cat_nombre}",
+                    options=["Todos"] + valores_unicos,
+                    key=f"nat_sel_{columna_df}"
+                )
                 
-                # Obtener valores unicos numéricos disponibles
-                if pd.api.types.is_numeric_dtype(df[columna_df]):
-                    valores_unicos = sorted([int(x) for x in df[columna_df].dropna().unique()])
-                else:
-                    valores_unicos = sorted(df[columna_df].dropna().unique().tolist())
-                
-                with cols[j]:
-                    valor_sel = st.selectbox(
-                        f"{cat_nombre}",
-                        options=["Todos"] + valores_unicos,
-                        key=f"nat_sel_{columna_df}"
-                    )
-                    
-                if valor_sel != "Todos":
-                    df_filtrado = df_filtrado[df_filtrado[columna_df] == valor_sel]
+            if valor_sel != "Todos":
+                df_filtrado = df_filtrado[df_filtrado[columna_df] == valor_sel]
 
     return df_filtrado
 
@@ -98,9 +88,9 @@ def filtro_morbilidad(df):
 
     st.markdown("**:material/manage_search: Filtros por Categoría — Morbilidad**")
     
-    col1, col2, col3 = st.columns(3)
+    cols = st.columns(3)
     
-    with col1:
+    with cols[0]:
         busqueda_nombre = st.text_input("Nombres y Apellidos", placeholder="Ej. Juan Pérez", max_chars=40, key="filtro_morb_nombre")
         bloquear_caracteres(
             caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
@@ -109,7 +99,7 @@ def filtro_morbilidad(df):
             label="Nombres y Apellidos"
         )
         
-    with col2:
+    with cols[1]:
         if pd.api.types.is_numeric_dtype(df["edad"]) and not df.empty:
             valores_edad = sorted([int(x) for x in df["edad"].dropna().unique()])
         else:
@@ -121,7 +111,7 @@ def filtro_morbilidad(df):
             key="filtro_morb_edad"
         )
         
-    with col3:
+    with cols[2]:
         busqueda_diagnostico = st.text_input("Diagnóstico", placeholder="Ej. Asma", max_chars=150, key="filtro_morb_diag")
         bloquear_caracteres(
             caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
@@ -161,92 +151,67 @@ def filtro_muerte_neonatal(df):
     if df.empty: return df
     st.markdown("**:material/manage_search: Filtros por Categoría — Muerte Neonatal**")
 
-    if "neo_categorias" not in st.session_state: st.session_state["neo_categorias"] = ["Todas"]
-    if "prev_neo_categorias" not in st.session_state: st.session_state["prev_neo_categorias"] = ["Todas"]
-
-    def _on_change_neo():
-        actual = st.session_state.get("neo_categorias", [])
-        prev = st.session_state.get("prev_neo_categorias", ["Todas"])
-        if "Todas" in actual and "Todas" not in prev:
-            st.session_state["neo_categorias"] = ["Todas"]
-            st.session_state["prev_neo_categorias"] = ["Todas"]
-            return
-        if "Todas" in prev and "Todas" in actual and len(actual) > 1:
-            new = [c for c in actual if c != "Todas"]
-            st.session_state["neo_categorias"] = new
-            st.session_state["prev_neo_categorias"] = new
-            return
-        if len(actual) == 0:
-            st.session_state["neo_categorias"] = ["Todas"]
-            st.session_state["prev_neo_categorias"] = ["Todas"]
-            return
-        st.session_state["prev_neo_categorias"] = actual
-
-    opciones_todas = {
-        "Historia Clínica": "historia_clinica",
-        "Nombre": "nombres_apellidos",
-        "Nombre Madre": "nombre_madre",
-        "Semanas de Gestación": "semanas_gestacion",
-        "Peso": "peso",
-        "Talla": "talla",
-        "Edad": "edad",
-    }
-    opciones_validas = {k: v for k, v in opciones_todas.items() if v in df.columns}
-    if "tiempo" in df.columns: opciones_validas["Edad"] = "edad"
-
-    categorias_sel = st.multiselect(
-        "Seleccione qué filtros utilizar",
-        options=["Todas"] + list(opciones_validas.keys()),
-        default=st.session_state.get("neo_categorias", ["Todas"]),
-        key="neo_categorias",
-        on_change=_on_change_neo
-    )
-
-    filtros_activos = list(opciones_validas.keys()) if "Todas" in categorias_sel else [
-        f for f in categorias_sel if f in opciones_validas
-    ]
-
-    busqueda_hc, busqueda_nombre, busqueda_madre, edad_sel, tiempo_sel, sem_sel = "", "", "", "Todos", "Todos", "Todos"
+    # Inicialización de variables de búsqueda
+    busqueda_hc, busqueda_nombre, busqueda_madre, edad_sel, sem_sel = "", "", "", "Todos", "Todos"
     sort_elegido = "Sin orden"
 
-    if not filtros_activos:
-        st.divider()
-        return df.copy()
+    # Lista de componentes para renderizar en grid (todos visibles por defecto)
+    componentes = []
+    
+    # 1. Historia Clínica
+    def render_hc():
+        nonlocal busqueda_hc
+        busqueda_hc = st.text_input("Historia Clínica", placeholder="Ej. 12345678", key="neo_hc")
+        bloquear_caracteres(list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "), "text", 8, "Historia Clínica")
+    componentes.append(render_hc)
+    
+    # 2. Nombre
+    def render_nombre():
+        nonlocal busqueda_nombre
+        busqueda_nombre = st.text_input("Nombre del paciente", placeholder="Ej. Juan Pérez", key="neo_nom")
+        bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre del paciente")
+    componentes.append(render_nombre)
+    
+    # 3. Nombre Madre
+    def render_madre():
+        nonlocal busqueda_madre
+        busqueda_madre = st.text_input("Nombre de la madre", placeholder="Ej. María García", key="neo_madre")
+        bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre de la madre")
+    componentes.append(render_madre)
+    
+    # 4. Semanas de Gestación
+    def render_sem():
+        nonlocal sem_sel
+        v_sem = sorted(df["semanas_gestacion"].dropna().unique().tolist())
+        sem_sel = st.selectbox("Semanas Gestación", options=["Todos"] + v_sem, key="neo_sem")
+    componentes.append(render_sem)
+    
+    # 5. Edad
+    def render_edad():
+        nonlocal edad_sel
+        v_e = sorted(df["edad"].dropna().astype(str).unique().tolist()) if "edad" in df.columns else []
+        edad_sel = st.selectbox("Edad", options=["Todos"] + v_e, key="neo_edad_num")
+    componentes.append(render_edad)
 
-    FILTROS_SIMPLES = ["Historia Clínica", "Nombre", "Nombre Madre", "Semanas de Gestación"]
-    simples_activos = [f for f in filtros_activos if f in FILTROS_SIMPLES]
-
-    for i in range(0, len(simples_activos), 3):
-        chunk = simples_activos[i:i+3]
-        cols = st.columns(len(chunk))
-        for j, tag in enumerate(chunk):
-            with cols[j]:
-                if tag == "Historia Clínica":
-                    busqueda_hc = st.text_input("Historia Clínica", placeholder="Ej. 12345678", key="neo_hc")
-                    bloquear_caracteres(list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "), "text", 8, "Historia Clínica")
-                elif tag == "Nombre":
-                    busqueda_nombre = st.text_input("Nombre del paciente", placeholder="Ej. Juan Pérez", key="neo_nom")
-                    bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre del paciente")
-                elif tag == "Nombre Madre":
-                    busqueda_madre = st.text_input("Nombre de la madre", placeholder="Ej. María García", key="neo_madre")
-                    bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre de la madre")
-                elif tag == "Semanas de Gestación":
-                    v_sem = sorted(df["semanas_gestacion"].dropna().unique().tolist())
-                    sem_sel = st.selectbox("Semanas Gestación", options=["Todos"] + v_sem, key="neo_sem")
-
-    opciones_orden = ["Sin orden"]
-    tiene_peso, tiene_talla = "Peso" in filtros_activos and "peso" in df.columns, "Talla" in filtros_activos and "talla" in df.columns
-    if tiene_peso: opciones_orden += ["Peso: Menor a mayor ↑", "Peso: Mayor a menor ↓"]
-    if tiene_talla: opciones_orden += ["Talla: Menor a mayor ↑", "Talla: Mayor a menor ↓"]
+    # 6. Ordenar (siempre que haya peso o talla)
+    tiene_peso, tiene_talla = "peso" in df.columns, "talla" in df.columns
     if tiene_peso or tiene_talla:
-        sort_elegido = st.selectbox("Ordenar registros por", opciones_orden, key="ord_neo")
+        def render_orden():
+            nonlocal sort_elegido
+            opciones_orden = ["Sin orden"]
+            if tiene_peso: opciones_orden += ["Peso: Menor a mayor ↑", "Peso: Mayor a menor ↓"]
+            if tiene_talla: opciones_orden += ["Talla: Menor a mayor ↑", "Talla: Mayor a menor ↓"]
+            sort_elegido = st.selectbox("Ordenar por", opciones_orden, key="ord_neo")
+        componentes.append(render_orden)
 
-    if "Edad" in filtros_activos:
-        _, col_num, _pad = st.columns([1.2, 3.0, 2.8])
-        with col_num:
-            v_e = sorted(df["edad"].dropna().astype(str).unique().tolist()) if "edad" in df.columns else []
-            edad_sel = st.selectbox("Edad", options=["Todos"] + v_e, key="neo_edad_num")
-        # Unidad eliminada por petición del usuario
+    # Renderizar en grid de 3 columnas
+    for i in range(0, len(componentes), 3):
+        chunk = componentes[i:i+3]
+        cols = st.columns(3)
+        for j, render_func in enumerate(chunk):
+            with cols[j]:
+                render_func()
+
 
     df_f = df.copy()
     def norm(t): return ''.join(c for c in unicodedata.normalize('NFKD', str(t).lower()) if unicodedata.category(c) != 'Mn')
@@ -274,75 +239,55 @@ def filtro_muerte_infantil(df):
     if df.empty: return df
     st.markdown("**:material/manage_search: Filtros por Categoría — Muerte Infantil**")
 
-    if "inf_categorias" not in st.session_state: st.session_state["inf_categorias"] = ["Todas"]
-    if "prev_inf_categorias" not in st.session_state: st.session_state["prev_inf_categorias"] = ["Todas"]
-
-    def _on_change_inf():
-        actual = st.session_state.get("inf_categorias", [])
-        prev = st.session_state.get("prev_inf_categorias", ["Todas"])
-        if "Todas" in actual and "Todas" not in prev:
-            st.session_state["inf_categorias"] = ["Todas"]; st.session_state["prev_inf_categorias"] = ["Todas"]
-            return
-        if "Todas" in prev and "Todas" in actual and len(actual) > 1:
-            new = [c for c in actual if c != "Todas"]
-            st.session_state["inf_categorias"] = new; st.session_state["prev_inf_categorias"] = new
-            return
-        if len(actual) == 0:
-            st.session_state["inf_categorias"] = ["Todas"]; st.session_state["prev_inf_categorias"] = ["Todas"]
-            return
-        st.session_state["prev_inf_categorias"] = actual
-
-    opciones_todas = {"Historia Clínica": "historia_clinica", "Nombre": "nombres_apellidos", "Nombre Madre": "nombre_madre", "Peso": "peso", "Talla": "talla", "Edad": "edad"}
-    opciones_validas = {k: v for k, v in opciones_todas.items() if v in df.columns}
-    if "tiempo" in df.columns: opciones_validas["Edad"] = "edad"
-
-    categorias_sel = st.multiselect(
-        "Seleccione qué filtros utilizar",
-        options=["Todas"] + list(opciones_validas.keys()),
-        default=st.session_state.get("inf_categorias", ["Todas"]),
-        key="inf_categorias",
-        on_change=_on_change_inf
-    )
-
-    filtros_activos = list(opciones_validas.keys()) if "Todas" in categorias_sel else [f for f in categorias_sel if f in opciones_validas]
-
-    busqueda_hc, busqueda_nombre, busqueda_madre, edad_sel, tiempo_sel = "", "", "", "Todos", "Todos"
+    # Inicialización de variables de búsqueda
+    busqueda_hc, busqueda_nombre, busqueda_madre, edad_sel = "", "", "", "Todos"
     sort_elegido = "Sin orden"
 
-    if not filtros_activos:
-        st.divider(); return df.copy()
+    # Lista de componentes para renderizar en grid
+    componentes = []
+    
+    def render_hc():
+        nonlocal busqueda_hc
+        busqueda_hc = st.text_input("Historia Clínica", placeholder="Ej. 12345678", key="inf_hc")
+        bloquear_caracteres(list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "), "text", 8, "Historia Clínica")
+    componentes.append(render_hc)
+    
+    def render_nombre():
+        nonlocal busqueda_nombre
+        busqueda_nombre = st.text_input("Nombre del paciente", placeholder="Ej. Juan Pérez", key="inf_nom")
+        bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre del paciente")
+    componentes.append(render_nombre)
+    
+    def render_madre():
+        nonlocal busqueda_madre
+        busqueda_madre = st.text_input("Nombre de la madre", placeholder="Ej. María García", key="inf_madre")
+        bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre de la madre")
+    componentes.append(render_madre)
+    
+    def render_edad():
+        nonlocal edad_sel
+        v_e = sorted(df["edad"].dropna().astype(str).unique().tolist()) if "edad" in df.columns else []
+        edad_sel = st.selectbox("Edad", options=["Todos"] + v_e, key="inf_edad_num")
+    componentes.append(render_edad)
 
-    FILTROS_SIMPLES = ["Historia Clínica", "Nombre", "Nombre Madre"]
-    simples_activos = [f for f in filtros_activos if f in FILTROS_SIMPLES]
-
-    for i in range(0, len(simples_activos), 3):
-        chunk = simples_activos[i:i+3]
-        cols = st.columns(len(chunk))
-        for j, tag in enumerate(chunk):
-            with cols[j]:
-                if tag == "Historia Clínica":
-                    busqueda_hc = st.text_input("Historia Clínica", placeholder="Ej. 12345678", key="inf_hc")
-                    bloquear_caracteres(list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "), "text", 8, "Historia Clínica")
-                elif tag == "Nombre":
-                    busqueda_nombre = st.text_input("Nombre del paciente", placeholder="Ej. Juan Pérez", key="inf_nom")
-                    bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre del paciente")
-                elif tag == "Nombre Madre":
-                    busqueda_madre = st.text_input("Nombre de la madre", placeholder="Ej. María García", key="inf_madre")
-                    bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre de la madre")
-
-    opciones_orden = ["Sin orden"]
-    tiene_peso, tiene_talla = "Peso" in filtros_activos and "peso" in df.columns, "Talla" in filtros_activos and "talla" in df.columns
-    if tiene_peso: opciones_orden += ["Peso: Menor a mayor ↑", "Peso: Mayor a menor ↓"]
-    if tiene_talla: opciones_orden += ["Talla: Menor a mayor ↑", "Talla: Mayor a menor ↓"]
+    # Ordenar (siempre que haya peso o talla)
+    tiene_peso, tiene_talla = "peso" in df.columns, "talla" in df.columns
     if tiene_peso or tiene_talla:
-        sort_elegido = st.selectbox("Ordenar registros por", opciones_orden, key="ord_inf")
+        def render_orden():
+            nonlocal sort_elegido
+            opciones_orden = ["Sin orden"]
+            if tiene_peso: opciones_orden += ["Peso: Menor a mayor ↑", "Peso: Mayor a menor ↓"]
+            if tiene_talla: opciones_orden += ["Talla: Menor a mayor ↑", "Talla: Mayor a menor ↓"]
+            sort_elegido = st.selectbox("Ordenar por", opciones_orden, key="ord_inf")
+        componentes.append(render_orden)
 
-    if "Edad" in filtros_activos:
-        _, col_num, _pad = st.columns([1.2, 3.0, 2.8])
-        with col_num:
-            v_e = sorted(df["edad"].dropna().astype(str).unique().tolist()) if "edad" in df.columns else []
-            edad_sel = st.selectbox("Edad", options=["Todos"] + v_e, key="inf_edad_num")
-        # Unidad eliminada por petición del usuario
+    # Renderizar en grid de 3 columnas
+    for i in range(0, len(componentes), 3):
+        chunk = componentes[i:i+3]
+        cols = st.columns(3)
+        for j, render_func in enumerate(chunk):
+            with cols[j]:
+                render_func()
 
     df_f = df.copy()
     def norm(t): return ''.join(c for c in unicodedata.normalize('NFKD', str(t).lower()) if unicodedata.category(c) != 'Mn')
@@ -351,7 +296,6 @@ def filtro_muerte_infantil(df):
     if busqueda_nombre: df_f = df_f[df_f["nombres_apellidos"].astype(str).apply(norm).str.contains(norm(busqueda_nombre), na=False)]
     if busqueda_madre: df_f = df_f[df_f["nombre_madre"].astype(str).apply(norm).str.contains(norm(busqueda_madre), na=False)]
     if edad_sel != "Todos": df_f = df_f[df_f["edad"].astype(str) == str(edad_sel)]
-    # Filtro de tiempo eliminado
 
     if sort_elegido != "Sin orden" and not df_f.empty:
         col = "peso" if sort_elegido.startswith("Peso") else "talla"
@@ -373,100 +317,56 @@ def filtro_muerte_materna(df):
 
     st.markdown("**:material/manage_search: Filtros por Categoría — Muerte Materna**")
 
-    if "mat_categorias" not in st.session_state:
-        st.session_state["mat_categorias"] = ["Todas"]
-    if "prev_mat_categorias" not in st.session_state:
-        st.session_state["prev_mat_categorias"] = ["Todas"]
+    # Inicialización de variables de búsqueda
+    busqueda_hc, busqueda_nombre, busqueda_madre = "", "", ""
+    busqueda_dx_ing, busqueda_dx_def, edad_sel = "", "", "Todos"
 
-    def _on_change():
-        actual = st.session_state.get("mat_categorias", [])
-        prev   = st.session_state.get("prev_mat_categorias", ["Todas"])
-        if "Todas" in actual and "Todas" not in prev:
-            st.session_state["mat_categorias"] = ["Todas"]
-            st.session_state["prev_mat_categorias"] = ["Todas"]
-            return
-        if "Todas" in prev and "Todas" in actual and len(actual) > 1:
-            new = [c for c in actual if c != "Todas"]
-            st.session_state["mat_categorias"] = new
-            st.session_state["prev_mat_categorias"] = new
-            return
-        if len(actual) == 0:
-            st.session_state["mat_categorias"] = ["Todas"]
-            st.session_state["prev_mat_categorias"] = ["Todas"]
-            return
-        st.session_state["prev_mat_categorias"] = actual
+    # Lista de componentes para renderizar en grid
+    componentes = []
+    
+    def render_hc():
+        nonlocal busqueda_hc
+        busqueda_hc = st.text_input("Historia Clínica", placeholder="Ej. 12345678", key="mat_hc")
+        bloquear_caracteres(list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "), "text", 8, "Historia Clínica")
+    componentes.append(render_hc)
+    
+    def render_nombre():
+        nonlocal busqueda_nombre
+        busqueda_nombre = st.text_input("Nombre del paciente", placeholder="Ej. Ana García", key="mat_nom")
+        bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre del paciente")
+    componentes.append(render_nombre)
+    
+    def render_madre():
+        nonlocal busqueda_madre
+        busqueda_madre = st.text_input("Nombre de la madre", placeholder="Ej. María López", key="mat_madre")
+        bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre de la madre")
+    componentes.append(render_madre)
+    
+    def render_dx_ing():
+        nonlocal busqueda_dx_ing
+        busqueda_dx_ing = st.text_input("Diagnóstico de ingreso", placeholder="Ej. I10", key="mat_dx_ing")
+        bloquear_caracteres(list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 20, "Diagnóstico de ingreso")
+    componentes.append(render_dx_ing)
+    
+    def render_dx_def():
+        nonlocal busqueda_dx_def
+        busqueda_dx_def = st.text_input("Diagnóstico de defunción", placeholder="Ej. I21", key="mat_dx_def")
+        bloquear_caracteres(list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 20, "Diagnóstico de defunción")
+    componentes.append(render_dx_def)
+    
+    def render_edad():
+        nonlocal edad_sel
+        valores_e = sorted(df["edad"].dropna().astype(str).unique().tolist()) if "edad" in df.columns else []
+        edad_sel  = st.selectbox("Edad (en años)", ["Todos"] + valores_e, key="mat_edad_num")
+    componentes.append(render_edad)
 
-    opciones_todas = {
-        "Historia Clínica": "historia_clinica",
-        "Nombre":           "nombres_apellidos",
-        "Nombre Madre":     "nombre_madre",
-        "Diagnóstico (Ingreso)":   "idx_ingreso",
-        "Diagnóstico (Defunción)": "idx_defuncion",
-        "Edad":             "edad",
-    }
-    opciones_validas = {k: v for k, v in opciones_todas.items() if v in df.columns}
-    if "tiempo" in df.columns:
-        opciones_validas["Edad"] = "edad"
-
-    opts = ["Todas"] + list(opciones_validas.keys())
-    categorias_sel = st.multiselect(
-        "Seleccione qué filtros utilizar",
-        options=opts,
-        default=st.session_state.get("mat_categorias", ["Todas"]),
-        key="mat_categorias",
-        on_change=_on_change
-    )
-
-    filtros_activos = list(opciones_validas.keys()) if "Todas" in categorias_sel else [
-        f for f in categorias_sel if f in opciones_validas
-    ]
-
-    # ─── valores por defecto ─────────────────────────────────────
-    busqueda_hc      = ""
-    busqueda_nombre  = ""
-    busqueda_madre   = ""
-    busqueda_dx_ing  = ""
-    busqueda_dx_def  = ""
-    edad_sel         = "Todos"
-    tiempo_sel       = "Todos"
-
-    if not filtros_activos:
-        st.divider()
-        return df.copy()
-
-    # ─── Filtros de texto en grid dinámico ───────────────────────
-    SIMPLES = ["Historia Clínica", "Nombre", "Nombre Madre",
-               "Diagnóstico (Ingreso)", "Diagnóstico (Defunción)"]
-    simples_activos = [f for f in filtros_activos if f in SIMPLES]
-
-    for i in range(0, len(simples_activos), 3):
-        chunk = simples_activos[i:i+3]
-        cols  = st.columns(len(chunk))
-        for j, tag in enumerate(chunk):
+    # Renderizar en grid de 3 columnas
+    for i in range(0, len(componentes), 3):
+        chunk = componentes[i:i+3]
+        cols  = st.columns(3)
+        for j, render_func in enumerate(chunk):
             with cols[j]:
-                if tag == "Historia Clínica":
-                    busqueda_hc = st.text_input("Historia Clínica", placeholder="Ej. 12345678", key="mat_hc")
-                    bloquear_caracteres(list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "), "text", 8, "Historia Clínica")
-                elif tag == "Nombre":
-                    busqueda_nombre = st.text_input("Nombre del paciente", placeholder="Ej. Ana García", key="mat_nom")
-                    bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre del paciente")
-                elif tag == "Nombre Madre":
-                    busqueda_madre = st.text_input("Nombre de la madre", placeholder="Ej. María López", key="mat_madre")
-                    bloquear_caracteres(list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 40, "Nombre de la madre")
-                elif tag == "Diagnóstico (Ingreso)":
-                    busqueda_dx_ing = st.text_input("Diagnóstico de ingreso", placeholder="Ej. I10", key="mat_dx_ing")
-                    bloquear_caracteres(list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 20, "Diagnóstico de ingreso")
-                elif tag == "Diagnóstico (Defunción)":
-                    busqueda_dx_def = st.text_input("Diagnóstico de defunción", placeholder="Ej. I21", key="mat_dx_def")
-                    bloquear_caracteres(list("!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"), "text", 20, "Diagnóstico de defunción")
-
-    # ─── Edad: fila dedicada ─────────────────────────────────────
-    if "Edad" in filtros_activos:
-        _, col_num, _pad = st.columns([1.2, 3.0, 2.8])
-        with col_num:
-            valores_e = sorted(df["edad"].dropna().astype(str).unique().tolist()) if "edad" in df.columns else []
-            edad_sel  = st.selectbox("Edad (en años)", ["Todos"] + valores_e, key="mat_edad_num")
-        # Quitamos selectbox de unidad por petición del usuario (se asume años)
+                render_func()
 
     # ─── Aplicar filtros ─────────────────────────────────────────
     df_filtrado = df.copy()
@@ -491,8 +391,6 @@ def filtro_muerte_materna(df):
         df_filtrado = df_filtrado[df_filtrado["idx_defuncion"].astype(str).apply(nrm).str.contains(bdd, na=False)]
     if "edad" in df_filtrado.columns and edad_sel != "Todos":
         df_filtrado = df_filtrado[df_filtrado["edad"].astype(str) == str(edad_sel)]
-    if "tiempo" in df_filtrado.columns and tiempo_sel != "Todos":
-        df_filtrado = df_filtrado[df_filtrado["tiempo"].str.contains(tiempo_sel, case=False, na=False)]
 
     st.divider()
     return df_filtrado

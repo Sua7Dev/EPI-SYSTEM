@@ -56,6 +56,9 @@ def ver_reportes():
     logo(tamano="70%")
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
+        salir = st.button("Volver a inicio de sesión", icon=":material/arrow_back:", type="primary",
+                  )
+        if salir: st.switch_page("pages/inicio_sesion.py")
         return
     nombre_usuario = st.session_state["autenticado_usuario"]
     info_usuario = obtener_info_usuario(nombre_usuario)

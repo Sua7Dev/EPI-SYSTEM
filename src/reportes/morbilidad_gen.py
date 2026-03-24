@@ -106,7 +106,7 @@ def formulario_reporte_general_morbilidad():
             timeframe = st.selectbox(
                 "Seleccionar período",
                 ["Año", "Fecha Específica", "Rango de Fechas"],
-                key="mortag",
+                key="morbi_timeframe",
                 on_change=lambda: st.session_state.update(
                     {timeframe_key: st.session_state[timeframe_key]}
                 )
@@ -137,7 +137,7 @@ def formulario_reporte_general_morbilidad():
                     st.error("Sin datos registrados.", icon=":material/error:")
                     return
 
-                year = st.selectbox("Año", available_years, key="year_general_reporte")
+                year = st.selectbox("Año", available_years, key="morbi_year")
                 pdf_df = _consultar_morbilidad(year=year)
 
             elif timeframe == "Fecha Específica":
@@ -147,7 +147,7 @@ def formulario_reporte_general_morbilidad():
                     format="DD/MM/YYYY",
                     min_value=datetime.date(2000, 1, 1),
                     max_value=datetime.date.today(),
-                    key="specific_date_general_reporte"
+                    key="morbi_specific_date"
                 )
                 pdf_df = _consultar_morbilidad(
                     specific_date=specific_date
@@ -191,7 +191,7 @@ def formulario_reporte_general_morbilidad():
                         value=min_fecha,
                         format="DD/MM/YYYY",
                         max_value=datetime.date.today(),
-                        key="start_date_general_reporte"
+                        key="morbi_start_date"
                     )
                 with col_end:
                     end_date = st.date_input(
@@ -199,7 +199,7 @@ def formulario_reporte_general_morbilidad():
                         value=max_fecha,
                         format="DD/MM/YYYY",
                         max_value=datetime.date.today(),
-                        key="end_date_general_reporte"
+                        key="morbi_end_date"
                     )
 
                 if end_date < start_date:

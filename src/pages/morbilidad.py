@@ -15,7 +15,6 @@ from utils.filtro_categorias import filtro_morbilidad
 from utils.validaciones import val_diagnostico, validar_texto, val_texynum, val_notas, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
 from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import procesar_guardado_morb_extenso
-from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
 from utils.recargar_retroceso import reload_on_back
 configurar_pagina_espanol()
 if "previous_page" not in st.session_state:
@@ -392,18 +391,7 @@ def mostrar_morb():
     if not info_usuario:
         st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
         return
-    tab1, tab2 = st.tabs(["| :material/personal_injury: Morbilidad |", 
-                                "| :material/article_shortcut: Reporte General |"])
-    with tab1:
-        formulario_morb_extenso()
-    with tab2:
-        st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
-        col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
-
-        with col_centro:
-            formulario_reporte_general_morbilidad()
-
-        st.markdown("")
+    formulario_morb_extenso()
     copyright_footer_dos("Equipo Investigador")
 
 mostrar_morb()

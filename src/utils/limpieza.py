@@ -24,7 +24,6 @@ def limpiar_campos_natalidad():
     st.session_state.partos_natalidad = min_value
     st.session_state.hembras_natalidad = min_value
     st.session_state.varones_natalidad = min_value
-    st.session_state.sexo_gemelar_natalidad = "No aplica"
     st.session_state.gemelar_natalidad = min_value
     st.session_state.cesareas_natalidad = min_value
     st.session_state.mto_natalidad = min_value

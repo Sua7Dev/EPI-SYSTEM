@@ -62,6 +62,10 @@ def menu():
         estadisticaicon, estadisticabtn = st.sidebar.columns((0.1, 1))
         estadistica_Logo = estadisticaicon.button("", type="tertiary", width="stretch", icon=":material/bar_chart_4_bars:", key="estadistica_Logo")
         estadistica_boton = estadisticabtn.button("Estadísticas", type="primary", width="stretch")
+        # Botones de Reportes
+        reportesicon, reportesbtn = st.sidebar.columns((0.1, 1))
+        reportes_Logo = reportesicon.button("", type="tertiary", width="stretch", icon=":material/docs:", key="reportes_Logo")
+        reportes_boton = reportesbtn.button("Reportes", type="primary", width="stretch")
         # Margen divisor
         st.sidebar.markdown(
         "<hr style='border: 1px solid #000000; margin-top: 0px; margin-bottom: 1px;'>"
@@ -99,6 +103,9 @@ def menu():
             st.rerun()
         if estadistica_Logo or estadistica_boton:
             st.switch_page("pages/estadisticas.py")
+            st.rerun()
+        if reportes_Logo or reportes_boton:
+            st.switch_page("pages/reportes.py")
             st.rerun()
         if configuracion_Logo or configuracion_boton:
             st.switch_page("pages/configuracion.py")

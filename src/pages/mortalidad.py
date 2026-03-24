@@ -11,12 +11,11 @@ from dateutil.relativedelta import relativedelta
 from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados, ver_pdf
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_materna, limpiar_campos_infantil, limpiar_campos_neonatal
-from utils.validaciones import validar_texto, val_diagnostico, val_texynum, val_notas, val_num_espacios, validar_cinco_espacios, validar_pais
+from utils.validaciones import val_diagnostico, validar_texto, val_texynum, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
 from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import (procesar_guardado_cambios_mortalidad_neonatal,
                                    procesar_guardado_cambios_mortalidad_infantil, procesar_guardado_cambios_mortalidad_materna,
                                    )
-from utils.reportes import formulario_reporte_general 
 from utils.recargar_retroceso import reload_on_back
 from utils.filtro_categorias import filtro_muerte_neonatal, filtro_muerte_infantil, filtro_muerte_materna
 import os
@@ -1473,31 +1472,19 @@ def mostrar_morta():
         st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
         return
 
-    tab1, tab2 = st.tabs(["| :material/skull: Mortalidad |", 
-                                "| :material/article_shortcut: Reporte General |"])
-    with tab1:
-        tipo_muerte = st.selectbox(
-            ":material/gesture_select: Selecciona el tipo de registro:",
-            options=["Muerte Neonatal", "Muerte Infantil", "Muerte Materna"],
-            key="tipo_muerte_normal"
-        )
-        formularios_normales = {
-            "Muerte Neonatal": formulario_neonatal,
-            "Muerte Infantil": formulario_infantil,
-            "Muerte Materna": formulario_materna
-        }
-        func_normal = formularios_normales.get(tipo_muerte)
-        if func_normal:
-            func_normal()
-
-    with tab2:
-        st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
-        col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
-
-        with col_centro:
-            formulario_reporte_general()
-
-        st.markdown("")
+    tipo_muerte = st.selectbox(
+        ":material/gesture_select: Selecciona el tipo de registro:",
+        options=["Muerte Neonatal", "Muerte Infantil", "Muerte Materna"],
+        key="tipo_muerte_normal"
+    )
+    formularios_normales = {
+        "Muerte Neonatal": formulario_neonatal,
+        "Muerte Infantil": formulario_infantil,
+        "Muerte Materna": formulario_materna
+    }
+    func_normal = formularios_normales.get(tipo_muerte)
+    if func_normal:
+        func_normal()
     copyright_footer_dos("Equipo Investigador", bottom="-200px")
         
 mostrar_morta()
