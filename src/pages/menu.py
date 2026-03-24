@@ -71,6 +71,10 @@ def menu():
         configuracion_Logo = configicon.button("", type="tertiary", width="stretch", icon=":material/settings:", key="config_logo")
         configuracion_boton = configbtn.button("Configuración", type="primary", width="stretch")
 
+        acerca_de_icon, acerca_de_btn = st.sidebar.columns((0.1, 1))
+        acerca_de_Logo = acerca_de_icon.button("", type="tertiary", width="stretch", icon=":material/info:", key="acerca_de_logo")
+        acerca_de_boton = acerca_de_btn.button("Acerca de", type="primary", width="stretch")
+
         # Botones de cerrar sesión
         logouticon, logoutbtn = st.sidebar.columns((0.1, 1))
         cerrar_Logo = logouticon.button("", type="tertiary", width="stretch", icon=":material/exit_to_app:", key="cerrar_logo")
@@ -98,6 +102,9 @@ def menu():
             st.rerun()
         if configuracion_Logo or configuracion_boton:
             st.switch_page("pages/configuracion.py")
+            st.rerun()
+        if acerca_de_Logo or acerca_de_boton:
+            st.switch_page("pages/acerca_de.py")
             st.rerun()
         if cerrar_Logo or cerrar_boton:
             @st.dialog(":material/brightness_alert: ¿Estás seguro de que quieres cerrar sesión?")

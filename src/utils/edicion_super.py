@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 from utils.visuales import markdown_sin_link
-from utils.informaciones import nosotros, hospital, mision, vision, manual_de_uso
+#from utils.informaciones import nosotros, hospital, mision, vision, manual_de_uso
 from utils.verificaciones import verificar_superusuario, eliminar_usuario_completo, obtener_info_usuario
 from utils.contra import borro_cassette
 from utils.validaciones import validar_texto, validar_nombre_usuario, val_mail, validar_contraseña
@@ -107,18 +107,19 @@ def confirmar_eliminar_multiples(usuarios_seleccionados): #nombre_usuario
 #        with col_nosotros:
 #            nosotros()
 
-def extras_exp():
-    with st.container(border=True):
-        hospital()
-        col_mision, col_vision, col_manual, col_nosotros = st.columns(4)
-        with col_mision:
-            mision()
-        with col_vision:
-            vision()
-        with col_manual:
-            manual_de_uso()        
-        with col_nosotros:
-            nosotros()
+# comentado xq se migro a acerca_de.py
+# def extras_exp():
+#     with st.container(border=True):
+#         hospital()
+#         col_mision, col_vision, col_manual, col_nosotros = st.columns(4)
+#         with col_mision:
+#             mision()
+#         with col_vision:
+#             vision()
+#         with col_manual:
+#             manual_de_uso()        
+#         with col_nosotros:
+#             nosotros()
             
 
 def mostrar_modo_normal():
@@ -173,7 +174,7 @@ def mostrar_modo_normal():
                 acceso_editar()
 
     #extras()
-    extras_exp()
+    #extras_exp()
 
 
 def mostrar_modo_edicion():
