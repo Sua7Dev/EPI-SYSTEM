@@ -490,19 +490,9 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
             # ─────────────────────────────────────────────────────────────
             # 1. Obtener y convertir valores
             # ─────────────────────────────────────────────────────────────
-            sexo_gemelar = row.get('sexo_gemelar', '') or ''
             gemelar = int(row.get('gemelar', 0)) if pd.notna(row.get('gemelar', 0)) else 0
             varones = int(row.get('varones', 0)) if pd.notna(row.get('varones', 0)) else 0
             hembras = int(row.get('hembras', 0)) if pd.notna(row.get('hembras', 0)) else 0
-
-            # Ajuste por gemelares
-            if sexo_gemelar == "Varones":
-                varones += gemelar * 2
-            elif sexo_gemelar == "Hembras":
-                hembras += gemelar * 2
-            elif sexo_gemelar == "Mixto":
-                varones += gemelar
-                hembras += gemelar
 
             # Fecha
             fecha_display = row.get('fecha_display', row.get('fecha', ''))
@@ -537,37 +527,20 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
                 return
 
          
-            if sexo_gemelar == "No aplica" and gemelar > 0:
-                st.warning(
-                    "Al seleccionar 'No aplica', la cantidad de gemelares se ajusta automáticamente a 0.",
-                    icon=":material/info:"
-                )
-                gemelar = 0
-
-            varones_aj = varones
-            hembras_aj = hembras
-            if sexo_gemelar == "Varones":
-                varones_aj += gemelar * 2
-            elif sexo_gemelar == "Hembras":
-                hembras_aj += gemelar * 2
-            elif sexo_gemelar == "Mixto":
-                varones_aj += gemelar
-                hembras_aj += gemelar
-
-            total_nacidos = varones_aj + hembras_aj + mto
-            total_eventos = partos + cesareas
-
-            if total_nacidos != total_eventos:
-                st.error(
-                    f"La suma de nacidos vivos + MTO ({total_nacidos}) no coincide "
-                    f"con el total de partos + cesáreas ({total_eventos}).",
-                    icon=":material/error:"
-                )
-                return
-
-            # Actualizamos varones y hembras con los valores ajustados para guardar en DB
-            varones = varones_aj
-            hembras = hembras_aj
+            if gemelar >= 1:
+                if (partos + cesareas + partos_extra) == 0:
+                    st.error("Si hay registros gemelares, debe haber al menos un Parto, Cesárea o Parto extrahospitalario.", icon=":material/error:")
+                    return
+                if (varones + hembras) == 0:
+                    st.error("Si hay registros gemelares, debe haber al menos un Varón o Hembra registrado.", icon=":material/error:")
+                    return
+            
+            if gemelar == 0:
+                total_nacidos = varones + hembras + mto
+                total_eventos = partos + cesareas
+                if total_nacidos != total_eventos:
+                    st.error(f"La suma de nacidos vivos + MTO ({total_nacidos}) no coincide con el total de partos + cesáreas ({total_eventos}).", icon=":material/error:")
+                    return
 
             # ─────────────────────────────────────────────────────────────
             # 4. Guardar el registro

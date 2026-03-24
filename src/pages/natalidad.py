@@ -82,19 +82,7 @@ def data_editor_natalidad(df, rol_usuario):
             disabled=(rol_usuario == "Secretario (a)")
         ),
         "gemelar": st.column_config.NumberColumn(
-            "Gemelar", min_value=0, step=1, disabled=True
-        ),
-        "mto": st.column_config.NumberColumn(
-            "Muertos (MTO)", min_value=0, step=1,
-            disabled=(rol_usuario == "Secretario (a)")
-        ),
-        "partos_extrahospitalarios": st.column_config.NumberColumn(
-            "Partos extrahospitalarios", min_value=0, step=1,
-            disabled=(rol_usuario == "Secretario (a)")
-        ),
-        "sexo_gemelar": st.column_config.SelectboxColumn(
-            "Sexo de los gemelos",
-            options=["No aplica", "Varones", "Hembras", "Mixto"],
+            "Gemelar", min_value=0, step=1,
             disabled=(rol_usuario == "Secretario (a)")
         ),
         "id": st.column_config.TextColumn("ID", disabled=True),
@@ -299,26 +287,20 @@ def formulario_natalidad():
             with col_varones:
                 varones = st.number_input("Varones", min_value=0, step=1)
 
-            col_sexo_gem, col_gemelar = st.columns(2)
-            with col_sexo_gem:
-                sexo_gemelar = st.selectbox(
-                    "Sexo de los gemelos",
-                    ["No aplica", "Varones", "Hembras", "Mixto"]
-                )
-
+            col_gemelar, col_cesareas, col_mto, col_sexo_gem = st.columns(4)
             with col_gemelar:
                 gemelar = st.number_input("Gemelar", min_value=0, step=1)
 
-            col_cesareas, col_mto = st.columns(2)
             with col_cesareas:
                 cesareas = st.number_input("Cesáreas", min_value=0, step=1)
 
             with col_mto:
                 mto = st.number_input("Muertos (MTO)", min_value=0, step=1)
 
-            partos_extrahospitalarios = st.number_input(
-                "Partos extrahospitalarios", min_value=0, step=1
-            )
+            with col_sexo_gem:
+                partos_extrahospitalarios = st.number_input(
+                    "Partos extrahospitalarios", min_value=0, step=1
+                )
 
             col_reg, col_limp = st.columns([30, 1])
             with col_reg:
@@ -341,37 +323,25 @@ def formulario_natalidad():
                     )
                     st.stop()
 
-                if sexo_gemelar == "No aplica" and gemelar > 0:
-                    st.warning(
-                        "Al seleccionar 'No aplica', la cantidad de gemelares se ajusta automáticamente a 0.",
-                        icon=":material/info:"
-                    )
-                    gemelar = 0
+                if gemelar >= 1:
+                    if (partos + cesareas + partos_extrahospitalarios) == 0:
+                        st.error("Si hay registros gemelares, debe haber al menos un Parto, Cesárea o Parto extrahospitalario.", icon=":material/error:")
+                        st.stop()
+                    if (varones + hembras) == 0:
+                        st.error("Si hay registros gemelares, debe haber al menos un Varón o Hembra registrado.", icon=":material/error:")
+                        st.stop()
 
-                varones_aj = varones
-                hembras_aj = hembras
-                if sexo_gemelar == "Varones":
-                    varones_aj += gemelar * 2
-                elif sexo_gemelar == "Hembras":
-                    hembras_aj += gemelar * 2
-                elif sexo_gemelar == "Mixto":
-                    varones_aj += gemelar
-                    hembras_aj += gemelar
-
-                total_nacidos = varones_aj + hembras_aj + mto
-                total_eventos = partos + cesareas
-
-                if total_nacidos != total_eventos:
-                    st.error(
-                        f"La suma de nacidos vivos + MTO ({total_nacidos}) no coincide "
-                        f"con el total de partos + cesáreas ({total_eventos}).",
-                        icon=":material/error:"
-                    )
-                    st.stop()
+                # Validación de coherencia si no hay gemelar (opcional, pero recomendada para datos limpios)
+                if gemelar == 0:
+                    total_nacidos = varones + hembras + mto
+                    total_eventos = partos + cesareas
+                    if total_nacidos != total_eventos:
+                        st.error(f"La suma de nacidos vivos + MTO ({total_nacidos}) no coincide con el total de partos + cesáreas ({total_eventos}).", icon=":material/error:")
+                        st.stop()
 
                 datos_registro = (
                     fecha, partos, cesareas,
-                    varones_aj, hembras_aj,
+                    varones, hembras,
                     gemelar, mto,
                     partos_extrahospitalarios,
                     id_doctor, id_administrador, rol_usuario
