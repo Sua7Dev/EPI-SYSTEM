@@ -11,12 +11,11 @@ from dateutil.relativedelta import relativedelta
 from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados, ver_pdf
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_materna, limpiar_campos_infantil, limpiar_campos_neonatal
-from utils.validaciones import val_motivo, validar_texto, val_texynum, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
+from utils.validaciones import val_diagnostico, validar_texto, val_texynum, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
 from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import (procesar_guardado_cambios_mortalidad_neonatal,
                                    procesar_guardado_cambios_mortalidad_infantil, procesar_guardado_cambios_mortalidad_materna,
                                    )
-from utils.reportes import formulario_reporte_general 
 from utils.recargar_retroceso import reload_on_back
 from utils.filtro_categorias import filtro_muerte_neonatal, filtro_muerte_infantil, filtro_muerte_materna
 import os

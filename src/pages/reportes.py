@@ -10,6 +10,9 @@ from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
 from reportes.natalidad_general import formulario_reporte_general_natalidad
 
 configurar_pagina_espanol()
+if "previous_page" not in st.session_state:
+    st.session_state["previous_page"] = "pages/inicio.py"
+st.session_state["previous_page"] = "pages/reportes.py"
 import sys
 
 
