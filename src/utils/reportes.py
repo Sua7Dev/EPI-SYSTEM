@@ -18,7 +18,7 @@ def formulario_reporte_general():
         timeframe = st.selectbox(
             "Seleccionar período",
             ["Año", "Fecha Específica", "Rango de Fechas"], 
-            key="mortag", 
+            key="morta_timeframe", 
             on_change=lambda: st.session_state.update(
                 {timeframe_key: st.session_state[timeframe_key]}
             )
@@ -65,7 +65,7 @@ def formulario_reporte_general():
                 "Año",
                 available_years,
                 index=available_years.index(default_year),
-                key="year_general_reporte"
+                key="morta_year"
             )
             pdf_df = consultar_mortalidad_general(year=year)
 
@@ -76,7 +76,7 @@ def formulario_reporte_general():
                 min_value=min_fecha,
                 max_value=max_fecha,
                 format="DD/MM/YYYY",
-                key="specific_date_general_reporte"
+                key="morta_specific_date"
             )
             pdf_df = consultar_mortalidad_general(
                 specific_date=specific_date
@@ -91,7 +91,7 @@ def formulario_reporte_general():
                     min_value=min_fecha,
                     max_value=max_fecha,
                     format="DD/MM/YYYY",
-                    key="start_date_general_reporte"
+                    key="morta_start_date"
                 )
             with col_end:
                 end_date = st.date_input(
@@ -100,7 +100,7 @@ def formulario_reporte_general():
                     min_value=min_fecha,
                     max_value=max_fecha,
                     format="DD/MM/YYYY",
-                    key="end_date_general_reporte"
+                    key="morta_end_date"
                 )
 
             if end_date < start_date:

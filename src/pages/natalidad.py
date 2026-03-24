@@ -18,7 +18,6 @@ configurar_pagina_espanol()
 if "previous_page" not in st.session_state:
     st.session_state["previous_page"] = "pages/inicio.py"
 st.session_state["previous_page"] = "pages/natalidad.py"
-from reportes.natalidad_general import formulario_reporte_general_natalidad
 from utils.recargar_retroceso import reload_on_back
 import sys
 import streamlit as st
@@ -577,25 +576,7 @@ def mostrar_nata():
         st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
         return
     
-    tab1, tab2 = st.tabs(["| :material/pregnant_woman: Natalidad |", 
-                                "| :material/article_shortcut: Reporte General |"])
-    with tab1:
-        formulario_natalidad()
-        #codigo = text_input_max_3_con_mensaje("Código", key="codigo")
-        #correo = email_input_validado_inteligente("Correo electrónico", key="email")
-
-    with tab2:
-        st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
-        col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
-        #with col_izq:
-            #formulario_reporte_mensual_combinado()
-        #st.markdown("---")
-        with col_centro:
-            formulario_reporte_general_natalidad()
-        #st.markdown("---")
-        #with col_der:
-            #formulario_reporte_mensual_general()
-        st.markdown("")
+    formulario_natalidad()
     copyright_footer_dos("Equipo Investigador")
 
 mostrar_nata()
