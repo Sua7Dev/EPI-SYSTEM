@@ -281,13 +281,18 @@ def filtro_muerte_infantil(df):
             sort_elegido = st.selectbox("Ordenar por", opciones_orden, key="ord_inf")
         componentes.append(render_orden)
 
-    # Renderizar en grid de 3 columnas
-    for i in range(0, len(componentes), 3):
-        chunk = componentes[i:i+3]
-        cols = st.columns(3)
-        for j, render_func in enumerate(chunk):
-            with cols[j]:
-                render_func()
+    # Renderizar en grid
+    # Fila 1: HC, Nombre, Madre
+    col1, col2, col3 = st.columns(3)
+    with col1: render_hc()
+    with col2: render_nombre()
+    with col3: render_madre()
+
+    # Fila 2: Ordenar y Edad (Edad al medio)
+    col_b1, col_b2, col_b3 = st.columns(3)
+    if tiene_peso or tiene_talla:
+        with col_b1: render_orden()
+    with col_b2: render_edad()
 
     df_f = df.copy()
     def norm(t): return ''.join(c for c in unicodedata.normalize('NFKD', str(t).lower()) if unicodedata.category(c) != 'Mn')
