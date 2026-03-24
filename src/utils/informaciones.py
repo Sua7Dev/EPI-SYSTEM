@@ -103,6 +103,31 @@ def manual_de_uso():
     except Exception as e:
        st.error(f"Ocurrió un error: {e}")
 
+def alcance_del_sistema():
+    with st.popover("Alcance del Sistema", icon=":material/info:", width="stretch"):
+        st.header(":material/info: Alcance del Sistema", divider="gray", anchor=False)
+        st.markdown("""
+        El sistema **EPI-SYSTEM** está diseñado para la gestión integral de datos epidemiológicos en entornos hospitalarios. Su alcance incluye:
+        1. **Registro y Seguimiento:** Captura detallada de eventos de morbilidad, mortalidad y natalidad.
+        2. **Análisis Estadístico:** Generación de indicadores clave y visualizaciones en tiempo real a través de tableros (dashboards).
+        3. **Control de Acceso:** Gestión de usuarios con roles diferenciados (Administrador, Médico, Secretario) para garantizar la integridad y confidencialidad.
+        4. **Reportes:** Emisión de reportes periódicos para el apoyo en la toma de decisiones de salud pública.
+        5. **Digitalización:** Transformación de procesos manuales en flujos de trabajo digitales eficientes.
+        """)
+
+
+def proposito_del_sistema():
+    with st.popover("Propósito del Sistema", icon=":material/ads_click:", width="stretch"):
+        st.header(":material/ads_click: Propósito del Sistema", divider="gray", anchor=False)
+        st.markdown("""
+        El propósito fundamental de **EPI-SYSTEM** es optimizar la vigilancia epidemiológica mediante el uso de tecnologías de la información. Sus objetivos principales son:
+        1. **Modernización:** Reemplazar los registros en papel por una plataforma digital centralizada que facilite el acceso y la búsqueda de información.
+        2. **Precisión:** Reducir errores humanos en la transcripción y tabulación de datos críticos de salud.
+        3. **Eficiencia:** Agilizar el tiempo de respuesta ante brotes o tendencias epidemiológicas mediante el análisis automatizado.
+        4. **Toma de Decisiones:** Proporcionar a las autoridades hospitalarias y sanitarias datos confiables para la planificación de recursos y políticas de salud.
+        5. **Accesibilidad:** Facilitar que el personal autorizado consulte el historial y las estadísticas institucionales de manera remota y segura.
+        """)
+
 def mostrar_usuario_activo():
     if "autenticado_usuario" not in st.session_state:
         st.sidebar.error("Debes iniciar sesión.", icon=":material/error:")

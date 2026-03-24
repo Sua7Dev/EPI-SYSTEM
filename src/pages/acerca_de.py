@@ -4,7 +4,7 @@ from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, co
 from pages.menu import menu
 from utils.base_64 import img_a_base64
 from pathlib import Path
-from utils.informaciones import nosotros, hospital, mision, vision, manual_de_uso
+from utils.informaciones import nosotros, hospital, mision, vision, manual_de_uso, alcance_del_sistema, proposito_del_sistema
 from utils.recargar_retroceso import reload_on_back
 
 configurar_pagina_espanol()
@@ -36,6 +36,13 @@ def orden_de_informaciones():
             manual_de_uso()        
         with col_nosotros:
             nosotros()
+        
+        st.markdown("---")
+        col_alcance, col_proposito = st.columns(2)
+        with col_alcance:
+            alcance_del_sistema()
+        with col_proposito:
+            proposito_del_sistema()
     st.markdown("# ")
 
 
