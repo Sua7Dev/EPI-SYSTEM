@@ -142,6 +142,11 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
         if col not in column_config and col != " ":
             column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
+    # Asegurar que todas las columnas de texto sean strings para evitar errores de codificación
+    for col in df_filtrado.columns:
+        if df_filtrado[col].dtype == object:
+            df_filtrado[col] = df_filtrado[col].apply(lambda x: "" if x is None else str(x))
+
     edited_df = st.data_editor(
         df_filtrado,
         hide_index=True,
@@ -230,6 +235,24 @@ def formulario_neonatal(db=DB_PATH):
                     procesar_guardado_cambios_mortalidad_neonatal(edited_df)
                     time.sleep(1)
                     st.rerun()
+
+    st.components.v1.html("""
+        <script>
+            const doc = window.parent.document;
+            if (!doc.getElementById("blur_hack_neonatal")) {
+                let s = doc.createElement("span");
+                s.id = "blur_hack_neonatal";
+                doc.body.appendChild(s);
+                doc.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('button') && e.target.innerText.includes('Guardar cambios')) {
+                        if (doc.activeElement && doc.activeElement.tagName === 'INPUT') {
+                            doc.activeElement.blur();
+                        }
+                    }
+                }, true);
+            }
+        </script>
+    """, height=0)
 
     if rol_usuario == "Secretario (a)":
         st.markdown("# ")
@@ -664,6 +687,11 @@ def data_editor_infantil(df, rol_usuario):
         if col not in column_config and col != " ":
             column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
+    # Asegurar que todas las columnas de texto sean strings para evitar errores de codificación
+    for col in df.columns:
+        if df[col].dtype == object:
+            df[col] = df[col].apply(lambda x: "" if x is None else str(x))
+
     edited_df = st.data_editor(
         df,
         hide_index=True,
@@ -1079,6 +1107,11 @@ def data_editor_materna(df, rol_usuario):
     for col in columns_to_show:
         if col not in column_config and col != " ":
             column_config[col] = st.column_config.TextColumn(col, disabled=True)
+
+    # Asegurar que todas las columnas de texto sean strings para evitar errores de codificación
+    for col in df.columns:
+        if df[col].dtype == object:
+            df[col] = df[col].apply(lambda x: "" if x is None else str(x))
 
     edited_df = st.data_editor(
         df,

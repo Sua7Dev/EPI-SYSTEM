@@ -195,6 +195,11 @@ def mostrar_modo_edicion():
         "Rol": st.column_config.TextColumn(disabled=True),
         "Correo": st.column_config.TextColumn(disabled=True),
     }
+    # Asegurar que todas las columnas de texto sean strings para evitar errores de codificación
+    for col in df.columns:
+        if df[col].dtype == object:
+            df[col] = df[col].apply(lambda x: "" if x is None else str(x))
+
     edited_df = st.data_editor(
         df,
         column_config=column_config,

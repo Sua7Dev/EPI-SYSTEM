@@ -122,6 +122,7 @@ def operaciones_sql_natalidad(accion, datos_registro=None, db=DB_PATH):
                     FROM natalidad
                     ORDER BY id_nata DESC
                 """
+                conn.text_factory = lambda x: x.decode('utf-8', 'replace')
                 return pd.read_sql_query(query, conn)
 
             elif accion == "registrar" and datos_registro:
@@ -230,6 +231,7 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, db=DB_PATH):
                     LEFT JOIN pais p ON e.id_pais = p.id_pais
                     ORDER BY m.id_morb DESC
                 """
+                conn.text_factory = lambda x: x.decode('utf-8', 'replace')
                 return pd.read_sql_query(query, conn)
 
             elif accion == "registrar" and datos_registro:
@@ -468,6 +470,7 @@ def operaciones_sql_neonatal(accion, datos_registro=None, db=DB_PATH):
                     LEFT JOIN pais p ON e.id_pais = p.id_pais
                     ORDER BY m.id_m DESC
                 """
+                conn.text_factory = lambda x: x.decode('utf-8', 'replace')
                 return pd.read_sql_query(query, conn)
             elif accion == "registrar" and datos_registro:
                 historia_clinica, nombres_apellidos, nombre_madre, fecha_nacimiento, hora_nacimiento, fecha_ingreso, hora_ingreso, fecha_defuncion, hora_defuncion, edad_junto, idx_ingreso, idx_defuncion, semanas_gestacion, peso, talla, pais_hogar, estado_hogar, municipio_hogar, parroquia_hogar, ciudad_hogar, direccion_exacta, id_doctor, id_administrador = datos_registro
@@ -674,6 +677,7 @@ def operaciones_sql_infantil(accion, datos_registro=None, db=DB_PATH):
                         ORDER BY m.id_m DESC;
 
                 """
+                conn.text_factory = lambda x: x.decode('utf-8', 'replace')
                 return pd.read_sql_query(query, conn)
             elif accion == "registrar" and datos_registro:
                 historia_clinica, nombres_apellidos, nombre_madre, fecha_nacimiento, fecha_ingreso, hora_ingreso, fecha_defuncion, hora_defuncion, edad_junto, idx_ingreso, idx_defuncion, pais_hogar, estado_hogar, municipio_hogar, parroquia_hogar, ciudad_hogar, direccion_exacta, id_doctor, id_administrador = datos_registro

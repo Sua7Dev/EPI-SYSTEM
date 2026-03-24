@@ -3,6 +3,7 @@ import pandas as pd
 import sqlite3
 import datetime
 import os
+import time
 from utils.visuales import notificacion_cambios
 from utils.validaciones import (val_diagnostico, validar_texto, val_texynum, val_notas, val_num_espacios, 
                                 val_solo_numeros, validar_cinco_espacios)
@@ -80,13 +81,13 @@ def _overwrite_hierarchy_defaults(cursor, id_parroquia):
 
         cursor.execute("UPDATE pais SET nombre = ? WHERE id_pais = ?", (pais, id_pais))
     except Exception:
-        # No interrumpir el guardado si algo falla aquí
         pass
 
 def procesar_guardado_cambios_mortalidad_neonatal(edited_df, DB_PATH=DB_PATH):
     usuario = st.session_state.get("autenticado_usuario", "Desconocido")
     hubo_cambios = False
     ultimo_id = None
+    error_occured = False
 
     COLUMN_TO_TABLE_MAP = {
         'historia_clinica': 'mortalidad',
@@ -108,35 +109,82 @@ def procesar_guardado_cambios_mortalidad_neonatal(edited_df, DB_PATH=DB_PATH):
 
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        for _, row in edited_df.iterrows():
-            id_m = row.get("id")
+        
+        editor_state = st.session_state.get("editor_neonatal", {})
+        edited_rows = editor_state.get("edited_rows", {})
+        cambios_directos = {}
+        for chgs in edited_rows.values():
+            for col, val in chgs.items():
+                if col != " ": cambios_directos[col] = val
+                
+        seleccionadas = [idx for idx, r in edited_df.iterrows() if r.get(" ") == True]
+        
+        filas_editadas = []
+        for k, chgs in edited_rows.items():
+            if any(c != " " for c in chgs.keys()):
+                try: idx = int(k)
+                except: idx = k
+                filas_editadas.append(idx)
+                
+        filas_a_procesar = sorted(list(set(filas_editadas) | set(seleccionadas)))
+        
+        if filas_a_procesar:
+            st.toast(f"💾 Guardando {len(filas_a_procesar)} cambios en Mortalidad Neonatal...")
+            
+        for idx in filas_a_procesar:
+            if idx in edited_df.index: row = edited_df.loc[idx].copy()
+            else:
+                try: row = edited_df.iloc[int(idx)].copy()
+                except: continue
+                
+            str_idx = str(idx)
+            int_idx = idx if isinstance(idx, int) else None
+            edits_for_row = {}
+            if str_idx in edited_rows: edits_for_row = edited_rows[str_idx]
+            elif int_idx in edited_rows: edits_for_row = edited_rows[int_idx]
+            
+            # DETERMINAR CAMPOS REALMENTE CAMBIADOS
+            campos_cambiados = set()
+            if str_idx in edited_rows: campos_cambiados.update(edited_rows[str_idx].keys())
+            if int_idx in edited_rows: campos_cambiados.update(edited_rows[int_idx].keys())
+            if idx in seleccionadas: campos_cambiados.update(cambios_directos.keys())
+            if " " in campos_cambiados: campos_cambiados.remove(" ")
+
+            if not campos_cambiados:
+                continue
+
+            try: id_m = int(row.get("id"))
+            except: 
+                st.error(f"Fila {idx}: ID de registro no válido.")
+                error_occured = True; continue
+            
             ultimo_id = id_m
 
-            peso_raw = row.get("peso", None)
-            talla_raw = row.get("talla", None)
+            # Validaciones solo si el campo fue cambiado
+            if 'peso' in campos_cambiados:
+                val = row.get("peso")
+                if pd.isna(val) or str(val).strip() == "":
+                    st.error(f"Fila {idx}: Peso no debe estar vacío."); error_occured = True; continue
+                try: 
+                    if float(val) <= 0: raise ValueError()
+                except: st.error(f"Fila {idx}: Peso debe ser número > 0."); error_occured = True; continue
 
-            if pd.isna(peso_raw) or pd.isna(talla_raw):
-                st.error("Peso y talla no deben estar vacíos.", icon=":material/error:")
-                return
+            if 'talla' in campos_cambiados:
+                val = row.get("talla")
+                if pd.isna(val) or str(val).strip() == "":
+                    st.error(f"Fila {idx}: Talla no debe estar vacío."); error_occured = True; continue
+                try: 
+                    if float(val) <= 0: raise ValueError()
+                except: st.error(f"Fila {idx}: Talla debe ser número > 0."); error_occured = True; continue
 
-            try:
-                peso = float(peso_raw)
-                talla = float(talla_raw)
-            except:
-                st.error("Peso y talla deben ser números válidos.", icon=":material/error:")
-                return
-
-            if peso <= 0 or talla <= 0:
-                st.error("Peso y talla deben ser mayores a 0.", icon=":material/error:")
-                return
-
-            if not val_num_espacios(str(row.get("historia_clinica", "")), "La", "historia clinica"): return
-            if not validar_texto(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
-            if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
-            if not validar_texto(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
-            if not validar_cinco_espacios(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
-            #if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
-            #if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
+            if 'historia_clinica' in campos_cambiados:
+                if not val_num_espacios(str(row.get("historia_clinica", "")), "La", "historia clinica"): error_occured = True; continue
+            if 'nombres_apellidos' in campos_cambiados:
+                if not validar_texto(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): error_occured = True; continue
+                if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): error_occured = True; continue
+            if 'nombre_madre' in campos_cambiados:
+                if not validar_texto(row.get("nombre_madre", ""), "El", "nombre de la madre"): error_occured = True; continue
+                if not validar_cinco_espacios(row.get("nombre_madre", ""), "El", "nombre de la madre"): error_occured = True; continue
 
             updates = {
                 'mortalidad': {'fields': [], 'values': []},
@@ -144,166 +192,82 @@ def procesar_guardado_cambios_mortalidad_neonatal(edited_df, DB_PATH=DB_PATH):
                 'persona_paciente': {'fields': [], 'values': []}
             }
 
-            for col, value in row.items():
+            for col in campos_cambiados:
                 if col in COLUMN_TO_TABLE_MAP:
-                    if isinstance(value, pd.Timestamp):
+                    value = row[col]
+                    if isinstance(value, (pd.Timestamp, datetime.date, datetime.datetime)):
                         value = value.strftime('%d/%m/%Y')
                     table = COLUMN_TO_TABLE_MAP[col]
                     updates[table]['fields'].append(f"{col} = ?")
                     updates[table]['values'].append(value)
 
             cambio_local = False
-
             if updates['mortalidad']['fields']:
-                cursor.execute(
-                    f"UPDATE mortalidad SET {', '.join(updates['mortalidad']['fields'])} WHERE id_m = ?",
-                    tuple(updates['mortalidad']['values'] + [id_m])
-                )
-                if cursor.rowcount > 0:
-                    cambio_local = True
+                cursor.execute(f"UPDATE mortalidad SET {', '.join(updates['mortalidad']['fields'])} WHERE id_m = ?", 
+                              tuple(updates['mortalidad']['values'] + [id_m]))
+                cambio_local = True
 
             if updates['mortalidad_neonatal']['fields']:
-                cursor.execute(
-                    f"UPDATE mortalidad_neonatal SET {', '.join(updates['mortalidad_neonatal']['fields'])} WHERE id_m = ?",
-                    tuple(updates['mortalidad_neonatal']['values'] + [id_m])
-                )
-                if cursor.rowcount > 0:
-                    cambio_local = True
+                cursor.execute(f"UPDATE mortalidad_neonatal SET {', '.join(updates['mortalidad_neonatal']['fields'])} WHERE id_m = ?", 
+                              tuple(updates['mortalidad_neonatal']['values'] + [id_m]))
+                cambio_local = True
 
             if updates['persona_paciente']['fields']:
                 cursor.execute("SELECT id_paciente FROM mortalidad WHERE id_m = ?", (id_m,))
                 res = cursor.fetchone()
                 if res:
-                    cursor.execute(
-                        f"UPDATE persona_paciente SET {', '.join(updates['persona_paciente']['fields'])} WHERE id_paciente = ?",
-                        tuple(updates['persona_paciente']['values'] + [res[0]])
-                    )
-                    if cursor.rowcount > 0:
-                        cambio_local = True
+                    cursor.execute(f"UPDATE persona_paciente SET {', '.join(updates['persona_paciente']['fields'])} WHERE id_paciente = ?", 
+                                  tuple(updates['persona_paciente']['values'] + [res[0]]))
+                    if cursor.rowcount > 0: cambio_local = True
 
-            # Guardar cambios en la dirección si se editó la columna 'direccion'
-            direccion_val = (row.get('direccion') or row.get('direccion_hogar') or '')
-            if pd.notna(direccion_val) and str(direccion_val).strip() != '':
+            # Manejo de dirección
+            if 'direccion' in campos_cambiados or 'direccion_hogar' in campos_cambiados:
+                direccion_val = (row.get('direccion') or row.get('direccion_hogar') or '')
                 direccion_text = str(direccion_val).strip()
                 cursor.execute("SELECT id_direccion FROM mortalidad WHERE id_m = ?", (id_m,))
                 r = cursor.fetchone()
                 id_dir = r[0] if r and r[0] is not None else None
                 if id_dir:
                     cursor.execute("SELECT descripcion FROM direccion WHERE id_direccion = ?", (id_dir,))
-                    cur = cursor.fetchone()
-                    cur_desc = cur[0] if cur and cur[0] is not None else ''
+                    curQuery = cursor.fetchone()
+                    cur_desc = curQuery[0] if curQuery and curQuery[0] is not None else ''
                     if cur_desc != direccion_text:
                         cursor.execute("SELECT COUNT(*) FROM mortalidad WHERE id_direccion = ?", (id_dir,))
                         uso = cursor.fetchone()[0]
                         if uso <= 1:
                             cursor.execute("SELECT id_parroquia FROM direccion WHERE id_direccion = ?", (id_dir,))
                             rpar = cursor.fetchone()
-                            if rpar and rpar[0] is not None:
-                                _overwrite_hierarchy_defaults(cursor, rpar[0])
+                            if rpar and rpar[0] is not None: _overwrite_hierarchy_defaults(cursor, rpar[0])
                             cursor.execute("UPDATE direccion SET descripcion = ? WHERE id_direccion = ?", (direccion_text, id_dir))
-                            if cursor.rowcount > 0:
-                                cambio_local = True
+                            if cursor.rowcount > 0: cambio_local = True
                         else:
                             id_parroquia = _ensure_default_jerarquia(cursor)
                             cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
                             new_id = cursor.lastrowid
                             cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
-                            if cursor.rowcount > 0:
-                                cambio_local = True
+                            if cursor.rowcount > 0: cambio_local = True
                 else:
                     id_parroquia = _ensure_default_jerarquia(cursor)
                     cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
                     new_id = cursor.lastrowid
                     cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
-                    if cursor.rowcount > 0:
-                        cambio_local = True
+                    if cursor.rowcount > 0: cambio_local = True
 
-            # Guardar cambios en la dirección si se editó la columna 'direccion'
-            direccion_val = (row.get('direccion') or row.get('direccion_hogar') or '')
-            if pd.notna(direccion_val) and str(direccion_val).strip() != '':
-                direccion_text = str(direccion_val).strip()
-                cursor.execute("SELECT id_direccion FROM mortalidad WHERE id_m = ?", (id_m,))
-                r = cursor.fetchone()
-                id_dir = r[0] if r and r[0] is not None else None
-                if id_dir:
-                    cursor.execute("SELECT descripcion FROM direccion WHERE id_direccion = ?", (id_dir,))
-                    cur = cursor.fetchone()
-                    cur_desc = cur[0] if cur and cur[0] is not None else ''
-                    if cur_desc != direccion_text:
-                        cursor.execute("SELECT COUNT(*) FROM mortalidad WHERE id_direccion = ?", (id_dir,))
-                        uso = cursor.fetchone()[0]
-                        if uso <= 1:
-                            cursor.execute("SELECT id_parroquia FROM direccion WHERE id_direccion = ?", (id_dir,))
-                            rpar = cursor.fetchone()
-                            if rpar and rpar[0] is not None:
-                                _overwrite_hierarchy_defaults(cursor, rpar[0])
-                            cursor.execute("UPDATE direccion SET descripcion = ? WHERE id_direccion = ?", (direccion_text, id_dir))
-                            if cursor.rowcount > 0:
-                                cambio_local = True
-                        else:
-                            id_parroquia = _ensure_default_jerarquia(cursor)
-                            cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
-                            new_id = cursor.lastrowid
-                            cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
-                            if cursor.rowcount > 0:
-                                cambio_local = True
-                else:
-                    id_parroquia = _ensure_default_jerarquia(cursor)
-                    cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
-                    new_id = cursor.lastrowid
-                    cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
-                    if cursor.rowcount > 0:
-                        cambio_local = True
+            if cambio_local: hubo_cambios = True
 
-            # Guardar cambios en la dirección si se editó la columna 'direccion'
-            direccion_val = (row.get('direccion') or row.get('direccion_hogar') or '')
-            if pd.notna(direccion_val) and str(direccion_val).strip() != '':
-                direccion_text = str(direccion_val).strip()
-                cursor.execute("SELECT id_direccion FROM mortalidad WHERE id_m = ?", (id_m,))
-                r = cursor.fetchone()
-                id_dir = r[0] if r and r[0] is not None else None
-                if id_dir:
-                    cursor.execute("SELECT descripcion FROM direccion WHERE id_direccion = ?", (id_dir,))
-                    cur = cursor.fetchone()
-                    cur_desc = cur[0] if cur and cur[0] is not None else ''
-                    if cur_desc != direccion_text:
-                        cursor.execute("SELECT COUNT(*) FROM mortalidad WHERE id_direccion = ?", (id_dir,))
-                        uso = cursor.fetchone()[0]
-                        if uso <= 1:
-                            # Forzar la jerarquía a los valores por defecto antes de actualizar
-                            cursor.execute("SELECT id_parroquia FROM direccion WHERE id_direccion = ?", (id_dir,))
-                            rpar = cursor.fetchone()
-                            if rpar and rpar[0] is not None:
-                                _overwrite_hierarchy_defaults(cursor, rpar[0])
-                            cursor.execute("UPDATE direccion SET descripcion = ? WHERE id_direccion = ?", (direccion_text, id_dir))
-                            if cursor.rowcount > 0:
-                                cambio_local = True
-                        else:
-                            id_parroquia = _ensure_default_jerarquia(cursor)
-                            cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
-                            new_id = cursor.lastrowid
-                            cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
-                            if cursor.rowcount > 0:
-                                cambio_local = True
-                else:
-                    id_parroquia = _ensure_default_jerarquia(cursor)
-                    cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
-                    new_id = cursor.lastrowid
-                    cursor.execute("UPDATE mortalidad SET id_direccion = ? WHERE id_m = ?", (new_id, id_m))
-                    if cursor.rowcount > 0:
-                        cambio_local = True
+        if hubo_cambios and not error_occured:
+            conn.commit()
+        else:
+            conn.rollback()
 
-            if cambio_local:
-                hubo_cambios = True
-
-        conn.commit()
-
-    if hubo_cambios:
+    if hubo_cambios and not error_occured:
         registrar_actividad_duradera("EDITADO", "Mortalidad Neonatal", ultimo_id, usuario)
         notificacion_cambios()
         st.session_state["reset_form_mortalidad"] = True
-        #
+        if "editor_neonatal" in st.session_state: del st.session_state["editor_neonatal"]
         st.rerun()
+    elif error_occured:
+        st.warning("Algunos cambios no se guardaron debido a errores de validación.", icon=":material/warning:")
     else:
         st.info("No se detectaron cambios para guardar.", icon=":material/info:")
 
@@ -312,6 +276,7 @@ def procesar_guardado_cambios_mortalidad_infantil(edited_df, DB_PATH=DB_PATH):
     usuario = st.session_state.get("autenticado_usuario", "Desconocido")
     hubo_cambios = False
     ultimo_id = None
+    error_occured = False
 
     COLUMN_TO_TABLE_MAP = {
         'historia_clinica': 'mortalidad',
@@ -329,17 +294,66 @@ def procesar_guardado_cambios_mortalidad_infantil(edited_df, DB_PATH=DB_PATH):
 
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        for _, row in edited_df.iterrows():
-            id_m = row.get("id")
+        
+        editor_state = st.session_state.get("editor_infantil", {})
+        edited_rows = editor_state.get("edited_rows", {})
+        cambios_directos = {}
+        for chgs in edited_rows.values():
+            for col, val in chgs.items():
+                if col != " ": cambios_directos[col] = val
+                
+        seleccionadas = [idx for idx, r in edited_df.iterrows() if r.get(" ") == True]
+        
+        filas_editadas = []
+        for k, chgs in edited_rows.items():
+            if any(c != " " for c in chgs.keys()):
+                try: idx = int(k)
+                except: idx = k
+                filas_editadas.append(idx)
+                
+        filas_a_procesar = sorted(list(set(filas_editadas) | set(seleccionadas)))
+        
+        if filas_a_procesar:
+            st.toast(f"💾 Guardando {len(filas_a_procesar)} cambios en Mortalidad Infantil...")
+            
+        for idx in filas_a_procesar:
+            if idx in edited_df.index: row = edited_df.loc[idx].copy()
+            else:
+                try: row = edited_df.iloc[int(idx)].copy()
+                except: continue
+                
+            str_idx = str(idx)
+            int_idx = idx if isinstance(idx, int) else None
+            edits_for_row = {}
+            if str_idx in edited_rows: edits_for_row = edited_rows[str_idx]
+            elif int_idx in edited_rows: edits_for_row = edited_rows[int_idx]
+            
+            # DETERMINAR CAMPOS REALMENTE CAMBIADOS
+            campos_cambiados = set()
+            if str_idx in edited_rows: campos_cambiados.update(edited_rows[str_idx].keys())
+            if int_idx in edited_rows: campos_cambiados.update(edited_rows[int_idx].keys())
+            if idx in seleccionadas: campos_cambiados.update(cambios_directos.keys())
+            if " " in campos_cambiados: campos_cambiados.remove(" ")
+
+            if not campos_cambiados:
+                continue
+
+            try: id_m = int(row.get("id"))
+            except: 
+                st.error(f"Fila {idx}: ID de registro no válido.")
+                error_occured = True; continue
+            
             ultimo_id = id_m
 
-            if not val_num_espacios(str(row.get("historia_clinica", "")), "La", "historia clinica"): return
-            if not validar_texto(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
-            if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
-            if not validar_texto(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
-            if not validar_cinco_espacios(row.get("nombre_madre", ""), "El", "nombre de la madre"): return
-            #if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
-            #if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
+            # Validaciones solo si el campo fue cambiado
+            if 'historia_clinica' in campos_cambiados:
+                if not val_num_espacios(str(row.get("historia_clinica", "")), "La", "historia clinica"): error_occured = True; continue
+            if 'nombres_apellidos' in campos_cambiados:
+                if not validar_texto(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): error_occured = True; continue
+                if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): error_occured = True; continue
+            if 'nombre_madre' in campos_cambiados:
+                if not validar_texto(row.get("nombre_madre", ""), "El", "nombre de la madre"): error_occured = True; continue
+                if not validar_cinco_espacios(row.get("nombre_madre", ""), "El", "nombre de la madre"): error_occured = True; continue
 
             updates = {
                 'mortalidad': {'fields': [], 'values': []},
@@ -347,54 +361,47 @@ def procesar_guardado_cambios_mortalidad_infantil(edited_df, DB_PATH=DB_PATH):
                 'persona_paciente': {'fields': [], 'values': []}
             }
 
-            for col, value in row.items():
+            for col in campos_cambiados:
                 if col in COLUMN_TO_TABLE_MAP:
-                    if isinstance(value, pd.Timestamp):
+                    value = row[col]
+                    if isinstance(value, (pd.Timestamp, datetime.date, datetime.datetime)):
                         value = value.strftime('%d/%m/%Y')
                     table = COLUMN_TO_TABLE_MAP[col]
                     updates[table]['fields'].append(f"{col} = ?")
                     updates[table]['values'].append(value)
 
             cambio_local = False
-
             if updates['mortalidad']['fields']:
-                cursor.execute(
-                    f"UPDATE mortalidad SET {', '.join(updates['mortalidad']['fields'])} WHERE id_m = ?",
-                    tuple(updates['mortalidad']['values'] + [id_m])
-                )
-                if cursor.rowcount > 0:
-                    cambio_local = True
-
+                cursor.execute(f"UPDATE mortalidad SET {', '.join(updates['mortalidad']['fields'])} WHERE id_m = ?", 
+                              tuple(updates['mortalidad']['values'] + [id_m]))
+                cambio_local = True
             if updates['mortalidad_infantil']['fields']:
-                cursor.execute(
-                    f"UPDATE mortalidad_infantil SET {', '.join(updates['mortalidad_infantil']['fields'])} WHERE id_m = ?",
-                    tuple(updates['mortalidad_infantil']['values'] + [id_m])
-                )
-                if cursor.rowcount > 0:
-                    cambio_local = True
-
+                cursor.execute(f"UPDATE mortalidad_infantil SET {', '.join(updates['mortalidad_infantil']['fields'])} WHERE id_m = ?", 
+                              tuple(updates['mortalidad_infantil']['values'] + [id_m]))
+                cambio_local = True
             if updates['persona_paciente']['fields']:
                 cursor.execute("SELECT id_paciente FROM mortalidad WHERE id_m = ?", (id_m,))
                 res = cursor.fetchone()
                 if res:
-                    cursor.execute(
-                        f"UPDATE persona_paciente SET {', '.join(updates['persona_paciente']['fields'])} WHERE id_paciente = ?",
-                        tuple(updates['persona_paciente']['values'] + [res[0]])
-                    )
-                    if cursor.rowcount > 0:
-                        cambio_local = True
+                    cursor.execute(f"UPDATE persona_paciente SET {', '.join(updates['persona_paciente']['fields'])} WHERE id_paciente = ?", 
+                                  tuple(updates['persona_paciente']['values'] + [res[0]]))
+                    if cursor.rowcount > 0: cambio_local = True
 
-            if cambio_local:
-                hubo_cambios = True
+            if cambio_local: hubo_cambios = True
 
-        conn.commit()
+        if hubo_cambios and not error_occured:
+            conn.commit()
+        else:
+            conn.rollback()
 
-    if hubo_cambios:
+    if hubo_cambios and not error_occured:
         registrar_actividad_duradera("EDITADO", "Mortalidad Infantil", ultimo_id, usuario)
         notificacion_cambios()
         st.session_state["reset_form_mortalidad"] = True
-        #
+        if "editor_infantil" in st.session_state: del st.session_state["editor_infantil"]
         st.rerun()
+    elif error_occured:
+        st.warning("Algunos cambios no se guardaron debido a errores de validación.", icon=":material/warning:")
     else:
         st.info("No se detectaron cambios para guardar.", icon=":material/info:")
 
@@ -403,6 +410,7 @@ def procesar_guardado_cambios_mortalidad_materna(edited_df, DB_PATH=DB_PATH):
     usuario = st.session_state.get("autenticado_usuario", "Desconocido")
     hubo_cambios = False
     ultimo_id = None
+    error_occured = False
 
     COLUMN_TO_TABLE_MAP = {
         'historia_clinica': 'mortalidad',
@@ -419,61 +427,107 @@ def procesar_guardado_cambios_mortalidad_materna(edited_df, DB_PATH=DB_PATH):
 
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        for _, row in edited_df.iterrows():
-            id_m = row.get("id")
+        
+        editor_state = st.session_state.get("editor_materna", {})
+        edited_rows = editor_state.get("edited_rows", {})
+        cambios_directos = {}
+        for chgs in edited_rows.values():
+            for col, val in chgs.items():
+                if col != " ": cambios_directos[col] = val
+                
+        seleccionadas = [idx for idx, r in edited_df.iterrows() if r.get(" ") == True]
+        
+        filas_editadas = []
+        for k, chgs in edited_rows.items():
+            if any(c != " " for c in chgs.keys()):
+                try: idx = int(k)
+                except: idx = k
+                filas_editadas.append(idx)
+                
+        filas_a_procesar = sorted(list(set(filas_editadas) | set(seleccionadas)))
+        
+        if filas_a_procesar:
+            st.toast(f"💾 Guardando {len(filas_a_procesar)} cambios en Mortalidad Materna...")
+            
+        for idx in filas_a_procesar:
+            if idx in edited_df.index: row = edited_df.loc[idx].copy()
+            else:
+                try: row = edited_df.iloc[int(idx)].copy()
+                except: continue
+                
+            str_idx = str(idx)
+            int_idx = idx if isinstance(idx, int) else None
+            edits_for_row = {}
+            if str_idx in edited_rows: edits_for_row = edited_rows[str_idx]
+            elif int_idx in edited_rows: edits_for_row = edited_rows[int_idx]
+            
+            # DETERMINAR CAMPOS REALMENTE CAMBIADOS
+            campos_cambiados = set()
+            if str_idx in edited_rows: campos_cambiados.update(edited_rows[str_idx].keys())
+            if int_idx in edited_rows: campos_cambiados.update(edited_rows[int_idx].keys())
+            if idx in seleccionadas: campos_cambiados.update(cambios_directos.keys())
+            if " " in campos_cambiados: campos_cambiados.remove(" ")
+
+            if not campos_cambiados:
+                continue
+
+            try: id_m = int(row.get("id"))
+            except: 
+                st.error(f"Fila {idx}: ID de registro no válido.")
+                error_occured = True; continue
+            
             ultimo_id = id_m
 
-            if not val_num_espacios(str(row.get("historia_clinica", "")), "La", "historia clinica"): return
-            if not validar_texto(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
-            if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): return
-            #if not val_diagnostico(row.get("idx_ingreso", ""), "La", "IDX de ingreso"): return
-            #if not val_diagnostico(row.get("idx_defuncion", ""), "La", "IDX de defuncion"): return
+            # Validaciones solo si el campo fue cambiado
+            if 'historia_clinica' in campos_cambiados:
+                if not val_num_espacios(str(row.get("historia_clinica", "")), "La", "historia clinica"): error_occured = True; continue
+            if 'nombres_apellidos' in campos_cambiados:
+                if not validar_texto(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): error_occured = True; continue
+                if not validar_cinco_espacios(row.get("nombres_apellidos", ""), "Los", "nombres y apellidos"): error_occured = True; continue
 
             updates = {
                 'mortalidad': {'fields': [], 'values': []},
                 'persona_paciente': {'fields': [], 'values': []}
             }
 
-            for col, value in row.items():
+            for col in campos_cambiados:
                 if col in COLUMN_TO_TABLE_MAP:
-                    if isinstance(value, pd.Timestamp):
+                    value = row[col]
+                    if isinstance(value, (pd.Timestamp, datetime.date, datetime.datetime)):
                         value = value.strftime('%d/%m/%Y')
                     table = COLUMN_TO_TABLE_MAP[col]
                     updates[table]['fields'].append(f"{col} = ?")
                     updates[table]['values'].append(value)
 
             cambio_local = False
-
             if updates['mortalidad']['fields']:
-                cursor.execute(
-                    f"UPDATE mortalidad SET {', '.join(updates['mortalidad']['fields'])} WHERE id_m = ?",
-                    tuple(updates['mortalidad']['values'] + [id_m])
-                )
-                if cursor.rowcount > 0:
-                    cambio_local = True
+                cursor.execute(f"UPDATE mortalidad SET {', '.join(updates['mortalidad']['fields'])} WHERE id_m = ?", 
+                              tuple(updates['mortalidad']['values'] + [id_m]))
+                cambio_local = True
 
             if updates['persona_paciente']['fields']:
                 cursor.execute("SELECT id_paciente FROM mortalidad WHERE id_m = ?", (id_m,))
                 res = cursor.fetchone()
                 if res:
-                    cursor.execute(
-                        f"UPDATE persona_paciente SET {', '.join(updates['persona_paciente']['fields'])} WHERE id_paciente = ?",
-                        tuple(updates['persona_paciente']['values'] + [res[0]])
-                    )
-                    if cursor.rowcount > 0:
-                        cambio_local = True
+                    cursor.execute(f"UPDATE persona_paciente SET {', '.join(updates['persona_paciente']['fields'])} WHERE id_paciente = ?", 
+                                  tuple(updates['persona_paciente']['values'] + [res[0]]))
+                    if cursor.rowcount > 0: cambio_local = True
 
-            if cambio_local:
-                hubo_cambios = True
+            if cambio_local: hubo_cambios = True
 
-        conn.commit()
+        if hubo_cambios and not error_occured:
+            conn.commit()
+        else:
+            conn.rollback()
 
-    if hubo_cambios:
+    if hubo_cambios and not error_occured:
         registrar_actividad_duradera("EDITADO", "Mortalidad Materna", ultimo_id, usuario)
         notificacion_cambios()
         st.session_state["reset_form_mortalidad"] = True
-        #
+        if "editor_materna" in st.session_state: del st.session_state["editor_materna"]
         st.rerun()
+    elif error_occured:
+        st.warning("Algunos cambios no se guardaron debido a errores de validación.", icon=":material/warning:")
     else:
         st.info("No se detectaron cambios para guardar.", icon=":material/info:")
 
@@ -482,108 +536,124 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
     usuario = st.session_state.get("autenticado_usuario", "Desconocido")
     hubo_cambios = False
     ultimo_id = None
+    error_occured = False
 
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
 
-        for _, row in edited_df.iterrows():
+        editor_state = st.session_state.get("editor_natalidad", {})
+        edited_rows = editor_state.get("edited_rows", {})
+        cambios_directos = {}
+        for chgs in edited_rows.values():
+            for col, val in chgs.items():
+                if col != " ": cambios_directos[col] = val
+                
+        seleccionadas = [idx for idx, r in edited_df.iterrows() if r.get(" ") == True]
+        
+        filas_editadas = []
+        for k, chgs in edited_rows.items():
+            if any(c != " " for c in chgs.keys()):
+                try: idx = int(k)
+                except: idx = k
+                filas_editadas.append(idx)
+                
+        filas_a_procesar = sorted(list(set(filas_editadas) | set(seleccionadas)))
+        
+        if filas_a_procesar:
+            st.toast(f"💾 Guardando {len(filas_a_procesar)} cambios en Natalidad...")
+            
+        for idx in filas_a_procesar:
+            if idx in edited_df.index: row = edited_df.loc[idx].copy()
+            else:
+                try: row = edited_df.iloc[int(idx)].copy()
+                except: continue
+                
+            str_idx = str(idx)
+            int_idx = idx if isinstance(idx, int) else None
+            edits_for_row = {}
+            if str_idx in edited_rows: edits_for_row = edited_rows[str_idx]
+            elif int_idx in edited_rows: edits_for_row = edited_rows[int_idx]
+            
+            # DETERMINAR CAMPOS REALMENTE CAMBIADOS
+            campos_cambiados = set()
+            if str_idx in edited_rows: campos_cambiados.update(edited_rows[str_idx].keys())
+            if int_idx in edited_rows: campos_cambiados.update(edited_rows[int_idx].keys())
+            if idx in seleccionadas: campos_cambiados.update(cambios_directos.keys())
+            if " " in campos_cambiados: campos_cambiados.remove(" ")
+
+            if not campos_cambiados:
+                continue
+
+            try: registro_id = int(row.get('id', 0))
+            except: registro_id = 0
+
             # ─────────────────────────────────────────────────────────────
-            # 1. Obtener y convertir valores
+            # 1. Obtener y convertir valores para validación
             # ─────────────────────────────────────────────────────────────
+            # (Incluso si no se cambian, los necesitamos para la validación de sumas del registro completo)
             sexo_gemelar = row.get('sexo_gemelar', '') or ''
             gemelar = int(row.get('gemelar', 0)) if pd.notna(row.get('gemelar', 0)) else 0
             varones = int(row.get('varones', 0)) if pd.notna(row.get('varones', 0)) else 0
             hembras = int(row.get('hembras', 0)) if pd.notna(row.get('hembras', 0)) else 0
-
-            # Ajuste por gemelares
-            if sexo_gemelar == "Varones":
-                varones += gemelar * 2
-            elif sexo_gemelar == "Hembras":
-                hembras += gemelar * 2
-            elif sexo_gemelar == "Mixto":
-                varones += gemelar
-                hembras += gemelar
-
-            # Fecha
-            fecha_display = row.get('fecha_display', row.get('fecha', ''))
-            if not fecha_display:
-                st.error("No se pudo determinar la fecha del registro.", icon=":material/error:")
-                return  # Detener todo el guardado
-
-            fecha_db = pd.to_datetime(fecha_display, format='%d/%m/%Y', errors='coerce')
-            if pd.isna(fecha_db):
-                st.error(
-                    f"Formato de fecha inválido: '{fecha_display}'. "
-                    "Use el formato dd/mm/yyyy.",
-                    icon=":material/error:"
-                )
-                return  # No guardar nada si hay fecha inválida
-
-            fecha_db_str = fecha_db.strftime('%d/%m/%Y')
-
-            # Valores numéricos
             partos = int(row.get("partos", 0)) if pd.notna(row.get("partos", 0)) else 0
             cesareas = int(row.get("cesareas", 0)) if pd.notna(row.get("cesareas", 0)) else 0
             mto = int(row.get("mto", 0)) if pd.notna(row.get("mto", 0)) else 0
             partos_extra = int(row.get("partos_extrahospitalarios", 0)) if pd.notna(row.get("partos_extrahospitalarios", 0)) else 0
 
+            fecha_display = row.get('fecha_display', row.get('fecha', ''))
+            if not fecha_display:
+                st.error(f"Fila {idx}: No se pudo determinar la fecha del registro."); error_occured = True; continue
 
+            try:
+                fecha_db = pd.to_datetime(fecha_display, dayfirst=True, errors='coerce')
+            except:
+                fecha_db = pd.NaT
+
+            if pd.isna(fecha_db):
+                st.error(f"Fila {idx}: Formato de fecha inválido: '{fecha_display}'."); error_occured = True; continue
+
+            fecha_db_str = fecha_db.strftime('%d/%m/%Y')
+
+            # Validaciones de integridad
             if partos_extra > partos:
-                st.error(
-                    f"**Error de validación**: Los partos extrahospitalarios ({partos_extra}) "
-                    f"no pueden ser mayores que el total de partos ({partos}).",
-                    icon=":material/error:"
-                )
-                return
+                st.error(f"Fila {idx}: Partos extra ({partos_extra}) > total partos ({partos})."); error_occured = True; continue
 
-         
             if sexo_gemelar == "No aplica" and gemelar > 0:
-                st.warning(
-                    "Al seleccionar 'No aplica', la cantidad de gemelares se ajusta automáticamente a 0.",
-                    icon=":material/info:"
-                )
                 gemelar = 0
 
-            varones_aj = varones
-            hembras_aj = hembras
-            if sexo_gemelar == "Varones":
-                varones_aj += gemelar * 2
-            elif sexo_gemelar == "Hembras":
-                hembras_aj += gemelar * 2
+            v_aj, h_aj = varones, hembras
+            if sexo_gemelar == "Varones": v_aj += gemelar * 2
+            elif sexo_gemelar == "Hembras": h_aj += gemelar * 2
             elif sexo_gemelar == "Mixto":
-                varones_aj += gemelar
-                hembras_aj += gemelar
+                v_aj += gemelar; h_aj += gemelar
+            
+            if (v_aj + h_aj + mto) != (partos + cesareas):
+                st.error(f"Fila {idx}: La suma de nacidos no coincide con partos + cesáreas."); error_occured = True; continue
 
-            total_nacidos = varones_aj + hembras_aj + mto
-            total_eventos = partos + cesareas
-
-            if total_nacidos != total_eventos:
-                st.error(
-                    f"La suma de nacidos vivos + MTO ({total_nacidos}) no coincide "
-                    f"con el total de partos + cesáreas ({total_eventos}).",
-                    icon=":material/error:"
-                )
-                return
-
-            # Actualizamos varones y hembras con los valores ajustados para guardar en DB
-            varones = varones_aj
-            hembras = hembras_aj
-
-            # ─────────────────────────────────────────────────────────────
-            # 4. Guardar el registro
-            # ─────────────────────────────────────────────────────────────
-            registro_id = row.get('id')
-
-            if pd.notna(registro_id):
-                cursor.execute(
-                    """UPDATE natalidad SET
-                       fecha = ?, partos = ?, cesareas = ?, varones = ?, hembras = ?,
-                       gemelar = ?, mto = ?, partos_extrahospitalarios = ?
-                       WHERE id_nata = ?""",
-                    (fecha_db_str, partos, cesareas, varones, hembras,
-                     gemelar, mto, partos_extra, registro_id)
-                )
-                if cursor.rowcount > 0:
+            if registro_id > 0:
+                # CONSTRUCCIÓN DINÁMICA DE LA CONSULTA UPDATE
+                # Mapeo de columnas internas a columnas de BD
+                BD_COLS = {
+                    'fecha': 'fecha', 'partos': 'partos', 'cesareas': 'cesareas',
+                    'varones': 'varones', 'hembras': 'hembras', 'gemelar': 'gemelar',
+                    'mto': 'mto', 'partos_extrahospitalarios': 'partos_extrahospitalarios',
+                    'sexo_gemelar': 'sexo_gemelar' # Si existe en la tabla
+                }
+                
+                fields_to_update = []
+                values_to_update = []
+                
+                for col in campos_cambiados:
+                    if col in BD_COLS:
+                        db_col = BD_COLS[col]
+                        val = row[col]
+                        if col == 'fecha': val = fecha_db_str
+                        fields_to_update.append(f"{db_col} = ?")
+                        values_to_update.append(val)
+                
+                if fields_to_update:
+                    query = f"UPDATE natalidad SET {', '.join(fields_to_update)} WHERE id_nata = ?"
+                    cursor.execute(query, tuple(values_to_update + [registro_id]))
                     hubo_cambios = True
             else:
                 cursor.execute(
@@ -597,108 +667,160 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
                 ultimo_id = cursor.lastrowid
                 hubo_cambios = True
 
-        conn.commit()
+        if hubo_cambios and not error_occured:
+            conn.commit()
+        else:
+            conn.rollback()
 
-    if hubo_cambios:
+    if hubo_cambios and not error_occured:
         registrar_actividad_duradera("EDITADO", "Natalidad", ultimo_id, usuario)
         notificacion_cambios()
+        if "editor_natalidad" in st.session_state: del st.session_state["editor_natalidad"]
         st.rerun()
+    elif error_occured:
+        st.warning("Algunos cambios no se guardaron debido a errores de validación.", icon=":material/warning:")
     else:
         st.info("No se detectaron cambios para guardar.", icon=":material/info:")
+
 def procesar_guardado_morb_extenso(edited_df, DB_PATH=DB_PATH):
     usuario = st.session_state.get("autenticado_usuario", "Desconocido")
     hubo_cambios = False
     ultimo_id = None
+    error_occured = False
 
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        for _, row in edited_df.iterrows():
-            id_morb = row.get("id")
-            if pd.isna(id_morb):
+        
+        editor_state = st.session_state.get("editor_morb_extenso", {})
+        edited_rows = editor_state.get("edited_rows", {})
+        cambios_directos = {}
+        for chgs in edited_rows.values():
+            for col, val in chgs.items():
+                if col != " ": cambios_directos[col] = val
+                
+        seleccionadas = [idx for idx, r in edited_df.iterrows() if r.get(" ") == True]
+        
+        filas_editadas = []
+        for k, chgs in edited_rows.items():
+            if any(c != " " for c in chgs.keys()):
+                try: idx = int(k)
+                except: idx = k
+                filas_editadas.append(idx)
+                
+        filas_a_procesar = sorted(list(set(filas_editadas) | set(seleccionadas)))
+            
+        if filas_a_procesar:
+            st.toast(f"💾 Guardando {len(filas_a_procesar)} cambios en Morbilidad...")
+
+        for idx in filas_a_procesar:
+            if idx in edited_df.index: row = edited_df.loc[idx].copy()
+            else:
+                try: row = edited_df.iloc[int(idx)].copy()
+                except: continue
+                
+            str_idx = str(idx)
+            int_idx = idx if isinstance(idx, int) else None
+            edits_for_row = {}
+            if str_idx in edited_rows: edits_for_row = edited_rows[str_idx]
+            elif int_idx in edited_rows: edits_for_row = edited_rows[int_idx]
+            
+            # DETERMINAR CAMPOS REALMENTE CAMBIADOS
+            campos_cambiados = set()
+            if str_idx in edited_rows: campos_cambiados.update(edited_rows[str_idx].keys())
+            if int_idx in edited_rows: campos_cambiados.update(edited_rows[int_idx].keys())
+            if idx in seleccionadas: campos_cambiados.update(cambios_directos.keys())
+            if " " in campos_cambiados: campos_cambiados.remove(" ")
+
+            if not campos_cambiados:
                 continue
+
+            try: id_morb = int(row.get("id"))
+            except: 
+                st.error(f"Fila {idx}: ID de registro no válido."); error_occured = True; continue
+            
             ultimo_id = id_morb
 
-            nombres = (row.get("nombres_apellidos") or "").strip()
-            edad = row.get("edad", None)
-            diagnostico = (row.get("diagnostico") or "").strip()
+            cambio_local = False
 
-            if not validar_texto(nombres, "Los", "Nombres y apellidos"): return
-            if not validar_cinco_espacios(nombres, "Los", "nombres y apellidos"): return
-            #if not val_diagnostico(diagnostico, "El", "diagnóstico"): return
+            # 1. Update Morbilidad (Nombres y Diagnóstico)
+            morb_fields = []
+            morb_values = []
+            if 'nombres_apellidos' in campos_cambiados:
+                nombres = (row.get("nombres_apellidos") or "").strip()
+                if not validar_texto(nombres, "Los", "Nombres y apellidos"): error_occured = True; continue
+                if not validar_cinco_espacios(nombres, "Los", "nombres y apellidos"): error_occured = True; continue
+                morb_fields.append("nombres_apellidos = ?")
+                morb_values.append(nombres)
+            
+            if 'diagnostico' in campos_cambiados:
+                diagnostico = (row.get("diagnostico") or "").strip()
+                if not val_texynum(diagnostico, "El", "diagnóstico"): error_occured = True; continue
+                morb_fields.append("diagnostico = ?")
+                morb_values.append(diagnostico)
+            
+            if morb_fields:
+                cursor.execute(f"UPDATE morbilidad SET {', '.join(morb_fields)} WHERE id_morb = ?", tuple(morb_values + [id_morb]))
+                if cursor.rowcount > 0: cambio_local = True
 
-            cursor.execute(
-                "UPDATE morbilidad SET nombres_apellidos = ? WHERE id_morb = ?",
-                (nombres, id_morb)
-            )
-            if cursor.rowcount > 0:
-                hubo_cambios = True
+            # 2. Update Persona Paciente (Edad)
+            if 'edad' in campos_cambiados:
+                edad = row.get("edad")
+                cursor.execute("SELECT id_paciente FROM morbilidad WHERE id_morb = ?", (id_morb,))
+                res_p = cursor.fetchone()
+                if res_p and res_p[0] is not None:
+                    try: edad_val = int(edad)
+                    except: edad_val = None
+                    if edad_val is not None:
+                        cursor.execute("UPDATE persona_paciente SET edad = ? WHERE id_paciente = ?", (edad_val, res_p[0]))
+                        if cursor.rowcount > 0: cambio_local = True
 
-            # Obtener id_paciente e id_direccion_hogar para actualizar edad y dirección
-            cursor.execute("SELECT id_paciente, id_direccion_hogar FROM morbilidad WHERE id_morb = ?", (id_morb,))
-            res = cursor.fetchone()
-            id_paciente = None
-            id_dir_hogar = None
-            if res:
-                id_paciente = res[0]
-                if len(res) > 1:
-                    id_dir_hogar = res[1]
-
-            if id_paciente is not None and pd.notna(edad):
-                try:
-                    edad_val = int(edad)
-                except Exception:
-                    edad_val = None
-                if edad_val is not None:
-                    cursor.execute(
-                        "UPDATE persona_paciente SET edad = ? WHERE id_paciente = ?",
-                        (edad_val, id_paciente)
-                    )
-                    if cursor.rowcount > 0:
-                        hubo_cambios = True
-
-            # Guardar cambios en la dirección si el usuario la editó
-            direccion_val = (row.get("direccion") or row.get("direccion_hogar") or "")
-            if pd.notna(direccion_val) and str(direccion_val).strip() != "":
+            # 3. Update Dirección
+            if 'direccion' in campos_cambiados or 'direccion_hogar' in campos_cambiados:
+                direccion_val = (row.get("direccion") or row.get("direccion_hogar") or "")
                 direccion_text = str(direccion_val).strip()
+                cursor.execute("SELECT id_direccion_hogar FROM morbilidad WHERE id_morb = ?", (id_morb,))
+                res_d = cursor.fetchone()
+                id_dir_hogar = res_d[0] if res_d and res_d[0] is not None else None
+                
                 if id_dir_hogar:
                     cursor.execute("SELECT descripcion FROM direccion WHERE id_direccion = ?", (id_dir_hogar,))
-                    cur = cursor.fetchone()
-                    cur_desc = cur[0] if cur and cur[0] is not None else ""
+                    curQuery = cursor.fetchone()
+                    cur_desc = curQuery[0] if curQuery and curQuery[0] is not None else ""
                     if cur_desc != direccion_text:
-                        # Si la dirección está siendo usada por otros registros, crear nueva entrada
                         cursor.execute("SELECT COUNT(*) FROM morbilidad WHERE id_direccion_hogar = ?", (id_dir_hogar,))
                         uso = cursor.fetchone()[0]
                         if uso <= 1:
                             cursor.execute("SELECT id_parroquia FROM direccion WHERE id_direccion = ?", (id_dir_hogar,))
                             rpar = cursor.fetchone()
-                            if rpar and rpar[0] is not None:
-                                _overwrite_hierarchy_defaults(cursor, rpar[0])
+                            if rpar and rpar[0] is not None: _overwrite_hierarchy_defaults(cursor, rpar[0])
                             cursor.execute("UPDATE direccion SET descripcion = ? WHERE id_direccion = ?", (direccion_text, id_dir_hogar))
-                            if cursor.rowcount > 0:
-                                hubo_cambios = True
+                            if cursor.rowcount > 0: cambio_local = True
                         else:
                             id_parroquia = _ensure_default_jerarquia(cursor)
                             cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
-                            new_id = cursor.lastrowid
-                            cursor.execute("UPDATE morbilidad SET id_direccion_hogar = ? WHERE id_morb = ?", (new_id, id_morb))
-                            if cursor.rowcount > 0:
-                                hubo_cambios = True
+                            new_id_dir = cursor.lastrowid
+                            cursor.execute("UPDATE morbilidad SET id_direccion_hogar = ? WHERE id_morb = ?", (new_id_dir, id_morb))
+                            if cursor.rowcount > 0: cambio_local = True
                 else:
-                    # No existía dirección previa: insertar nueva y enlazar (usar jerarquía por defecto)
                     id_parroquia = _ensure_default_jerarquia(cursor)
                     cursor.execute("INSERT INTO direccion (descripcion, id_parroquia) VALUES (?, ?)", (direccion_text, id_parroquia))
-                    new_id = cursor.lastrowid
-                    cursor.execute("UPDATE morbilidad SET id_direccion_hogar = ? WHERE id_morb = ?", (new_id, id_morb))
-                    if cursor.rowcount > 0:
-                        hubo_cambios = True
+                    new_id_dir = cursor.lastrowid
+                    cursor.execute("UPDATE morbilidad SET id_direccion_hogar = ? WHERE id_morb = ?", (new_id_dir, id_morb))
+                    if cursor.rowcount > 0: cambio_local = True
 
-        conn.commit()
+            if cambio_local: hubo_cambios = True
 
-    if hubo_cambios:
+        if hubo_cambios and not error_occured:
+            conn.commit()
+        else:
+            conn.rollback()
+
+    if hubo_cambios and not error_occured:
         registrar_actividad_duradera("EDITADO", "Morbilidad", ultimo_id, usuario)
         notificacion_cambios()
-        st.session_state["reset_form_morb_extenso"] = True
-        #
+        if "editor_morb_extenso" in st.session_state: del st.session_state["editor_morb_extenso"]
         st.rerun()
+    elif error_occured:
+        st.warning("Algunos cambios no se guardaron debido a errores de validación.", icon=":material/warning:")
     else:
         st.info("No se detectaron cambios para guardar.", icon=":material/info:")

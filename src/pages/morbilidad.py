@@ -81,6 +81,11 @@ def data_editor_morb_extenso(df):
         if col not in column_config and col != " ":
             column_config[col] = st.column_config.TextColumn(col, disabled=True)
 
+    # Asegurar que todas las columnas de texto sean strings para evitar errores de codificación
+    for col in df.columns:
+        if df[col].dtype == object:
+            df[col] = df[col].apply(lambda x: "" if x is None else str(x))
+
     edited_df = st.data_editor(
         df,
         hide_index=True,
