@@ -3,6 +3,7 @@ from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, co
 from utils.base_64 import img_a_base64
 from streamlit_extras.pdf_viewer import pdf_viewer
 from utils.verificaciones import obtener_info_usuario
+from utils.recargar_retroceso import reload_on_back
 from pathlib import Path
 configurar_pagina_espanol()
 import sys
@@ -69,3 +70,4 @@ def ver_reportes():
     copyright_footer_dos("Equipo Investigador", margin_right="0px")
 
 ver_reportes()
+reload_on_back()

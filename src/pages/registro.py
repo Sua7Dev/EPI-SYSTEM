@@ -11,7 +11,7 @@ from utils.validaciones import validar_texto, validar_nombre_usuario, val_mail, 
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_registro_usuario
 from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
-
+from utils.recargar_retroceso import reload_on_back
 import sqlite3
 from utils.validaciones import bloquear_caracteres
 
@@ -222,3 +222,4 @@ def registro():
     copyright_footer_dos("Equipo Investigador", margin_right="0px")
 
 registro()
+reload_on_back()

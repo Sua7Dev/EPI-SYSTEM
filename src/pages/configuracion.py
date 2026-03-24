@@ -5,6 +5,7 @@ from utils.edicion_super import mostrar_modo_edicion, mostrar_modo_normal
 from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
 from pages.menu import menu
 from utils.base_64 import img_a_base64
+from utils.recargar_retroceso import reload_on_back
 from pathlib import Path
 
 configurar_pagina_espanol()
@@ -60,5 +61,5 @@ def configuracion():
     
 
 configuracion()
-    
+reload_on_back()
 

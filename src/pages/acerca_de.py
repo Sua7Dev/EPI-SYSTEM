@@ -5,6 +5,7 @@ from pages.menu import menu
 from utils.base_64 import img_a_base64
 from pathlib import Path
 from utils.informaciones import nosotros, hospital, mision, vision, manual_de_uso
+from utils.recargar_retroceso import reload_on_back
 
 configurar_pagina_espanol()
 import sys
@@ -35,6 +36,8 @@ def orden_de_informaciones():
             manual_de_uso()        
         with col_nosotros:
             nosotros()
+    st.markdown("# ")
+
 
 def acerca_de():
     logo_bandera  = ASSETS_DIR / "imagebanderanueva2.png"
@@ -42,12 +45,13 @@ def acerca_de():
     
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
+    if "autenticado_usuario" not in st.session_state:
+        st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
+        return   
     logo(tamano="100%")
     st.header(":material/chat_info: Información del sistema", divider="gray", anchor=False)
     orden_de_informaciones()
-    if "autenticado_usuario" not in st.session_state:
-        st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
-        return
+    st.markdown('## ')
 
     nombre_usuario = st.session_state["autenticado_usuario"]
     info_usuario = obtener_info_usuario(nombre_usuario)
@@ -63,5 +67,5 @@ def acerca_de():
     
 
 acerca_de()
-    
+reload_on_back()
 

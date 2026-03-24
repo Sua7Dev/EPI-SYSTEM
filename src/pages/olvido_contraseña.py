@@ -13,6 +13,7 @@ from utils.base_64 import img_a_base64
 from utils.validaciones import val_solo_numeros, validar_contraseña, validar_texto, validar_nombre_usuario
 from utils.visuales import cargando, configurar_pagina_espanol, logo, recargar_una_vez, copyright_footer_dos
 from utils.contra import borro_cassette, verifi_contra_hasheada
+from utils.recargar_retroceso import reload_on_back
 import sys
 from utils.validaciones import bloquear_caracteres
 
@@ -355,3 +356,4 @@ def mostrar_olvido():
 
 # ------------------- Ejecución -------------------
 mostrar_olvido()
+reload_on_back()

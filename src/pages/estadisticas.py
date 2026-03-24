@@ -6,6 +6,7 @@ from stats.mortalidad_stats import mortalidad_stats
 from stats.natalidad_stats import natalidad_stats
 from stats.morbilidad_stats import morbilidad_stats
 from utils.verificaciones import obtener_info_usuario
+from utils.recargar_retroceso import reload_on_back
 from pathlib import Path
 configurar_pagina_espanol()
 import sys
@@ -65,3 +66,4 @@ def estadisticas():
     
 
 estadisticas()
+reload_on_back()

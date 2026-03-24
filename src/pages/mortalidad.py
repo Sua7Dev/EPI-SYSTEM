@@ -17,6 +17,7 @@ from utils.guardar_cambios import (procesar_guardado_cambios_mortalidad_neonatal
                                    procesar_guardado_cambios_mortalidad_infantil, procesar_guardado_cambios_mortalidad_materna,
                                    )
 from utils.reportes import formulario_reporte_general 
+from utils.recargar_retroceso import reload_on_back
 import os
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
@@ -1466,3 +1467,4 @@ def mostrar_morta():
     copyright_footer_dos("Equipo Investigador", bottom="-200px")
         
 mostrar_morta()
+reload_on_back()

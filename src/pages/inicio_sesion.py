@@ -12,6 +12,7 @@ from utils.bienvenida import bienvenida
 from utils.verificaciones import obtener_info_usuario, verificar_preguntas_guardadas, verificar_correo_cedula, obtener_nombre_usuario
 from pages.historial import registrar_actividad_duradera
 from utils.validaciones import bloquear_caracteres
+from utils.recargar_retroceso import reload_on_back
 configurar_pagina_espanol()
 
 # --- CONFIGURACIÓN DE RUTAS ---
@@ -173,3 +174,4 @@ def login():
     
 
 login()
+reload_on_back()

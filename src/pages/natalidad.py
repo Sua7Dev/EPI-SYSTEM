@@ -18,6 +18,7 @@ if "previous_page" not in st.session_state:
     st.session_state["previous_page"] = "pages/inicio.py"
 st.session_state["previous_page"] = "pages/natalidad.py"
 from reportes.natalidad_general import formulario_reporte_general_natalidad
+from utils.recargar_retroceso import reload_on_back
 import sys
 import streamlit as st
 import streamlit.components.v1 as components
@@ -596,3 +597,4 @@ def mostrar_nata():
     copyright_footer_dos("Equipo Investigador")
 
 mostrar_nata()
+reload_on_back()

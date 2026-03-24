@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as npv
 from utils.verificaciones import obtener_info_usuario
 from utils.informaciones import mostrar_usuario_activo, usuario_activo_fixed
+from utils.recargar_retroceso import reload_on_back
 from pathlib import Path
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 
@@ -213,6 +214,7 @@ def inicio():
     dashboard()
 # Aquí va el contenido que quieres mostrar después de que termine el "cargando"
 inicio()
+reload_on_back()
 
 
 

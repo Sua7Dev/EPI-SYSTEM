@@ -15,6 +15,7 @@ from utils.validaciones import val_diagnostico, validar_texto, val_texynum, val_
 from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import procesar_guardado_morb_extenso
 from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
+from utils.recargar_retroceso import reload_on_back
 configurar_pagina_espanol()
 if "previous_page" not in st.session_state:
     st.session_state["previous_page"] = "pages/inicio.py"
@@ -391,3 +392,4 @@ def mostrar_morb():
     copyright_footer_dos("Equipo Investigador")
 
 mostrar_morb()
+reload_on_back()
