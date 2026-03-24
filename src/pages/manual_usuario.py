@@ -30,9 +30,9 @@ MANUALES_POR_ROL = {
 }
 
 def botones_manual(ruta_pdf=None):
-    col_volver, col_descargar = st.columns(2, width="stretch")
+    col_volver, col_descargar = st.columns(2)
     with col_volver:
-        volver_btn = st.button(label="Volver atras", type="primary", icon=":material/arrow_back:")
+        volver_btn = st.button(label="Volver atras", type="primary", icon=":material/arrow_back:", use_container_width=True)
     
     with col_descargar:
         if ruta_pdf and ruta_pdf.exists():
@@ -44,13 +44,16 @@ def botones_manual(ruta_pdf=None):
                     data=pdf_data,
                     file_name=ruta_pdf.name,
                     mime="application/pdf",
-                    key="descargar_manual_usuario"
+                    key="descargar_manual_usuario",
+                    use_container_width=True,
+                    type="primary",
+                    icon=":material/download:"
                 )
             except Exception as e:
                 st.error(f"Error al leer el archivo PDF: {e}")
-                st.button(label="Descargar PDF", disabled=True, key="descargar_manual_error")
+                st.button(label="Descargar PDF", disabled=True, key="descargar_manual_error", type="primary", use_container_width=True)
         else:
-            st.button(label="Descargar PDF", disabled=True, key="descargar_manual_no_disponible")
+            st.button(label="Descargar PDF", disabled=True, key="descargar_manual_no_disponible", type="primary", use_container_width=True)
             
     if volver_btn:
         st.switch_page("pages/acerca_de.py")
