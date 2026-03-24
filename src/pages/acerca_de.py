@@ -63,7 +63,7 @@ def acerca_de():
     info_usuario = obtener_info_usuario(nombre_usuario)
 
 
-    copyright_footer_dos("Equipo Investigador", bottom="-200px")#
+    copyright_footer_dos("Equipo Investigador", bottom="-335px")#
     
 
 acerca_de()
