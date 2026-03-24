@@ -17,6 +17,7 @@ from utils.guardar_cambios import (procesar_guardado_cambios_mortalidad_neonatal
                                    procesar_guardado_cambios_mortalidad_infantil, procesar_guardado_cambios_mortalidad_materna,
                                    )
 from utils.reportes import formulario_reporte_general 
+from utils.filtro_categorias import filtro_muerte_neonatal, filtro_muerte_infantil, filtro_muerte_materna
 import os
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
@@ -177,13 +178,13 @@ def formulario_neonatal(db=DB_PATH):
     else:
         mostrar_editor = st.toggle(
             "Mostrar datos de registros", 
-            value=st.session_state.get("toggle_editor_neonatal", False),
             key="toggle_editor_neonatal"
         )
 
         if mostrar_editor:
-            df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
-            edited_df = data_editor_neonatal(df_filtrado, rol_usuario)
+            df_fechas = filtrar_por_fechas(df, 'fecha_defuncion')
+            df_morta = filtro_muerte_neonatal(df_fechas)
+            edited_df = data_editor_neonatal(df_morta, rol_usuario)
             has_selection = edited_df[' '].any()
             df_sel = edited_df[edited_df[' '] == True] if has_selection else None
 
@@ -702,13 +703,13 @@ def formulario_infantil(db=DB_PATH):
     else:
         mostrar_editor = st.toggle(
             "Mostrar datos de registros", 
-            value=st.session_state.get("toggle_editor_infantil", False),
             key="toggle_editor_infantil"
         )
 
         if mostrar_editor:
-            df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
-            edited_df = data_editor_infantil(df_filtrado, rol_usuario)
+            df_fechas = filtrar_por_fechas(df, 'fecha_defuncion')
+            df_morta = filtro_muerte_infantil(df_fechas)
+            edited_df = data_editor_infantil(df_morta, rol_usuario)
             has_selection = edited_df[' '].any()
             df_sel = edited_df[edited_df[' '] == True] if has_selection else None
 
@@ -1115,14 +1116,14 @@ def formulario_materna(db=DB_PATH):
         st.info("No hay datos para mostrar.", icon=":material/info:")
     else:
         mostrar_editor = st.toggle(
-            "Mostrar datos de registros", 
-            value=st.session_state.get("toggle_editor_materna", False),
+            "Mostrar datos de registros",
             key="toggle_editor_materna"
         )
 
         if mostrar_editor:
-            df_filtrado = filtrar_por_fechas(df, 'fecha_defuncion')
-            edited_df = data_editor_materna(df_filtrado, rol_usuario)
+            df_fechas = filtrar_por_fechas(df, 'fecha_defuncion')
+            df_morta = filtro_muerte_materna(df_fechas)
+            edited_df = data_editor_materna(df_morta, rol_usuario)
             has_selection = edited_df[' '].any()
             df_sel = edited_df[edited_df[' '] == True] if has_selection else None
 

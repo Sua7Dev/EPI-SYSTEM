@@ -12,6 +12,7 @@ from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_natalidad
 from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import procesar_guardado_cambios_natalidad
+from utils.filtro_categorias import filtro_categorias_natalidad
 import pandas as pd
 configurar_pagina_espanol()
 if "previous_page" not in st.session_state:
@@ -148,7 +149,8 @@ def formulario_natalidad():
             return
 
         df[' '] = False
-        df_filtrado = filtrar_por_fechas(df, 'fecha')
+        df_fechas = filtrar_por_fechas(df, 'fecha')
+        df_filtrado = filtro_categorias_natalidad(df_fechas)
         edited_df = data_editor_natalidad(df_filtrado, rol_usuario)
 
         if not df_filtrado.empty:
@@ -171,13 +173,13 @@ def formulario_natalidad():
     else:
         mostrar_editor = st.toggle(
             "Mostrar datos de registros",
-            value=st.session_state.get("toggle_editor_natalidad", False),
             key="toggle_editor_natalidad"
         )
 
         if mostrar_editor:
             df[' '] = False
-            df_filtrado = filtrar_por_fechas(df, 'fecha')
+            df_fechas = filtrar_por_fechas(df, 'fecha')
+            df_filtrado = filtro_categorias_natalidad(df_fechas)
             edited_df = data_editor_natalidad(df_filtrado, rol_usuario)
 
             if not df_filtrado.empty:
