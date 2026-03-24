@@ -24,7 +24,6 @@ ASSETS_DIR = PROJECT_ROOT / "static" / "assets" / "imagenes"
 PDF_DIR = PROJECT_ROOT / "static" / "assets" / "pdf"
 
 def boton_volver():
-    # TODO hacer que te devuelva a la pagina que viniste
     volver_btn = st.button(label="Volver atras", type="primary", icon=":material/arrow_back:", use_container_width=True)
     if volver_btn:
         st.switch_page(st.session_state.get("previous_page", "pages/inicio.py"))
@@ -68,6 +67,7 @@ def ver_reportes():
     st.markdown("######")
     st.markdown("######")
     copyright_footer_dos("Equipo Investigador", margin_right="0px")
+    recargar_una_vez(__file__) 
 
 ver_reportes()
 reload_on_back()

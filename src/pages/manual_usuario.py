@@ -29,30 +29,52 @@ MANUALES_POR_ROL = {
     "Secretario (a)": PDF_DIR / "MANUAL SECREATARIA.pdf"
 }
 
-def botones_manual():
-    volver_btn = st.button(label="Volver atras", type="primary", icon=":material/arrow_back:")
+def botones_manual(ruta_pdf=None):
+    col_volver, col_descargar = st.columns(2, width="stretch")
+    with col_volver:
+        volver_btn = st.button(label="Volver atras", type="primary", icon=":material/arrow_back:")
+    
+    with col_descargar:
+        if ruta_pdf and ruta_pdf.exists():
+            try:
+                with open(ruta_pdf, "rb") as f:
+                    pdf_data = f.read()
+                st.download_button(
+                    label="Descargar PDF",
+                    data=pdf_data,
+                    file_name=ruta_pdf.name,
+                    mime="application/pdf",
+                    key="descargar_manual_usuario"
+                )
+            except Exception as e:
+                st.error(f"Error al leer el archivo PDF: {e}")
+                st.button(label="Descargar PDF", disabled=True, key="descargar_manual_error")
+        else:
+            st.button(label="Descargar PDF", disabled=True, key="descargar_manual_no_disponible")
+            
     if volver_btn:
-        st.switch_page("pages/configuracion.py")
+        st.switch_page("pages/acerca_de.py")
         st.rerun()
+
 
 def mostrar_pdf():
     if "autenticado_usuario" not in st.session_state:
         st.error("Debes iniciar sesión para acceder a este apartado.", icon=":material/error:")
-        return
+        return None
     nombre_usuario = st.session_state["autenticado_usuario"]
     info_usuario = obtener_info_usuario(nombre_usuario)
     
     # Normalizamos el rol para que la primera letra sea mayúscula y coincida con las claves del diccionario.
-    # Esto hace la búsqueda más robusta ante variaciones de mayúsculas/minúsculas.
-    rol_usuario = info_usuario["rol"]#.capitalize()
-    # esto no sirvio xd
+    rol_usuario = info_usuario["rol"]
     ruta_pdf = MANUALES_POR_ROL.get(rol_usuario)    
     
-    if ruta_pdf: #and ruta_pdf.exists():
+    if ruta_pdf:
         # pdf_viewer puede manejar objetos Path directamente
         pdf_viewer(ruta_pdf)
     else:
         st.error("No se encontró el manual para tu rol o el archivo no existe.", icon=":material/error:")
+    
+    return ruta_pdf
 
 def manual_usuario():
     logo_bandera = ASSETS_DIR / "imagebanderanueva2.png"
@@ -60,8 +82,8 @@ def manual_usuario():
     st.set_page_config(layout="wide", page_icon=logo_bandera)
     recargar_una_vez(__file__) # Llama a la función para recargar la página una vez.
     logo(tamano="70%")
-    mostrar_pdf()
-    botones_manual()
+    ruta_pdf = mostrar_pdf()
+    botones_manual(ruta_pdf)
     st.markdown("######")
     st.markdown("######")
     copyright_footer_dos("Equipo Investigador", margin_right="0px")
