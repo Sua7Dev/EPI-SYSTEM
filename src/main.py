@@ -18,6 +18,7 @@ def paginas():
             st.Page("pages/manual_usuario.py", title="Manual de Usuario", icon=":material/developer_guide:"),
             st.Page("pages/ver_reportes.py", title="Reporte", icon=":material/docs:"),
             st.Page("pages/acerca_de.py", title="Acerca de", icon=":material/chat_info:"),
+            st.Page("pages/reportes.py", title="Reportes", icon=":material/docs:"),
         ],
         "Menu": [
             st.Page("pages/inicio.py", title="Dashboard", icon=":material/home:"),
