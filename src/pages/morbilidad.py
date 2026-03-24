@@ -11,6 +11,7 @@ from dateutil.relativedelta import relativedelta
 from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados, ver_pdf
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_morb_extenso
+from utils.filtro_categorias import filtro_morbilidad
 from utils.validaciones import val_diagnostico, validar_texto, val_texynum, val_notas, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
 from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import procesar_guardado_morb_extenso
@@ -120,12 +121,12 @@ def formulario_morb_extenso(db=DB_PATH):
     else:
         mostrar_editor = st.toggle(
             "Mostrar datos de registros", 
-            value=st.session_state.get("toggle_editor_morbilidadex", False),
             key="toggle_editor_morbilidadex"
         )
         if mostrar_editor:
-            df = filtrar_por_fechas(df, 'fecha_registro_formulario')
-            edited_df = data_editor_morb_extenso(df)
+            df_fechas = filtrar_por_fechas(df, 'fecha_registro_formulario')
+            df_morb = filtro_morbilidad(df_fechas)
+            edited_df = data_editor_morb_extenso(df_morb)
 
             col_ver, col_guardar, col_descargar, col_eliminar = st.columns(4)
             has_selection = edited_df[' '].any()
