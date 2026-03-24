@@ -34,7 +34,7 @@ RUTA_DOCTOR_SVG = ASSETS_DIR / "doctor.svg"
 RUTA_SECRETARIA_SVG = ASSETS_DIR / "secretaria.svg"
 
 def nosotros():
-    nosotros_sg = st.popover("Sobre Nosotros", icon=":material/contact_support:", width="stretch")
+    nosotros_sg = st.expander("Sobre Nosotros", icon=":material/contact_support:", width="stretch")
     with nosotros_sg:
         st.subheader(":material/contact_page: Contactanos al:", divider="gray", anchor=False)
         #st.markdown(":green[Whatsapp:]")
@@ -51,11 +51,13 @@ def hospital():
         st.subheader(":material/medical_information: Información de la institución", anchor=False)#, divider="gray"
     col_hospital, col_depa = st.columns(2, gap="medium")
     with col_hospital:
-        st.subheader(":material/home_health: Sobre el Hospital...", anchor=False, divider="gray")
-        mostrar_descripcion_hospital()
+        with st.expander("Hospital", icon=":material/target:", width="stretch", expanded=True):
+            st.subheader(":material/home_health: Sobre el Hospital...", anchor=False, divider="gray")
+            mostrar_descripcion_hospital()
     with col_depa:
-        st.subheader(":material/local_hospital: Sobre el Departamento...", anchor=False, divider="gray")
-        mostrar_descripcion_departamento()
+        with st.expander("Departamento", icon=":material/target:", width="stretch", expanded=True):
+            st.subheader(":material/local_hospital: Sobre el Departamento...", anchor=False, divider="gray")
+            mostrar_descripcion_departamento()
     # aqui la informacion del personal
 
 def mision():
@@ -68,7 +70,7 @@ def mision():
         
         texto = (row[0] if row and row[0] else "Misión no definida aún.")
         
-        with st.popover("Misión", icon=":material/target:", width="stretch"):
+        with st.expander("Misión", icon=":material/target:", width="stretch", expanded=True):
             st.header(":material/target: Misión", divider="gray", anchor=False)
             st.markdown(f"<div style='text-align: justify; margin: 10px 0;'>{texto}</div>", unsafe_allow_html=True)
             
@@ -86,7 +88,7 @@ def vision():
         
         texto = (row[0] if row and row[0] else "Visión no definida aún.")
         
-        with st.popover("Visión", icon=":material/emoji_objects:", width="stretch"):
+        with st.expander("Visión", icon=":material/emoji_objects:", width="stretch", expanded=True):
             st.header(":material/emoji_objects: Visión", divider="gray", anchor=False)
             st.markdown(f"<div style='text-align: justify; margin: 10px 0;'>{texto}</div>", unsafe_allow_html=True)
             
@@ -94,7 +96,7 @@ def vision():
         st.error(f"Error al cargar la visión: {e}", icon=":material/error:")
 def manual_de_uso():
     try:
-        with st.popover("Manual de usuario", icon=":material/developer_guide:", width="stretch"):
+        with st.expander("Manual de usuario", icon=":material/developer_guide:", width="stretch"):
             st.subheader(":material/pageview: Ver manual de usuario", divider="gray", anchor=False)
             ver_manual = st.button("Ver PDF", icon=":material/export_notes:", width="stretch")
             if ver_manual:
@@ -104,7 +106,7 @@ def manual_de_uso():
        st.error(f"Ocurrió un error: {e}")
 
 def alcance_del_sistema():
-    with st.popover("Alcance del Sistema", icon=":material/info:", width="stretch"):
+    with st.expander("Alcance del Sistema", icon=":material/info:", width="stretch", expanded=True):
         st.header(":material/info: Alcance del Sistema", divider="gray", anchor=False)
         st.markdown("""
         El sistema **EPI-SYSTEM** está diseñado para la gestión integral de datos epidemiológicos en entornos hospitalarios. Su alcance incluye:
@@ -117,7 +119,7 @@ def alcance_del_sistema():
 
 
 def proposito_del_sistema():
-    with st.popover("Propósito del Sistema", icon=":material/ads_click:", width="stretch"):
+    with st.expander("Propósito del Sistema", icon=":material/ads_click:", width="stretch", expanded=True):
         st.header(":material/ads_click: Propósito del Sistema", divider="gray", anchor=False)
         st.markdown("""
         El propósito fundamental de **EPI-SYSTEM** es optimizar la vigilancia epidemiológica mediante el uso de tecnologías de la información. Sus objetivos principales son:

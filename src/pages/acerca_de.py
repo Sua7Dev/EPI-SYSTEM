@@ -27,15 +27,12 @@ menu()
 def orden_de_informaciones():
     with st.container(border=True):
         hospital()
-        col_mision, col_vision, col_manual, col_nosotros = st.columns(4)
+        st.markdown("---")
+        col_mision, col_vision = st.columns(2)
         with col_mision:
             mision()
         with col_vision:
             vision()
-        with col_manual:
-            manual_de_uso()        
-        with col_nosotros:
-            nosotros()
         
         st.markdown("---")
         col_alcance, col_proposito = st.columns(2)
@@ -43,6 +40,12 @@ def orden_de_informaciones():
             alcance_del_sistema()
         with col_proposito:
             proposito_del_sistema()
+        st.markdown("---")
+        col_manual, col_nosotros = st.columns(2)
+        with col_manual:
+            manual_de_uso()        
+        with col_nosotros:
+            nosotros()
     st.markdown("# ")
 
 
