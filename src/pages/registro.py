@@ -36,7 +36,7 @@ ASSETS_DIR = PROJECT_ROOT / "static" / "assets" / "imagenes"
 # Ruta global de la base de datos
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 
-# ------------------- Formulario de registro -------------------
+# Formulario de registro 
 def registro_formulario():
     try:
         

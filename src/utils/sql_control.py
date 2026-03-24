@@ -294,7 +294,7 @@ def operaciones_sql_morb_extenso(accion, datos_registro=None, db=DB_PATH):
                     id_direccion,
                     nombres_apellidos,
                     diagnostico,
-                    datetime.date.today().strftime("%d/%m/%Y")
+                    datetime.date.today().strftime("%Y-%m-%d")
                 ))
 
                 id_morb = cursor.lastrowid  # ← ID del nuevo registro en morbilidad
