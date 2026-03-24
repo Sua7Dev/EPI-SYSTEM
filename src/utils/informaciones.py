@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import os
 from utils.base_64 import img_a_base64
+from utils.visuales import markdown_sin_link
 from pathlib import Path
 from utils.sql_control import mostrar_descripcion_departamento, mostrar_descripcion_hospital
 from pathlib import Path
@@ -34,15 +35,44 @@ RUTA_DOCTOR_SVG = ASSETS_DIR / "doctor.svg"
 RUTA_SECRETARIA_SVG = ASSETS_DIR / "secretaria.svg"
 
 def nosotros():
-    nosotros_sg = st.expander("Sobre Nosotros", icon=":material/contact_support:", width="stretch")
+    nosotros_sg = st.expander("Sobre Nosotros", icon=":material/contact_support:", width="stretch", expanded=True)
     with nosotros_sg:
-        st.subheader(":material/contact_page: Contactanos al:", divider="gray", anchor=False)
-        #st.markdown(":green[Whatsapp:]")
-        st.markdown(":red[Gmail:]")
-        st.write("Samuel Urbano: samuel.urbano.arana@gmail.com")
-        st.markdown("Gustavo Heredia: newpersonal98@gmail.com")
-        st.markdown("Arturo Noriega: arturonoriega2321@gmail.com")
-        st.markdown("Antonella Reyes: antonellareyes04@gmail.com")
+        st.subheader(":material/contact_page: Contacto y Soporte Técnico", divider="gray", anchor=False)
+        st.markdown("""
+        Si tienes alguna pregunta, encuentras un problema o necesitas asistencia, puedes contactar a nuestro equipo de soporte técnico. 
+        A continuación, se presenta la información de contacto de las personas clave responsables del desarrollo del software y del soporte.
+        """)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 1. Coordinación y Logística")
+            st.markdown("""
+            **Samuel Urbano**  
+            *Coordinador General*  
+            📞 +58 4248528064  
+            ✉️ [samuel.urbano.arana@gmail.com](mailto:samuel.urbano.arana@gmail.com)
+            
+            **Antonella Reyes**  
+            *Logística de Visitas y Contacto Directo*  
+            📞 +58 04248841980  
+            ✉️ [antonellareyes04@gmail.com](mailto:antonellareyes04@gmail.com)
+            """)
+
+        with col2:
+            st.markdown("#### 2. Soporte de Contenido")
+            st.markdown("""
+            **Gustavo Heredia**  
+            *Redacción de Informes y Sistematización de Datos*  
+            📞 +58 4147966434  
+            ✉️ [newpersonal98@gmail.com](mailto:newpersonal98@gmail.com)
+            
+            **Arturo Noriega**  
+            *Levantamiento de Información y Observación*  
+            📞 +58 04248655694  
+            ✉️ [arturonoriega2321@gmail.com](mailto:arturonoriega2321@gmail.com)
+            """)
+    markdown_sin_link()
 
 
 def hospital():
@@ -71,7 +101,7 @@ def mision():
         texto = (row[0] if row and row[0] else "Misión no definida aún.")
         
         with st.expander("Misión", icon=":material/target:", width="stretch", expanded=True):
-            st.header(":material/target: Misión", divider="gray", anchor=False)
+            st.subheader(":material/target: Misión", divider="gray", anchor=False)
             st.markdown(f"<div style='text-align: justify; margin: 10px 0;'>{texto}</div>", unsafe_allow_html=True)
             
     except Exception as e:
@@ -89,16 +119,17 @@ def vision():
         texto = (row[0] if row and row[0] else "Visión no definida aún.")
         
         with st.expander("Visión", icon=":material/emoji_objects:", width="stretch", expanded=True):
-            st.header(":material/emoji_objects: Visión", divider="gray", anchor=False)
+            st.subheader(":material/emoji_objects: Visión", divider="gray", anchor=False)
             st.markdown(f"<div style='text-align: justify; margin: 10px 0;'>{texto}</div>", unsafe_allow_html=True)
             
     except Exception as e:
         st.error(f"Error al cargar la visión: {e}", icon=":material/error:")
+
 def manual_de_uso():
     try:
-        with st.expander("Manual de usuario", icon=":material/developer_guide:", width="stretch"):
+        with st.expander("Manual de usuario", icon=":material/developer_guide:", width="stretch", expanded=True):
             st.subheader(":material/pageview: Ver manual de usuario", divider="gray", anchor=False)
-            ver_manual = st.button("Ver PDF", icon=":material/export_notes:", width="stretch")
+            ver_manual = st.button("Ver PDF", icon=":material/export_notes:", width="stretch", type="primary")
             if ver_manual:
                 st.switch_page("pages/manual_usuario.py")
                 st.rerun()
@@ -107,7 +138,7 @@ def manual_de_uso():
 
 def alcance_del_sistema():
     with st.expander("Alcance del Sistema", icon=":material/info:", width="stretch", expanded=True):
-        st.header(":material/info: Alcance del Sistema", divider="gray", anchor=False)
+        st.subheader(":material/info: Alcance del Sistema", divider="gray", anchor=False)
         st.markdown("""
         El sistema **EPI-SYSTEM** está diseñado para la gestión integral de datos epidemiológicos en entornos hospitalarios. Su alcance incluye:
         1. **Registro y Seguimiento:** Captura detallada de eventos de morbilidad, mortalidad y natalidad.
@@ -120,7 +151,7 @@ def alcance_del_sistema():
 
 def proposito_del_sistema():
     with st.expander("Propósito del Sistema", icon=":material/ads_click:", width="stretch", expanded=True):
-        st.header(":material/ads_click: Propósito del Sistema", divider="gray", anchor=False)
+        st.subheader(":material/ads_click: Propósito del Sistema", divider="gray", anchor=False)
         st.markdown("""
         El propósito fundamental de **EPI-SYSTEM** es optimizar la vigilancia epidemiológica mediante el uso de tecnologías de la información. Sus objetivos principales son:
         1. **Modernización:** Reemplazar los registros en papel por una plataforma digital centralizada que facilite el acceso y la búsqueda de información.

@@ -41,11 +41,8 @@ def orden_de_informaciones():
         with col_proposito:
             proposito_del_sistema()
         st.markdown("---")
-        col_manual, col_nosotros = st.columns(2)
-        with col_manual:
-            manual_de_uso()        
-        with col_nosotros:
-            nosotros()
+        manual_de_uso()        
+        nosotros()
     st.markdown("# ")
 
 
