@@ -255,8 +255,14 @@ def formulario_morb_extenso(db=DB_PATH):
                 label="Nombres y apellidos"
             )
         with col_edad:
-            edad = st.number_input("Edad", min_value=0, step=1, key="edad_morb_extenso")
-
+            edad = st.text_input("Edad (años)", key="edad_morb_extenso",
+                placeholder="Ej. 25", max_chars=3)
+            bloquear_caracteres(
+                caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
+                tipo_de_input="text",
+                max_chars=3,
+                label="Edad (años)"
+            )
         diagnostico = st.text_area(
             "Diagnóstico", max_chars=150,
             key="diagnostico_morb_extenso",
@@ -333,6 +339,9 @@ def formulario_morb_extenso(db=DB_PATH):
             if not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"): 
                 return
             if not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"): 
+                return
+            if edad > 120:
+                st.error("La edad no puede ser mayor a 120 años", icon=":material/error:")
                 return
             if not val_diagnostico(diagnostico, "El", "diagnóstico"): 
                 return
