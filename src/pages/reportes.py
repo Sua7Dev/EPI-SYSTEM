@@ -36,19 +36,19 @@ def secciones_reportes():
         "| :material/personal_injury: Morbilidad |",
     ]) 
     with tab_morta:
-        st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
+        #st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
         col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
         with col_centro:
             formulario_reporte_general()
         #st.markdown("")
     with tab_nata:
-        st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
+        #st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
         col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
         with col_centro:
             formulario_reporte_general_natalidad()
         #st.markdown("")
     with tab_morbi:
-        st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
+        #st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
         col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
         with col_centro:
             formulario_reporte_general_morbilidad()

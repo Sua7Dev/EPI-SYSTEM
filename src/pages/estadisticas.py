@@ -54,7 +54,7 @@ def mostrar_stats():
     with tabs[2]:
         morbilidad_stats()
         pass
-    copyright_footer_dos("Equipo Investigador", bottom="-200px")
+    copyright_footer_dos("Equipo Investigador", bottom="-400px")
 
 # ejecucion principal
 def estadisticas():

@@ -271,7 +271,8 @@ def formulario_natalidad():
                 }
                 </style>
                     """, unsafe_allow_html=True)
-            col_fecha, col_partos, col_hembras, col_varones = st.columns(4)
+            #primera fila de 3
+            col_fecha, col_partos, col_cesareas = st.columns(3)
 
             with col_fecha:
                 fecha_minima = datetime.datetime.now().date() - relativedelta(months=1)
@@ -286,23 +287,29 @@ def formulario_natalidad():
             with col_partos:
                 partos = st.number_input("Partos", min_value=0, step=1)
 
+            with col_cesareas:
+                cesareas = st.number_input("Cesáreas", min_value=0, step=1)
+            # segunda fila de 3
+            col_hembras, col_varones, col_gemelar = st.columns(3)
+
             with col_hembras:
                 hembras = st.number_input("Hembras", min_value=0, step=1)
 
             with col_varones:
                 varones = st.number_input("Varones", min_value=0, step=1)
 
-            col_gemelar, col_cesareas, col_mto, col_sexo_gem = st.columns(4)
             with col_gemelar:
                 gemelar = st.number_input("Gemelar", min_value=0, step=1)
+            # tercera fila de 2
+            col_mto, col_ptoh = st.columns(2)
 
-            with col_cesareas:
-                cesareas = st.number_input("Cesáreas", min_value=0, step=1)
+
+
 
             with col_mto:
                 mto = st.number_input("Muertos (MTO)", min_value=0, step=1)
 
-            with col_sexo_gem:
+            with col_ptoh:
                 partos_extrahospitalarios = st.number_input(
                     "Partos extrahospitalarios", min_value=0, step=1
                 )
@@ -552,7 +559,7 @@ def mostrar_nata():
         return
     
     formulario_natalidad()
-    copyright_footer_dos("Equipo Investigador")
+    copyright_footer_dos("Equipo Investigador", bottom="-220px")
 
 mostrar_nata()
 reload_on_back()

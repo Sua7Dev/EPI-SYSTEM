@@ -392,7 +392,7 @@ def mostrar_morb():
         st.error("Usuario no encontrado. Por favor, inicia sesión nuevamente.", icon=":material/error:")
         return
     formulario_morb_extenso()
-    copyright_footer_dos("Equipo Investigador")
+    copyright_footer_dos("Equipo Investigador", bottom="-220px")
 
 mostrar_morb()
 reload_on_back()
