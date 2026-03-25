@@ -326,30 +326,34 @@ def formulario_natalidad():
                 )
 
             if registrar:
+                # Validaciones de coherencia numérica
+                total_eventos = partos + cesareas + partos_extrahospitalarios
+                total_nacidos = varones + hembras + mto
 
-                if partos_extrahospitalarios > partos:
+                if total_eventos > total_nacidos:
                     st.error(
-                        f"**Error de validación**: Los partos extrahospitalarios ({partos_extrahospitalarios}) "
-                        f"no pueden ser mayores que el total de partos ({partos}).",
+                        f"**Error de coherencia**: La suma de Partos, Cesáreas y Partos extrahospitalarios ({total_eventos}) "
+                        f"no puede ser mayor al total de Hembras, Varones y Muertos ({total_nacidos}).",
                         icon=":material/error:"
                     )
                     st.stop()
 
                 if gemelar >= 1:
-                    if (partos + cesareas + partos_extrahospitalarios) == 0:
+                    if total_eventos == 0:
                         st.error("Si hay registros gemelares, debe haber al menos un Parto, Cesárea o Parto extrahospitalario.", icon=":material/error:")
                         st.stop()
                     if (varones + hembras) == 0:
                         st.error("Si hay registros gemelares, debe haber al menos un Varón o Hembra registrado.", icon=":material/error:")
                         st.stop()
 
-                # Validación de coherencia si no hay gemelar (opcional, pero recomendada para datos limpios)
-                if gemelar == 0:
-                    total_nacidos = varones + hembras + mto
-                    total_eventos = partos + cesareas
-                    if total_nacidos != total_eventos:
-                        st.error(f"La suma de nacidos vivos + MTO ({total_nacidos}) no coincide con el total de partos + cesáreas ({total_eventos}).", icon=":material/error:")
-                        st.stop()
+                # Si no es gemelar, los eventos deben coincidir exactamente con los nacidos
+                if gemelar == 0 and total_eventos != total_nacidos:
+                    st.error(
+                        f"**Error de coherencia**: Al no ser un caso gemelar, el total de eventos ({total_eventos}) "
+                        f"debe coincidir exactamente con el total de Hembras, Varones y Muertos ({total_nacidos}).",
+                        icon=":material/error:"
+                    )
+                    st.stop()
 
                 datos_registro = (
                     fecha, partos, cesareas,
