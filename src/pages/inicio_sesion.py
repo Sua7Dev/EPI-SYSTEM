@@ -159,11 +159,80 @@ def iniciar_sesion():
 
 
 
+def sin_scroll():
+    """Desactiva el scroll en toda la página mediante una solución agresiva de CSS y JavaScript."""
+    st.markdown(
+        """
+        <style>
+        /* Bloqueo total por CSS en todos los contenedores posibles */
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main, .stApp, .block-container {
+            overflow: hidden !important;
+            height: 100vh !important;
+            width: 100vw !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Asegurar que el contenedor de la derecha también esté bloqueado */
+        [data-testid="stMain"] > div:first-child > div:nth-child(2) {
+            overflow-y: hidden !important;
+            height: 100vh !important;
+            position: relative !important;
+        }
+        </style>
+        
+        <script>
+        // Función nuclear para forzar el scroll a cero y bloquear estilos
+        const forceNoScroll = () => {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100vw';
+            document.body.style.height = '100vh';
+            
+            // Forzar el scroll a (0, 0)
+            window.scrollTo(0, 0);
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        };
+
+        // Prevenir eventos de entrada que causan desplazamiento
+        const preventDefault = (e) => {
+            const keys = ['ArrowUp', 'ArrowDown', ' ', 'PageUp', 'PageDown', 'Home', 'End'];
+            if (e.type === 'keydown' && !keys.includes(e.key)) {
+                return; // No prevenir otras teclas
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        };
+
+        const options = { passive: false };
+        
+        // Registrar eventos en la ventana y el documento
+        window.addEventListener('wheel', preventDefault, options);
+        window.addEventListener('touchmove', preventDefault, options);
+        window.addEventListener('keydown', preventDefault, options);
+        
+        // Ejecutar forzado inmediatamente y de forma periódica (cada 50ms)
+        // para contrarrestar cualquier script interno de Streamlit
+        setInterval(forceNoScroll, 50);
+        
+        // Ejecución inicial
+        forceNoScroll();
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+
 def login():
     logo_path = ASSETS_DIR / "imagebanderanueva2.png"
     st.set_page_config(layout="wide", page_icon=str(logo_path))
     recargar_una_vez(__file__)
-    colfoto, coltext = st.columns([3, 2.7])    
+    colfoto, coltext, _ = st.columns([3, 2.7, 0.1])    
     with colfoto:
         with st.container():
             foto()
@@ -175,3 +244,4 @@ def login():
 
 login()
 reload_on_back()
+sin_scroll()
