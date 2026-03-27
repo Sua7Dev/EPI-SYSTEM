@@ -6,8 +6,9 @@ from utils.base_64 import img_a_base64
 from pathlib import Path
 from utils.recargar_retroceso import reload_on_back
 from utils.reportes import formulario_reporte_general
-from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
+
 from reportes.natalidad_general import formulario_reporte_general_natalidad
+from reportes.morbilidad_gen import formulario_reporte_general_morbilidad
 
 configurar_pagina_espanol()
 if "previous_page" not in st.session_state:
@@ -36,23 +37,11 @@ def secciones_reportes():
         "| :material/personal_injury: Morbilidad |",
     ]) 
     with tab_morta:
-        #st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
-        col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
-        with col_centro:
-            formulario_reporte_general()
-        #st.markdown("")
+        formulario_reporte_general()
     with tab_nata:
-        #st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
-        col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
-        with col_centro:
-            formulario_reporte_general_natalidad()
-        #st.markdown("")
+        formulario_reporte_general_natalidad()
     with tab_morbi:
-        #st.subheader(":material/arrow_circle_down: Descargas de reportes", anchor=False, divider="gray")
-        col_izq, col_centro, col_der = st.columns([3.35, 4, 2.65])
-        with col_centro:
-            formulario_reporte_general_morbilidad()
-        #st.markdown("")
+        formulario_reporte_general_morbilidad()
 
 def reportes():
     logo_bandera  = ASSETS_DIR / "imagebanderanueva2.png"

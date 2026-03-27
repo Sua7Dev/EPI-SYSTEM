@@ -1,6 +1,32 @@
 import re
 import streamlit as st
+import pandas as pd
 from datetime import datetime
+
+def parse_fecha_robusta(date_value):
+    if pd.isna(date_value) or str(date_value).strip() == '':
+        return pd.NaT
+
+    date_str = str(date_value).strip()
+
+    # Formatos comunes en Venezuela y el sistema
+    formatos = [
+        '%d/%m/%Y', '%d-%m-%Y', '%d.%m.%Y',
+        '%Y-%m-%d', '%Y/%m/%d',
+        '%d/%m/%y', '%d-%m-%y',
+        '%H:%M:%S %d/%m/%Y',
+    ]
+
+    for fmt in formatos:
+        try:
+            return pd.to_datetime(date_str, format=fmt, dayfirst=True)
+        except:
+            continue
+    
+    try:
+        return pd.to_datetime(date_str, dayfirst=True, errors='coerce')
+    except:
+        return pd.to_datetime(date_str, errors='coerce')
 
 # Función para validar que el contenido sea texto válido
 # campo se reemplaza por el mensaje que se quiera dar

@@ -4,7 +4,7 @@ from pathlib import Path
 from utils.sql_control import operaciones_sql_natalidad, eliminar_registros_natalidad
 from dateutil.relativedelta import relativedelta
 from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, copyright_footer_dos
-from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados, ver_pdf
+from utils.filtro import filtrar_datos_completos, descargar_pdf, descargar_registros_seleccionados, ver_pdf
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
 import time
@@ -12,7 +12,7 @@ from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_natalidad
 from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import procesar_guardado_cambios_natalidad
-from utils.filtro_categorias import filtro_categorias_natalidad
+# import sys para bloquear caracteres redundante (ya esta en filtro_categorias)
 import pandas as pd
 configurar_pagina_espanol()
 if "previous_page" not in st.session_state:
@@ -37,20 +37,28 @@ PROJECT_ROOT = get_project_root()
 ASSETS_DIR = PROJECT_ROOT / "static" / "assets" / "imagenes"
 menu()
 
-def data_editor_natalidad(df, rol_usuario):
+def data_editor_natalidad(df, rol_usuario, columnas_activas=None):
 
     if " " not in df.columns:
         df.insert(0, " ", False)
 
-    # Mostrar todo excepto ids internos, pero dejar ID al final
-    columns_to_display = [
-        col for col in df.columns
-        if col not in [" ", "id_doctor", "fecha_registro_formulario"]
-    ]
+    # Columnas base siempre visibles (no numéricas / de control)
+    BASE_COLS = ["fecha", "registrado_por"]
+
+    # Columnas numéricas que pueden ser filtradas por tags
+    ALL_NUM_COLS = ["partos", "cesareas", "varones", "hembras", "gemelar", "mto", "partos_extrahospitalarios"]
+
+    # Si hay columnas activas, mostrar solo esas; si no, mostrar todas
+    visible_num = columnas_activas if columnas_activas else ALL_NUM_COLS
+
+    # Construir lista final respetando el orden canónico
+    columns_to_display = (
+        [c for c in BASE_COLS if c in df.columns]
+        + [c for c in ALL_NUM_COLS if c in visible_num and c in df.columns]
+    )
 
     # Mover id al final
-    if "id" in columns_to_display:
-        columns_to_display.remove("id")
+    if "id" in df.columns:
         columns_to_display.append("id")
 
     columns_to_show = [" "] + columns_to_display
@@ -83,6 +91,14 @@ def data_editor_natalidad(df, rol_usuario):
         ),
         "gemelar": st.column_config.NumberColumn(
             "Gemelar", min_value=0, step=1,
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "mto": st.column_config.NumberColumn(
+            "MTO", min_value=0, step=1,
+            disabled=(rol_usuario == "Secretario (a)")
+        ),
+        "partos_extrahospitalarios": st.column_config.NumberColumn(
+            "PEH", min_value=0, step=1,
             disabled=(rol_usuario == "Secretario (a)")
         ),
         "id": st.column_config.TextColumn("ID", disabled=True),
@@ -142,9 +158,8 @@ def formulario_natalidad():
             return
 
         df[' '] = False
-        df_fechas = filtrar_por_fechas(df, 'fecha')
-        df_filtrado = filtro_categorias_natalidad(df_fechas)
-        edited_df = data_editor_natalidad(df_filtrado, rol_usuario)
+        df_filtrado, columnas_activas = filtrar_datos_completos(df, 'natalidad', 'fecha')
+        edited_df = data_editor_natalidad(df_filtrado, rol_usuario, columnas_activas)
 
         if not df_filtrado.empty:
             has_selection = edited_df[' '].any()
@@ -171,9 +186,8 @@ def formulario_natalidad():
 
         if mostrar_editor:
             df[' '] = False
-            df_fechas = filtrar_por_fechas(df, 'fecha')
-            df_filtrado = filtro_categorias_natalidad(df_fechas)
-            edited_df = data_editor_natalidad(df_filtrado, rol_usuario)
+            df_filtrado, columnas_activas = filtrar_datos_completos(df, 'natalidad', 'fecha')
+            edited_df = data_editor_natalidad(df_filtrado, rol_usuario, columnas_activas)
 
             if not df_filtrado.empty:
                 has_selection = edited_df[' '].any()

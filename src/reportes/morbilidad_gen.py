@@ -3,13 +3,22 @@ import datetime
 import time
 import sqlite3
 import os
+import unicodedata
 import pandas as pd
 from io import BytesIO
 from descargas.descarga_morbilidad import exportar_pdf_morbilidad_extensa
 from pages.historial import registrar_actividad_duradera
+
 from utils.botones import ver_btn
+from utils.validaciones import bloquear_caracteres
 
 DB_PATH = os.getenv("hospital.db", "hospital.db")
+
+MESES_ES = {
+    1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+    5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+    9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+}
 
 
 def _consultar_morbilidad(year=None, specific_date=None, start_date=None, end_date=None):
@@ -39,7 +48,7 @@ def _consultar_morbilidad(year=None, specific_date=None, start_date=None, end_da
             where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
 
             query = f"""
-                SELECT 
+                SELECT
                     m.id_morb AS id,
                     m.id_paciente,
                     m.id_direccion_hogar,
@@ -66,17 +75,16 @@ def _consultar_morbilidad(year=None, specific_date=None, start_date=None, end_da
             """
             df = pd.read_sql_query(query, conn, params=params)
 
-            # Convertir a datetime usando pandas robusto (detecta DD/MM/YYYY)
             if 'fecha_registro_formulario' in df.columns:
-                 df['fecha_iso'] = pd.to_datetime(df['fecha_registro_formulario'], dayfirst=True, errors='coerce')
-            
-            # Re-filtrar por fechas usando pandas si es necesario (ya que SQL podría no haber filtrado bien sin conversión)
+                from utils.validaciones import parse_fecha_robusta
+                df['fecha_iso'] = df['fecha_registro_formulario'].apply(parse_fecha_robusta)
+
             if start_date and end_date:
                 df = df[(df['fecha_iso'].dt.date >= start_date) & (df['fecha_iso'].dt.date <= end_date)]
             if specific_date:
-                 df = df[df['fecha_iso'].dt.date == specific_date]
+                df = df[df['fecha_iso'].dt.date == specific_date]
             if year:
-                 df = df[df['fecha_iso'].dt.year == int(year)]
+                df = df[df['fecha_iso'].dt.year == int(year)]
 
             return df
     except Exception:
@@ -94,42 +102,50 @@ def exportar_pdf_morbilidad_general(year=None, specific_date=None, start_date=No
     return exportar_pdf_morbilidad_extensa(df, nombre_archivo)
 
 
+def _defaults_morbi():
+    for key in [
+        "morbi_timeframe", "morbi_year", "morbi_specific_date",
+        "morbi_start_date", "morbi_end_date",
+        "morbi_anio_mes", "morbi_mes_sel",
+        "gen_morbi_nombre", "gen_morbi_diag", "gen_morbi_edad_select"
+    ]:
+        if key in st.session_state:
+            del st.session_state[key]
+
+
 def formulario_reporte_general_morbilidad():
     st.subheader(":material/description: General de Morbilidad", anchor=False)
 
     with st.container():
         try:
-            timeframe_key = "timeframe_general_reporte"
-            if timeframe_key not in st.session_state:
-                st.session_state[timeframe_key] = "Año"
-
             timeframe = st.selectbox(
-                "Seleccionar período",
-                ["Año", "Fecha Específica", "Rango de Fechas"],
-                key="morbi_timeframe",
-                on_change=lambda: st.session_state.update(
-                    {timeframe_key: st.session_state[timeframe_key]}
-                )
+                ":material/calendar_view_day: Seleccionar período",
+                ["Todo", "Año", "Año y Mes", "Fecha Específica", "Rango de Fechas"],
+                key="morbi_timeframe"
             )
+
 
             year = None
             specific_date = None
             start_date = None
             end_date = None
+            meses_filtro = []
             pdf_df = None
 
-            # ------------------ AÑO ------------------
-            if timeframe == "Año":
+            if timeframe == "Todo":
+                pdf_df = _consultar_morbilidad()
+
+            elif timeframe == "Año":
                 try:
                     with sqlite3.connect(DB_PATH) as conn:
                         df_years = pd.read_sql_query("SELECT fecha_registro_formulario FROM morbilidad", conn)
-                    
+
                     if df_years.empty:
-                         available_years = []
+                        available_years = []
                     else:
                         df_years['fecha_iso'] = pd.to_datetime(df_years['fecha_registro_formulario'], dayfirst=True, errors='coerce')
                         available_years = sorted(df_years['fecha_iso'].dt.year.dropna().unique().astype(int), reverse=True)
-                        
+
                 except Exception:
                     available_years = []
 
@@ -137,21 +153,64 @@ def formulario_reporte_general_morbilidad():
                     st.error("Sin datos registrados.", icon=":material/error:")
                     return
 
-                year = st.selectbox("Año", available_years, key="morbi_year")
+                year = st.selectbox(":material/calendar_today: Año", available_years, key="morbi_year")
+
                 pdf_df = _consultar_morbilidad(year=year)
+
+            elif timeframe == "Año y Mes":
+                try:
+                    with sqlite3.connect(DB_PATH) as conn:
+                        df_years = pd.read_sql_query("SELECT fecha_registro_formulario FROM morbilidad", conn)
+                    if df_years.empty:
+                        available_years = []
+                    else:
+                        df_years['fecha_iso'] = pd.to_datetime(df_years['fecha_registro_formulario'], dayfirst=True, errors='coerce')
+                        available_years = sorted(df_years['fecha_iso'].dt.year.dropna().unique().astype(int), reverse=True)
+                except Exception:
+                    available_years = []
+
+                if not available_years:
+                    st.error("Sin datos registrados.", icon=":material/error:")
+                    return
+
+                col_y, col_m = st.columns(2)
+                with col_y:
+                    year = st.selectbox(":material/calendar_today: Año", available_years, key="morbi_anio_mes")
+
+
+                df_temp = _consultar_morbilidad(year=year)
+                if df_temp is not None and not df_temp.empty:
+                    meses_num = sorted(df_temp["fecha_iso"].dt.month.dropna().unique().astype(int).tolist())
+                    meses_opts = [MESES_ES[m] for m in meses_num if m in MESES_ES]
+                else:
+                    meses_opts = list(MESES_ES.values())
+
+                with col_m:
+                    meses_filtro = st.multiselect(
+                        ":material/calendar_month: Mes(es)",
+                        options=meses_opts,
+                        placeholder="Todos los meses",
+                        key="morbi_mes_sel"
+                    )
+
+
+                pdf_df = _consultar_morbilidad(year=year)
+                if meses_filtro and pdf_df is not None and not pdf_df.empty:
+                    m_nums = [k for k, v in MESES_ES.items() if v in meses_filtro]
+                    pdf_df = pdf_df[pdf_df["fecha_iso"].dt.month.isin(m_nums)]
 
             elif timeframe == "Fecha Específica":
                 specific_date = st.date_input(
-                    "Fecha",
+                    ":material/event: Fecha",
                     value=datetime.date.today(),
                     format="DD/MM/YYYY",
                     min_value=datetime.date(2000, 1, 1),
                     max_value=datetime.date.today(),
                     key="morbi_specific_date"
                 )
-                pdf_df = _consultar_morbilidad(
-                    specific_date=specific_date
-                )
+
+                pdf_df = _consultar_morbilidad(specific_date=specific_date)
+
             else:
                 try:
                     with sqlite3.connect(DB_PATH) as conn:
@@ -167,7 +226,6 @@ def formulario_reporte_general_morbilidad():
                             dayfirst=True,
                             errors="coerce"
                         )
-                        # Filtrar fechas muy lejanas en el futuro (error de parseo real)
                         umbral_futuro = pd.Timestamp.now() + pd.Timedelta(days=1)
                         df_fechas = df_fechas[df_fechas["fecha_iso"] <= umbral_futuro]
 
@@ -187,7 +245,7 @@ def formulario_reporte_general_morbilidad():
                 col_start, col_end = st.columns(2)
                 with col_start:
                     start_date = st.date_input(
-                        "Fecha Inicio",
+                        ":material/date_range: Fecha Inicio",
                         value=min_fecha,
                         format="DD/MM/YYYY",
                         max_value=datetime.date.today(),
@@ -195,12 +253,13 @@ def formulario_reporte_general_morbilidad():
                     )
                 with col_end:
                     end_date = st.date_input(
-                        "Fecha Fin",
+                        ":material/date_range: Fecha Fin",
                         value=max_fecha,
                         format="DD/MM/YYYY",
                         max_value=datetime.date.today(),
                         key="morbi_end_date"
                     )
+
 
                 if end_date < start_date:
                     st.error(
@@ -209,29 +268,107 @@ def formulario_reporte_general_morbilidad():
                     )
                     return
 
-                pdf_df = _consultar_morbilidad(
-                    start_date=start_date,
-                    end_date=end_date
+                pdf_df = _consultar_morbilidad(start_date=start_date, end_date=end_date)
+
+            col_nom, col_diag, col_edad = st.columns(3)
+            with col_nom:
+                nombre_busq = st.text_input(
+                    ":material/person: Nombres y Apellidos",
+                    placeholder="Ej. Juan Pérez",
+                    max_chars=40,
+                    key="gen_morbi_nombre"
                 )
 
+                bloquear_caracteres(
+                    caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~--^"),
+                    tipo_de_input="text",
+                    max_chars=40,
+                    label="Nombres y Apellidos"
+                )
+            with col_diag:
+                diag_busq = st.text_input(
+                    ":material/medical_services: Diagnóstico",
+                    placeholder="Ej. Asma",
+                    max_chars=150,
+                    key="gen_morbi_diag"
+                )
+
+                bloquear_caracteres(
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
+                    tipo_de_input="text",
+                    max_chars=150,
+                    label="Diagnóstico"
+                )
+            with col_edad:
+                if pdf_df is not None and not pdf_df.empty and "edad" in pdf_df.columns:
+                    if pd.api.types.is_numeric_dtype(pdf_df["edad"]):
+                        valores_edad = sorted([int(x) for x in pdf_df["edad"].dropna().unique()])
+                    else:
+                        valores_edad = sorted(pdf_df["edad"].dropna().unique().tolist())
+                else:
+                    valores_edad = []
+
+                edad_options = ["Todos"] + valores_edad
+                
+                edad_sel = st.selectbox(
+                    ":material/cake: Edad",
+                    options=edad_options,
+                    index=0,
+                    key="gen_morbi_edad_select"
+                )
+
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            col_f1, col_f2, col_f3, col_f4 = st.columns(4)
+            with col_f1:
+                st.button("Filtrar", icon=":material/search:", use_container_width=True, type="primary", key="gen_morbi_btn_filtrar")
+
+            nombre_activo = nombre_busq
+            diag_activo = diag_busq
+            edad_activa = edad_sel
+
+            def normalizar(texto):
+                if not isinstance(texto, str):
+                    return ""
+                t = texto.lower()
+                return ''.join(c for c in unicodedata.normalize('NFKD', t) if unicodedata.category(c) != 'Mn')
 
             if pdf_df is not None and not pdf_df.empty:
+                df_cat = pdf_df.copy()
+
+                if nombre_activo:
+                    bn = normalizar(nombre_activo)
+                    df_cat = df_cat[df_cat["nombres_apellidos"].astype(str).apply(normalizar).str.contains(bn, na=False)]
+
+                if diag_activo:
+                    bd = normalizar(diag_activo)
+                    df_cat = df_cat[df_cat["diagnostico"].astype(str).apply(normalizar).str.contains(bd, na=False)]
+
+                if edad_activa != "Todos":
+                    df_cat = df_cat[df_cat["edad"] == edad_activa]
+
                 from utils.filtro import ver_pdf, descargar_pdf
-                col_ver, col_descargar = st.columns(2)
-                with col_ver:
-                    ver_pdf(pdf_df, "morbilidad", key_btn="ver_reporte_general_morbilidad")
-
-                with col_descargar:
-                    descargar_pdf(pdf_df, "morbilidad", label="Descargar Reporte")
-
+                if not df_cat.empty:
+                    with col_f2:
+                        ver_pdf(df_cat, "morbilidad", key_btn="ver_reporte_general_morbilidad")
+                    with col_f3:
+                        descargar_pdf(df_cat, "morbilidad", label="Descargar Reporte")
+                else:
+                    with col_f2: st.write("")
+                    with col_f3: st.write("")
+                    st.warning("No hay datos para los filtros seleccionados.", icon=":material/warning:")
             else:
-                st.error(
-                    "No hay datos para el período seleccionado.",
-                    icon=":material/error:"
-                )
+                with col_f2: st.write("")
+                with col_f3: st.write("")
+                st.error("No hay datos para el período seleccionado.", icon=":material/error:")
+
+            with col_f4:
+                st.button("Limpiar filtros", icon=":material/cleaning_services:", use_container_width=True, key="gen_morbi_btn_limpiar", on_click=_defaults_morbi)
+
+
 
         except Exception as e:
             st.error(f"Error al generar el reporte: {e}")
 
     st.markdown("#")
-    st.markdown("#####") 
+    st.markdown("#####")

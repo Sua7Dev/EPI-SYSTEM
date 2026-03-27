@@ -12,51 +12,120 @@ from pages.historial import registrar_actividad_duradera
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
 
-def filtrar_por_fechas(df, columna_fecha='fecha_registro_formulario'):
+MESES_ES = {
+    1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+    5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+    9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+}
 
+def filtrar_por_fechas(df, columna_fecha='fecha_registro_formulario'):
     if columna_fecha is None or columna_fecha not in df.columns:
         return df
     try:
+        # Pre-procesar fechas
         df[columna_fecha] = pd.to_datetime(df[columna_fecha], dayfirst=True, errors='coerce')
         if df[columna_fecha].isna().all():
             return df
-        st.subheader(":material/calendar_clock: Filtrar por Fechas", anchor=False)
         
-       
-        fecha_min_datos = df[columna_fecha].min().date() if not df.empty else datetime.date.today()
-        fecha_max_datos = df[columna_fecha].max().date() if not df.empty else datetime.date.today()
-        fecha_min = datetime.date(2000, 1, 1)
-        fecha_max = datetime.date.today()
+        # Obtener años y fechas límites
+        min_f = df[columna_fecha].min().date()
+        max_f = df[columna_fecha].max().date()
+        anios_disponibles = sorted(df[columna_fecha].dt.year.dropna().unique().astype(int).tolist(), reverse=True)
         
-        col1, col2 = st.columns(2)
-        with col1:
-            fecha_inicio = st.date_input(
-                ":material/date_range: Fecha de Inicio",
-                value=fecha_min_datos,
-                min_value=fecha_min_datos,
-                max_value=fecha_max,
-                format=DATE_FORMAT,
-                key=f"fecha_inicio_filtro_{columna_fecha}"
-            )
-        with col2:
-            fecha_fin = st.date_input(
-                ":material/date_range: Fecha de Fin",
-                value=fecha_max_datos,
-                min_value=fecha_min_datos,
-                max_value=fecha_max,
-                format=DATE_FORMAT,
-                key=f"fecha_fin_filtro_{columna_fecha}"
-            )
-        
-        if fecha_inicio and fecha_fin:
+        if not anios_disponibles:
+            return df
+
+        modo = st.selectbox(
+            ":material/calendar_view_month: Seleccionar período",
+            ["Todo", "Año", "Mes y Año", "Fecha Específica", "Rango de Fechas"],
+            index=0,
+            key=f"modo_filtro_{columna_fecha}"
+        )
+
+        if modo == "Todo":
+            return df
+
+        elif modo == "Año":
+            anio_sel = st.selectbox(":material/calendar_today: Año", options=anios_disponibles, key=f"anio_solo_{columna_fecha}")
+            return df[df[columna_fecha].dt.year == anio_sel]
+
+        elif modo == "Mes y Año":
+            col1, col2 = st.columns(2)
+            with col1:
+                anio_sel = st.selectbox(":material/calendar_today: Año", options=anios_disponibles, key=f"anio_mes_{columna_fecha}")
+            
+            df_anio = df[df[columna_fecha].dt.year == anio_sel]
+            meses_dis_num = sorted(df_anio[columna_fecha].dt.month.dropna().unique().astype(int).tolist())
+            meses_opt = [MESES_ES[m] for m in meses_dis_num]
+            
+            with col2:
+                meses_sel = st.multiselect(":material/calendar_month: Mes(es)", options=meses_opt, placeholder="Todos los meses", key=f"meses_sel_{columna_fecha}")
+            
+            if meses_sel:
+                m_nums = [k for k, v in MESES_ES.items() if v in meses_sel]
+                return df_anio[df_anio[columna_fecha].dt.month.isin(m_nums)]
+            return df_anio
+
+        elif modo == "Fecha Específica":
+            f_esp = st.date_input(":material/event: Fecha", value=max_f, min_value=min_f, max_value=max_f, format="DD/MM/YYYY", key=f"f_esp_{columna_fecha}")
+            return df[df[columna_fecha].dt.date == f_esp]
+
+        elif modo == "Rango de Fechas":
+            c1, c2 = st.columns(2)
+            with c1:
+                f_ini = st.date_input(":material/date_range: Fecha Inicio", value=min_f, min_value=min_f, max_value=max_f, format="DD/MM/YYYY", key=f"f_ini_{columna_fecha}")
+            with c2:
+                f_fin = st.date_input(":material/date_range: Fecha Fin", value=max_f, min_value=min_f, max_value=max_f, format="DD/MM/YYYY", key=f"f_fin_{columna_fecha}")
+            
+            if f_fin < f_ini:
+                st.error("La fecha fin debe ser posterior a la inicio.")
+                return df
+            
             return df[
-                (df[columna_fecha] >= pd.Timestamp(fecha_inicio)) &
-                (df[columna_fecha] <= pd.Timestamp(fecha_fin) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1))
+                (df[columna_fecha].dt.date >= f_ini) & 
+                (df[columna_fecha].dt.date <= f_fin)
             ]
+
         return df
+
     except Exception as e:
         st.error(f"Error al filtrar por fechas: {e}", icon=":material/error:")
         return df
+
+from utils.filtro_categorias import (
+    filtro_categorias_natalidad, 
+    filtro_muerte_neonatal, 
+    filtro_muerte_infantil, 
+    filtro_muerte_materna, 
+    filtro_morbilidad
+)
+
+def filtrar_datos_completos(df, tipo_reporte, columna_fecha='fecha_registro_formulario'):
+    """
+    Función unificada que maneja filtros por fecha (Año/Mes) y filtros por categoría (cascading).
+    """
+    if df.empty:
+        if tipo_reporte == 'natalidad':
+             return df, []
+        return df
+
+    # 1. Filtro por Fecha (Contenedor principal)
+    with st.container():
+        df_fechas = filtrar_por_fechas(df, columna_fecha)
+        
+        # 2. Filtro por Categorías (usando el resultado de las fechas para cascading)
+        if tipo_reporte == 'natalidad':
+            return filtro_categorias_natalidad(df_fechas)
+        elif tipo_reporte == 'mortalidad_neonatal':
+            return filtro_muerte_neonatal(df_fechas)
+        elif tipo_reporte == 'mortalidad_infantil':
+            return filtro_muerte_infantil(df_fechas)
+        elif tipo_reporte == 'mortalidad_materna':
+            return filtro_muerte_materna(df_fechas)
+        elif tipo_reporte == 'morbilidad_extensa':
+            return filtro_morbilidad(df_fechas)
+        else:
+            return df_fechas
 
 def obtener_area(nombre_base):
     if nombre_base.lower() in ["natalidad", "natalidad_seleccionado"]:

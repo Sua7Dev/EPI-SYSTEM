@@ -11,30 +11,40 @@ DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = "DD/MM/YYYY"
 from utils.botones import ver_btn
 
-# ===============================================================
-# FUNCIÓN AUXILIAR PARA PARSEO ROBUSTO DE FECHAS
-# ===============================================================
+SEXO_MAP = {
+    "Varones": "varones",
+    "Hembras": "hembras",
+}
+TIPO_NATA_MAP = {
+    "Partos":    "partos",
+    "Cesáreas":  "cesareas",
+    "Gemelar":   "gemelar",
+    "PEH":       "partos_extrahospitalarios",
+    "MTO":       "mto",
+}
+MESES_ES = {
+    1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+    5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+    9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+}
+
+
 def parse_fecha_robusta(date_value):
-    """
-    Intenta parsear la fecha de múltiples formatos comunes.
-    Devuelve pd.Timestamp o pd.NaT si no puede.
-    """
     if pd.isna(date_value) or str(date_value).strip() == '':
         return pd.NaT
-    
+
     date_str = str(date_value).strip()
 
-    # Formatos más comunes primero
     formatos = [
-        '%d/%m/%Y', '%d-%m-%Y', '%d.%m.%Y',             # 25/12/2023
-        '%Y-%m-%d', '%Y/%m/%d',                         # 2023-12-25
-        '%d/%m/%y', '%d-%m-%y',                         # 25/12/23
-        '%m/%d/%Y', '%m-%d-%Y',                         # americano
-        '%Y%m%d',                                       # 20231225
-        '%d %b %Y', '%d %B %Y',                         # 25 dic 2023
-        '%d/%b/%Y', '%d-%b-%Y',                         # 25/dic/2023
+        '%d/%m/%Y', '%d-%m-%Y', '%d.%m.%Y',
+        '%Y-%m-%d', '%Y/%m/%d',
+        '%d/%m/%y', '%d-%m-%y',
+        '%m/%d/%Y', '%m-%d-%Y',
+        '%Y%m%d',
+        '%d %b %Y', '%d %B %Y',
+        '%d/%b/%Y', '%d-%b-%Y',
         '%d %b %y', '%d %B %y',
-        '%b %d, %Y', '%B %d, %Y',                       # Dec 25, 2023
+        '%b %d, %Y', '%B %d, %Y',
     ]
 
     for fmt in formatos:
@@ -43,19 +53,13 @@ def parse_fecha_robusta(date_value):
         except ValueError:
             continue
 
-    # Último intento: dejar que pandas infiera (con preferencia día primero)
     try:
         return pd.to_datetime(date_str, dayfirst=True, errors='raise')
     except Exception:
         return pd.NaT
 
 
-# ===============================================================
-# CONSULTAS PRINCIPALES
-# ===============================================================
-
 def _consultar_natalidad(year=None, specific_date=None, start_date=None, end_date=None, iso_week=None):
-    """Consulta los registros de natalidad, parsea fechas de forma robusta y filtra"""
     try:
         with sqlite3.connect(DB_PATH) as conn:
             query = """
@@ -78,19 +82,11 @@ def _consultar_natalidad(year=None, specific_date=None, start_date=None, end_dat
         if df.empty:
             return df
 
-        # ────────────────────────────────────────────────
-        # PARSEO ROBUSTO DE LA COLUMNA 'fecha'
-        # ────────────────────────────────────────────────
         df['fecha_dt'] = df['fecha'].apply(parse_fecha_robusta)
-
-        # Para compatibilidad con el resto del código: columna auxiliar iso
         df["fecha_iso"] = df["fecha_dt"]
-
-        # Calcular semana y año ISO (usando la fecha parseada correctamente)
         df["iso_year"] = df["fecha_dt"].dt.isocalendar().year
         df["iso_week"] = df["fecha_dt"].dt.isocalendar().week
 
-        # Aplicar filtros
         if year:
             df = df[df["iso_year"] == int(year)]
         if iso_week:
@@ -124,12 +120,7 @@ def exportar_pdf_natalidad_general(year=None, specific_date=None, start_date=Non
     return _exportar_pdf_natalidad(df, nombre_archivo)
 
 
-# ===============================================================
-# FUNCIONES DE APOYO PARA FILTROS
-# ===============================================================
-
 def obtener_anios_disponibles():
-    """Devuelve los años disponibles según fechas parseadas correctamente"""
     try:
         with sqlite3.connect(DB_PATH) as conn:
             df = pd.read_sql_query("""
@@ -137,14 +128,14 @@ def obtener_anios_disponibles():
                 FROM natalidad
                 WHERE fecha IS NOT NULL
             """, conn)
-        
+
         if df.empty:
             st.error("Sin datos registrados.", icon=":material/error:")
             return None
 
         df['fecha_dt'] = df['fecha'].apply(parse_fecha_robusta)
         df = df[df['fecha_dt'].notna()]
-        
+
         if df.empty:
             st.error("Sin fechas válidas registradas.", icon=":material/error:")
             return None
@@ -154,7 +145,8 @@ def obtener_anios_disponibles():
             st.error("Sin datos válidos registrados.", icon=":material/error:")
             return None
 
-        return st.selectbox("Año", years, key="nata_year")
+        return st.selectbox(":material/calendar_today: Año", years, key="nata_year")
+
 
     except Exception as e:
         st.error(f"Error al obtener años: {e}", icon=":material/error:")
@@ -162,7 +154,6 @@ def obtener_anios_disponibles():
 
 
 def obtener_semanas_por_anio(year):
-    """Devuelve semanas ISO reales para el año seleccionado"""
     try:
         with sqlite3.connect(DB_PATH) as conn:
             df = pd.read_sql_query("""
@@ -170,14 +161,14 @@ def obtener_semanas_por_anio(year):
                 FROM natalidad
                 WHERE fecha IS NOT NULL
             """, conn)
-        
+
         if df.empty:
             return []
 
         df['fecha_dt'] = df['fecha'].apply(parse_fecha_robusta)
         df = df[df['fecha_dt'].notna()]
         df = df[df["fecha_dt"].dt.isocalendar().year == int(year)]
-        
+
         semanas = sorted(df["fecha_dt"].dt.isocalendar().week.dropna().unique())
         return semanas
 
@@ -185,38 +176,75 @@ def obtener_semanas_por_anio(year):
         return []
 
 
-# ===============================================================
-# FORMULARIO DE REPORTES
-# ===============================================================
+def _defaults_nata():
+    for key in [
+        "nata_timeframe", "nata_year", "nata_semana_iso",
+        "nata_specific_date", "nata_start_date", "nata_end_date",
+        "nata_anio_mes", "nata_mes_sel", "nata_gen_sexo", "nata_gen_tipo",
+        "nat_columnas_activas", "nat_filtros_label", "nat_sel_sexo", "nat_sel_tipo"
+    ]:
+        if key in st.session_state:
+            del st.session_state[key]
+
 
 def formulario_reporte_general_natalidad():
     st.subheader(":material/description: General de Natalidad", anchor=False)
-    
+
     with st.container():
         try:
             timeframe = st.selectbox(
-                "Seleccionar período",
-                ["Año", "Año y Semana", "Fecha Específica", "Rango de Fechas"],
+                ":material/calendar_view_day: Seleccionar período",
+                ["Todo", "Año", "Año y Mes", "Año y Semana", "Fecha Específica", "Rango de Fechas"],
                 key="nata_timeframe"
             )
+
 
             year = None
             iso_week = None
             specific_date = None
             start_date = None
             end_date = None
+            meses_filtro = []
             pdf_df = None
 
-            # FILTRO POR AÑO
-            if timeframe == "Año":
+            if timeframe == "Todo":
+                pdf_df = _consultar_natalidad()
+
+            elif timeframe == "Año":
                 year = obtener_anios_disponibles()
                 if not year:
                     return
                 pdf_df = _consultar_natalidad(year=year)
 
-            # FILTRO POR AÑO + SEMANA ISO
+            elif timeframe == "Año y Mes":
+                col_y, col_m = st.columns(2)
+                with col_y:
+                    year = obtener_anios_disponibles()
+                if not year:
+                    return
+                df_temp = _consultar_natalidad(year=year)
+                if df_temp is not None and not df_temp.empty:
+                    meses_num = sorted(df_temp["fecha_dt"].dt.month.dropna().unique().astype(int).tolist())
+                    meses_opts = [MESES_ES[m] for m in meses_num if m in MESES_ES]
+                else:
+                    meses_opts = list(MESES_ES.values())
+                with col_m:
+                    meses_filtro = st.multiselect(
+                        ":material/calendar_month: Mes(es)",
+                        options=meses_opts,
+                        placeholder="Todos los meses",
+                        key="nata_mes_sel"
+                    )
+
+                pdf_df = _consultar_natalidad(year=year)
+                if meses_filtro and pdf_df is not None and not pdf_df.empty:
+                    m_nums = [k for k, v in MESES_ES.items() if v in meses_filtro]
+                    pdf_df = pdf_df[pdf_df["fecha_dt"].dt.month.isin(m_nums)]
+
             elif timeframe == "Año y Semana":
-                year = obtener_anios_disponibles()
+                col_y, col_s = st.columns(2)
+                with col_y:
+                    year = obtener_anios_disponibles()
                 if not year:
                     return
 
@@ -225,23 +253,23 @@ def formulario_reporte_general_natalidad():
                     st.error("No existen semanas con registros para este año.", icon=":material/error:")
                     return
 
-                iso_week = st.selectbox("Semana disponible", semanas, key="nata_semana_iso")
+                with col_s:
+                    iso_week = st.selectbox(":material/calendar_view_week: Semana disponible", semanas, key="nata_semana_iso")
+
                 pdf_df = _consultar_natalidad(year=year, iso_week=iso_week)
 
-            # FECHA ESPECÍFICA
             elif timeframe == "Fecha Específica":
                 specific_date = st.date_input(
-                    "Fecha",
+                    ":material/event: Fecha",
                     value=datetime.date.today(),
                     format="DD/MM/YYYY",
                     max_value=datetime.date.today(),
                     key="nata_specific_date"
                 )
+
                 pdf_df = _consultar_natalidad(specific_date=specific_date)
 
-            # RANGO DE FECHAS
             else:
-                # Intentar obtener rango real de fechas válidas
                 try:
                     with sqlite3.connect(DB_PATH) as conn:
                         df_fechas = pd.read_sql_query("SELECT fecha FROM natalidad WHERE fecha IS NOT NULL", conn)
@@ -267,7 +295,7 @@ def formulario_reporte_general_natalidad():
                 col_start, col_end = st.columns(2)
                 with col_start:
                     start_date = st.date_input(
-                        "Fecha Inicio",
+                        ":material/date_range: Fecha Inicio",
                         value=min_fecha,
                         format="DD/MM/YYYY",
                         max_value=datetime.date.today(),
@@ -275,12 +303,13 @@ def formulario_reporte_general_natalidad():
                     )
                 with col_end:
                     end_date = st.date_input(
-                        "Fecha Fin",
+                        ":material/date_range: Fecha Fin",
                         value=max_fecha,
                         format="DD/MM/YYYY",
                         max_value=datetime.date.today(),
                         key="nata_end_date"
                     )
+
 
                 if end_date < start_date:
                     st.error("La fecha fin debe ser igual o posterior a la fecha inicio.", icon=":material/error:")
@@ -288,23 +317,83 @@ def formulario_reporte_general_natalidad():
 
                 pdf_df = _consultar_natalidad(start_date=start_date, end_date=end_date)
 
-            # ----------------------------
-            # BOTONES LAZY (PDF)
-            # ----------------------------
+            col_sexo, col_tipo = st.columns(2)
+            with col_sexo:
+                sexo_sel = st.multiselect(
+                    ":material/female: :material/male: Sexo",
+                    options=list(SEXO_MAP.keys()),
+                    default=st.session_state.get("nata_gen_sexo", []),
+                    placeholder="Todos (Varones y Hembras)",
+                    key="nata_gen_sexo"
+                )
+
+            with col_tipo:
+                tipo_sel = st.multiselect(
+                    ":material/category: Tipo de Natalidad",
+                    options=list(TIPO_NATA_MAP.keys()),
+                    default=st.session_state.get("nata_gen_tipo", []),
+                    placeholder="Todos los tipos",
+                    key="nata_gen_tipo"
+                )
+
+
+            # Lógica de filtrado de columnas (Sync con Data Editor y PDF Generator)
+            sexo_activo = sexo_sel
+            tipo_activo = tipo_sel
+
+            cols_sexo = [SEXO_MAP[s] for s in sexo_activo] if sexo_activo else list(SEXO_MAP.values())
+            cols_tipo = [TIPO_NATA_MAP[t] for t in tipo_activo] if tipo_activo else list(TIPO_NATA_MAP.values())
+            columnas_activas = list(dict.fromkeys(cols_sexo + cols_tipo))
+            
+            # Actualizar session_state PARA EL GENERADOR DE PDF
+            st.session_state["nat_columnas_activas"] = columnas_activas
+            st.session_state["nat_filtros_label"] = {
+                "sexo": ", ".join(sexo_sel) if sexo_sel else "Todos",
+                "tipo": ", ".join(tipo_sel) if tipo_sel else "Todos"
+            }
+            
+            # Columnas base siempre visibles
+            BASE_COLS = ["fecha", "registrado_por"]
+            
             if pdf_df is not None and not pdf_df.empty:
-                from utils.filtro import ver_pdf, descargar_pdf
-                col_ver, col_descargar = st.columns(2)
-                with col_ver:
-                    ver_pdf(pdf_df, "natalidad_general", key_btn="ver_reporte_general_natalidad")
-
-                with col_descargar:
-                    descargar_pdf(pdf_df, "natalidad_general", label="Descargar Reporte")
-
+                # Asegurar columnas base
+                if "registrado_por" not in pdf_df.columns and "id_doctor" in pdf_df.columns:
+                    pdf_df["registrado_por"] = pdf_df["id_doctor"]
+                
+                cols_to_show = [c for c in BASE_COLS if c in pdf_df.columns] + [c for c in columnas_activas if c in pdf_df.columns]
+                pdf_df_final = pdf_df[cols_to_show]
             else:
-                st.error("No hay datos para el período seleccionado.", icon=":material/error:")
+                pdf_df_final = pdf_df
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            col_f1, col_f2, col_f3, col_f4 = st.columns(4)
+            with col_f1:
+                st.button("Filtrar", icon=":material/search:", use_container_width=True, type="primary", key="nata_gen_btn_filtrar")
+            
+            if pdf_df_final is not None and not pdf_df_final.empty:
+                from utils.filtro import ver_pdf, descargar_pdf
+                with col_f2:
+                    ver_pdf(pdf_df_final, "natalidad_general", key_btn="ver_reporte_general_natalidad")
+                with col_f3:
+                    descargar_pdf(pdf_df_final, "natalidad_general", label="Descargar Reporte")
+            else:
+                with col_f2: st.write("")
+                with col_f3: st.write("")
+
+            with col_f4:
+                st.button("Limpiar filtros", icon=":material/cleaning_services:", use_container_width=True, key="nata_gen_btn_limpiar", on_click=_defaults_nata)
+
+            if pdf_df_final is None or pdf_df_final.empty:
+                st.warning("No hay datos para mostrar.", icon=":material/warning:")
+
+
+
+
 
         except Exception as e:
             st.error(f"Error al generar el reporte: {e}")
 
+    st.markdown("#")
+    st.markdown("#####")
     st.markdown("#")
     st.markdown("#####")

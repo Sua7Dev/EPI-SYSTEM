@@ -8,16 +8,16 @@ from utils.visuales import logo, configurar_pagina_espanol, recargar_una_vez, co
 from utils.verificaciones import obtener_info_usuario
 from pages.menu import menu
 from dateutil.relativedelta import relativedelta
-from utils.filtro import filtrar_por_fechas, descargar_pdf, descargar_registros_seleccionados, ver_pdf
+from utils.filtro import filtrar_datos_completos, descargar_pdf, descargar_registros_seleccionados, ver_pdf
 from utils.base_64 import img_a_base64
 from utils.limpieza import limpiar_campos_materna, limpiar_campos_infantil, limpiar_campos_neonatal
-from utils.validaciones import val_diagnostico, validar_texto, val_texynum, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
+from utils.validaciones import val_diagnostico, validar_texto, val_notas, val_texynum, val_num_espacios, val_solo_numeros, validar_cinco_espacios, validar_pais
 from utils.botones import confirmar_eliminar, guadar_btn, ver_btn
 from utils.guardar_cambios import (procesar_guardado_cambios_mortalidad_neonatal,
                                    procesar_guardado_cambios_mortalidad_infantil, procesar_guardado_cambios_mortalidad_materna,
                                    )
 from utils.recargar_retroceso import reload_on_back
-from utils.filtro_categorias import filtro_muerte_neonatal, filtro_muerte_infantil, filtro_muerte_materna
+# import redundante de filtros (ya estan en filtrar_datos_completos)
 import os
 DB_PATH = os.getenv("hospital.db", "hospital.db")
 DATE_FORMAT = 'DD/MM/YYYY'
@@ -187,8 +187,7 @@ def formulario_neonatal(db=DB_PATH):
         )
 
         if mostrar_editor:
-            df_fechas = filtrar_por_fechas(df, 'fecha_defuncion')
-            df_morta = filtro_muerte_neonatal(df_fechas)
+            df_morta = filtrar_datos_completos(df, 'mortalidad_neonatal', 'fecha_defuncion')
             edited_df = data_editor_neonatal(df_morta, rol_usuario)
             has_selection = edited_df[' '].any()
             df_sel = edited_df[edited_df[' '] == True] if has_selection else None
@@ -735,8 +734,7 @@ def formulario_infantil(db=DB_PATH):
         )
 
         if mostrar_editor:
-            df_fechas = filtrar_por_fechas(df, 'fecha_defuncion')
-            df_morta = filtro_muerte_infantil(df_fechas)
+            df_morta = filtrar_datos_completos(df, 'mortalidad_infantil', 'fecha_defuncion')
             edited_df = data_editor_infantil(df_morta, rol_usuario)
             has_selection = edited_df[' '].any()
             df_sel = edited_df[edited_df[' '] == True] if has_selection else None
@@ -1154,8 +1152,7 @@ def formulario_materna(db=DB_PATH):
         )
 
         if mostrar_editor:
-            df_fechas = filtrar_por_fechas(df, 'fecha_defuncion')
-            df_morta = filtro_muerte_materna(df_fechas)
+            df_morta = filtrar_datos_completos(df, 'mortalidad_materna', 'fecha_defuncion')
             edited_df = data_editor_materna(df_morta, rol_usuario)
             has_selection = edited_df[' '].any()
             df_sel = edited_df[edited_df[' '] == True] if has_selection else None

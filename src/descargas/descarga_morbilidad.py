@@ -57,8 +57,9 @@ def exportar_pdf_morbilidad_extensa(df, nombre_archivo):
 
     pdf.ln(15)
 
+    from utils.validaciones import parse_fecha_robusta
     df = df.copy()
-    df['fecha_dt'] = pd.to_datetime(df['fecha_registro_formulario'], dayfirst=True, errors='coerce')
+    df['fecha_dt'] = df['fecha_registro_formulario'].apply(parse_fecha_robusta)
     df['fecha_str'] = df['fecha_dt'].dt.strftime('%d/%m/%Y').fillna('Sin fecha')
 
     headers = ['#', 'Enfermedad / Diagnóstico', 'Nombres y Apellidos', 'Edad', 'Dirección de Hogar']
