@@ -31,13 +31,37 @@ class CustomPDF(FPDF):
     def header(self):
         # Asegurar fuente estándar al inicio de página para evitar negritas heredadas
         self.set_font("Arial", '', 10)
+        self.set_text_color(0, 0, 0)
         logo_path = ASSETS_DIR / "facil.png"
         if logo_path.exists():
             page_width = self.w  
             logo_width = 190 # Tamaño fijo profesional para Letter P
             x = (page_width - logo_width) / 2  
             self.image(str(logo_path), x=x, y=8, w=logo_width)
-        self.ln(35) # Más espacio para evitar que el banner se sobreponga
+        
+        # Información del Hospital - Ubicada en los extremos a la altura de los títulos
+        # Se baja a y=40 para evitar colisión con el banner superior (logo)
+        y_altura_info = 40
+        self.set_y(y_altura_info)
+        self.set_font("Arial", "B", 8)
+        self.set_text_color(110, 110, 110) # Gris profesional suave
+        
+        # RIF a la Izquierda (Usa el ancho completo, alineado a la izquierda)
+        self.cell(0, 10, "RIF: G-20002372-4", 0, 0, "L")
+        
+        # Teléfono a la Derecha (Regresamos el cursor al inicio de la línea para alinear a la derecha)
+        self.set_x(self.l_margin)
+        self.cell(0, 10, f"Tel\u00E9fono: 0283-2410577", 0, 0, "R")
+        
+        # Resetear color y lógica de espaciado
+        self.set_text_color(0, 0, 0)
+        
+        # Si es la página 1, el título se centrará en esta misma altura (y=40)
+        # En páginas siguientes, bajamos el cursor para que el contenido no colisione
+        if self.page_no() == 1:
+            self.set_y(y_altura_info)
+        else:
+            self.set_y(y_altura_info + 10)
 
     def footer(self):
         self.set_y(-18)

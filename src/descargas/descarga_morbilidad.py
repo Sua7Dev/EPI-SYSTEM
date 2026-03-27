@@ -28,7 +28,7 @@ def exportar_pdf_morbilidad_extensa(df, nombre_archivo):
     pdf.add_page()
     pdf.set_font("Arial", 'B', 14)
     pdf.set_text_color(0, 51, 102)
-    pdf.cell(0, 10, "REPORTE DE DENUNCIAS OBLIGATORIAS (MORBILIDAD)", ln=1, align='C')
+    pdf.cell(0, 10, "REPORTE DE DENUNCIAS OBLIGATORIAS", ln=1, align='C')
     pdf.ln(2)
     pdf.set_text_color(0, 0, 0)
 
