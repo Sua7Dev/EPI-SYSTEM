@@ -24,28 +24,6 @@ PROJECT_ROOT = get_project_root()
 ASSETS_DIR = PROJECT_ROOT / "static" / "assets" / "imagenes"
 menu()
 
-def orden_de_informaciones():
-    with st.container(border=True):
-        hospital()
-        st.markdown("---")
-        col_mision, col_vision = st.columns(2)
-        with col_mision:
-            mision()
-        with col_vision:
-            vision()
-        
-        st.markdown("---")
-        col_alcance, col_proposito = st.columns(2)
-        with col_alcance:
-            alcance_del_sistema()
-        with col_proposito:
-            proposito_del_sistema()
-        st.markdown("---")
-        manual_de_uso()        
-        nosotros()
-    st.markdown("# ")
-
-
 def acerca_de():
     logo_bandera  = ASSETS_DIR / "imagebanderanueva2.png"
     logo_base64 = img_a_base64(logo_bandera)
@@ -56,8 +34,46 @@ def acerca_de():
         st.error("Debes iniciar sesión para acceder a esta area.", icon=":material/error:")
         return   
     logo(tamano="100%")
-    st.header(":material/chat_info: Información del sistema", divider="gray", anchor=False)
-    orden_de_informaciones()
+
+    st.header(":material/chat_info: Información del Sistema", divider="gray", anchor=False)
+    
+    tab1, tab2, tab3, tab4 = st.tabs([
+        ":material/local_hospital: Institución", 
+        ":material/emoji_objects: Misión y Visión", 
+        ":material/dvr: Sobre EPI-SYSTEM", 
+        ":material/support_agent: Soporte y Manuales"
+    ])
+    
+    with tab1:
+        st.markdown("<br>", unsafe_allow_html=True)
+        hospital()
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+    with tab2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        col_mision, col_vision = st.columns(2, gap="large")
+        with col_mision:
+            mision()
+        with col_vision:
+            vision()
+        st.markdown("<br>", unsafe_allow_html=True)
+            
+    with tab3:
+        st.markdown("<br>", unsafe_allow_html=True)
+        col_alcance, col_proposito = st.columns(2, gap="large")
+        with col_alcance:
+            alcance_del_sistema()
+        with col_proposito:
+            proposito_del_sistema()
+        st.markdown("<br>", unsafe_allow_html=True)
+            
+    with tab4:
+        st.markdown("<br>", unsafe_allow_html=True)
+        manual_de_uso()        
+        st.markdown("<br>", unsafe_allow_html=True)
+        nosotros()
+        st.markdown("<br>", unsafe_allow_html=True)
+
     st.markdown('## ')
 
     nombre_usuario = st.session_state["autenticado_usuario"]

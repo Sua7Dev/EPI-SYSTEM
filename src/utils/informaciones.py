@@ -140,7 +140,7 @@ def alcance_del_sistema():
     with st.expander("Alcance del Sistema", icon=":material/info:", width="stretch", expanded=True):
         st.subheader(":material/info: Alcance del Sistema", divider="gray", anchor=False)
         st.markdown("""
-        El sistema **EPI-SYSTEM** está diseñado para la gestión integral de datos epidemiológicos en entornos hospitalarios. Su alcance incluye:
+        El sistema **S.E.E** está diseñado para la gestión integral de datos epidemiológicos en entornos hospitalarios. Su alcance incluye:
         1. **Registro y Seguimiento:** Captura detallada de eventos de morbilidad, mortalidad y natalidad.
         2. **Análisis Estadístico:** Generación de indicadores clave y visualizaciones en tiempo real a través de tableros (dashboards).
         3. **Control de Acceso:** Gestión de usuarios con roles diferenciados (Administrador, Médico, Secretario) para garantizar la integridad y confidencialidad.
@@ -153,7 +153,7 @@ def proposito_del_sistema():
     with st.expander("Propósito del Sistema", icon=":material/ads_click:", width="stretch", expanded=True):
         st.subheader(":material/ads_click: Propósito del Sistema", divider="gray", anchor=False)
         st.markdown("""
-        El propósito fundamental de **EPI-SYSTEM** es optimizar la vigilancia epidemiológica mediante el uso de tecnologías de la información. Sus objetivos principales son:
+        El propósito fundamental de **S.E.E** es optimizar la vigilancia epidemiológica mediante el uso de tecnologías de la información. Sus objetivos principales son:
         1. **Modernización:** Reemplazar los registros en papel por una plataforma digital centralizada que facilite el acceso y la búsqueda de información.
         2. **Precisión:** Reducir errores humanos en la transcripción y tabulación de datos críticos de salud.
         3. **Eficiencia:** Agilizar el tiempo de respuesta ante brotes o tendencias epidemiológicas mediante el análisis automatizado.
