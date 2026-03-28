@@ -40,6 +40,47 @@ def get_project_root() -> Path:
 PROJECT_ROOT = get_project_root()
 ASSETS_DIR = PROJECT_ROOT / "static" / "assets" / "imagenes"
 
+# --- HELPERS PARA CÁLCULO DE EDAD ---
+def calcular_edad_neonatal_cb():
+    """Callback para neonatal: Horas si < 24h, Días si >= 24h."""
+    fnac = st.session_state.get("fecha_nacimiento_neonatal")
+    hnac = st.session_state.get("hora_nacimiento_neonatal")
+    fdef = st.session_state.get("fecha_defuncion_neonatal")
+    hdef = st.session_state.get("hora_defuncion_neonatal")
+    if all([fnac, hnac, fdef, hdef]):
+        dt_nac = datetime.datetime.combine(fnac, hnac)
+        dt_def = datetime.datetime.combine(fdef, hdef)
+        diff = dt_def - dt_nac
+        total_horas = diff.total_seconds() / 3600
+        if total_horas < 24:
+            st.session_state["edad_neonatal"] = int(max(0, total_horas))
+            st.session_state["tiempo_neonatal"] = "Horas"
+        else:
+            st.session_state["edad_neonatal"] = int(max(0, diff.days))
+            st.session_state["tiempo_neonatal"] = "Días"
+
+def calcular_edad_infantil_cb():
+    """Callback para infantil: Meses si < 1 año, Años si >= 1 año."""
+    fnac = st.session_state.get("fecha_nacimiento_infantil")
+    fdef = st.session_state.get("fecha_defuncion_infantil")
+    if fnac and fdef:
+        diff = relativedelta(fdef, fnac)
+        if diff.years >= 1:
+            st.session_state["edad_infantil"] = int(max(0, diff.years))
+            st.session_state["tiempo_infantil"] = "Año(s)"
+        else:
+            total_meses = (diff.years * 12) + diff.months
+            st.session_state["edad_infantil"] = int(max(0, total_meses))
+            st.session_state["tiempo_infantil"] = "Meses"
+
+def calcular_edad_materna_cb():
+    """Callback para materna: Solo años."""
+    fnac = st.session_state.get("fecha_nacimiento_materna")
+    fdef = st.session_state.get("fecha_defuncion_materna")
+    if fnac and fdef:
+        diff = relativedelta(fdef, fnac)
+        st.session_state["edad_materna"] = int(max(0, diff.years))
+
 
 #NEONATAL
 def data_editor_neonatal(df_filtrado, rol_usuario):
@@ -317,7 +358,8 @@ def formulario_neonatal(db=DB_PATH):
 
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Neonatal", anchor=False)
-        with st.form("form_neonatal"):
+        with st.container(border=True):
+            # Se removió with st.form para permitir cálculos automáticos (reactividad)
             # 1. CSS base (solo para limpiar las flechas nativas del navegador, no las de Streamlit)
             st.markdown("""
                 <style>
@@ -334,7 +376,7 @@ def formulario_neonatal(db=DB_PATH):
                     display: none !important;
                     height: 0 !important;
                     margin: 0 !important;
-                
+                }
                 /* Ocultamos el contenedor del script para que no deje hueco */
                 [data-testid="stHtml"] {
                     display: none !important;
@@ -362,7 +404,6 @@ def formulario_neonatal(db=DB_PATH):
                 max_chars=8,
                 label="Historia clínica"
             )
-            st.markdown('</div>', unsafe_allow_html=True)
             with col_nombres:
                 nombres_apellidos = st.text_input("Nombres y apellidos", max_chars=40, key="nombres_apellidos_neonatal", placeholder="Ej. Juan Pérez")
                 bloquear_caracteres(
@@ -382,9 +423,11 @@ def formulario_neonatal(db=DB_PATH):
             col_fecha_nacimiento, col_hora_nacimiento, col_fecha_ingreso, col_hora_ingreso = st.columns(4)
             with col_fecha_nacimiento:
                 fecha_nacimiento = st.date_input("Fecha de nacimiento", format=DATE_FORMAT, min_value=fecha_minima, 
-                                                max_value=fecha_maxima_hoy, key="fecha_nacimiento_neonatal")
+                                                max_value=fecha_maxima_hoy, key="fecha_nacimiento_neonatal",
+                                                on_change=calcular_edad_neonatal_cb)
             with col_hora_nacimiento:
-                hora_nacimiento = st.time_input("Hora de nacimiento", key="hora_nacimiento_neonatal", value="now")
+                hora_nacimiento = st.time_input("Hora de nacimiento", key="hora_nacimiento_neonatal", value="now",
+                                                on_change=calcular_edad_neonatal_cb)
 
             with col_fecha_ingreso:
                 fecha_ingreso = st.date_input("Fecha de ingreso", format=DATE_FORMAT, min_value=fecha_minima, 
@@ -422,26 +465,32 @@ def formulario_neonatal(db=DB_PATH):
                         format=DATE_FORMAT,
                         min_value=fecha_minimi_1935,
                         max_value=max_defuncion,
-                        key="fecha_defuncion_neonatal"
+                        key="fecha_defuncion_neonatal",
+                        on_change=calcular_edad_neonatal_cb
                     )
                 except Exception as e:
                     st.error(f"Error en selector de fecha: {e}", icon=":material/error:")
-                    # fallback razonable
                     fecha_defuncion = fecha_maxima_hoy
 
             with col_hora_defuncion:
-                hora_defuncion = st.time_input("Hora de defunción", key="hora_defuncion_neonatal", value="now")
-            with col_edad:
-                edad = st.number_input("Edad", min_value=0, step=1, key="edad_neonatal")
+                hora_defuncion = st.time_input("Hora de defunción", key="hora_defuncion_neonatal", value="now",
+                                                on_change=calcular_edad_neonatal_cb)
             with col_tiempo:
-                tiempo = st.selectbox("Tiempo de edad", ["Días", "Horas"], key="tiempo_neonatal")
+                tiempo = st.selectbox("Tiempo de edad", ["Horas", "Días"], key="tiempo_neonatal", disabled=True)
+            with col_edad:
+                max_e = 23 if tiempo == "Horas" else 27
+                edad_disabled = True if tiempo == "Días" else False
+                edad = st.number_input("Edad", min_value=0, max_value=max_e, step=1, key="edad_neonatal", disabled=edad_disabled)
+                # Bloqueo de caracteres y límite de 2 dígitos
+                bloquear_caracteres(caracteres="eE+-.,", tipo_de_input="number", max_chars=2, label="Edad")
+
             edad_junto = f"{edad} {tiempo}"
-            
+                
             col_idx_ingreso, col_idx_defuncion = st.columns(2)
             with col_idx_ingreso:
                 idx_ingreso = st.text_area("IDX de ingreso", max_chars=150, key="idx_ingreso_neonatal", placeholder="Descripción de la IDX de ingreso")
                 bloquear_caracteres(
-                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),  # bloquea caracteres NO permitidos por val_diagnostico
+                    caracteres=list("!@#$%¨&*_=+[]{}:;\"\\|<>?`~^°¡¿§±←→•#"),
                     tipo_de_input="textarea",
                     max_chars=150,
                     label="IDX de ingreso"
@@ -454,6 +503,19 @@ def formulario_neonatal(db=DB_PATH):
                     max_chars=150,
                     label="IDX de defunción"
                 )
+    
+            st.markdown("**Datos clínicos adicionales**")
+            col_semanas, col_peso, col_talla = st.columns(3)
+            with col_semanas:
+                semanas_gestacion = st.number_input("Semanas de gestación", min_value=1, max_value=50, step=1, key="semanas_gestacion_neonatal")
+                bloquear_caracteres(caracteres="eE+-.,", tipo_de_input="number", max_chars=2, label="Semanas de gestación")
+            with col_peso:
+                peso = st.number_input("Peso (kg)", min_value=0.1, max_value=10.0, step=0.01, format="%.2f", key="peso_neonatal")
+                bloquear_caracteres(caracteres="eE+-", tipo_de_input="number", max_chars=4, label="Peso (kg)")
+            with col_talla:
+                talla = st.number_input("Talla (cm)", min_value=1.0, max_value=100.0, step=0.1, format="%.1f", key="talla_neonatal")
+                bloquear_caracteres(caracteres="eE+-", tipo_de_input="number", max_chars=4, label="Talla (cm)")
+    
             st.markdown("**Dirección**")
             col_pais, col_estado, col_muni = st.columns(3)
             with col_pais:
@@ -473,8 +535,7 @@ def formulario_neonatal(db=DB_PATH):
                     label="Estado"
                 )
             with col_muni:
-                municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_neonatal", 
-                                                placeholder="Simón Rodríguez")
+                municipio_hogar = st.text_input("Municipio (Opcional)", max_chars=56, key="municipio_hogar_neonatal", placeholder="Simón Rodríguez")
                 bloquear_caracteres(
                     caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
@@ -489,55 +550,46 @@ def formulario_neonatal(db=DB_PATH):
                     tipo_de_input="text",
                     max_chars=40,
                     label="Parroquia"
-                ) 
+                )
             with col_city:
-                ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="cuidad_hogar_neonatal", placeholder="El Tigre")
+                ciudad_hogar = st.text_input("Ciudad", max_chars=56, key="ciudad_hogar_neonatal", placeholder="El Tigre")
                 bloquear_caracteres(
                     caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                     tipo_de_input="text",
                     max_chars=40,
                     label="Ciudad"
-                ) 
+                )
             direccion_exacta = st.text_area("Dirección", max_chars=150, key="direccion_exacta_neonatal", placeholder="Pueblo Nuevo Norte, 3ra Carrera Norte, Número 26")
             bloquear_caracteres(
-                caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•"),  # caracteres prohibidos (excluye ' / - . , #)
+                caracteres=list("!@%¨&*()_+=[]{}:;\"\\|<>?`~^°¡¿§±←→•"),
                 tipo_de_input="textarea",
                 max_chars=150,
                 label="Dirección"
             )
-            col_semanas, col_peso, col_talla = st.columns(3)
-            with col_semanas:
-                semanas_gestacion = st.number_input("Semanas de gestación", min_value=0, step=1, key="semanas_gestacion_neonatal")
-            with col_peso:
-                peso = st.number_input("Peso (kg)", min_value=0.0, step=0.25, format="%.2f", #, format="%.2f"
-                                    key="peso_neonatal")
-            with col_talla:
-                talla = st.number_input("Talla (cm)", min_value=0.0, step=0.25, format="%.2f", 
-                                        key="talla_neonatal")
             col_reg, col_limp = st.columns([30, 1])
             with col_reg:
-                registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
+                registrar = st.button("Registrar", icon=":material/save:", type="primary")
             with col_limp:
-                limpiar = st.form_submit_button("", icon=":material/cleaning_services:", on_click=limpiar_campos_neonatal, 
-                                                type="tertiary", help="Limpia todos los campos del formulario.")
+                st.button("", icon=":material/cleaning_services:", on_click=limpiar_campos_neonatal, 
+                          type="tertiary", help="Limpia todos los campos del formulario.", key="btn_limpiar_neonatal")
             if registrar:
                 # guardar fechas formateadas y validar
-                if fecha_defuncion < fecha_nacimiento or fecha_defuncion > fecha_nacimiento + relativedelta(days=28):
-                    st.error("La defuncion tiene que estar entre los primeros 28 días del nacimiento.", icon=":material/error:")
+                if fecha_defuncion < fecha_nacimiento:
+                    st.error("La defunción no puede ser previa al nacimiento.", icon=":material/error:")
                     return
-                elif tiempo == "Días" and edad > 28:
-                    st.error("EL tiempo de edad no debe ser mayor a 28 días.", icon=":material/error:")
+                elif (fecha_defuncion - fecha_nacimiento).days > 27:
+                    st.error("Un registro neonatal no puede exceder los 27 días desde el nacimiento.", icon=":material/error:")
                     return
-                elif tiempo == "Horas" and edad > 672:
-                    st.error("EL tiempo de edad no debe ser mayor a 672 Horas (28 días).", icon=":material/error:")
+                elif tiempo == "Días" and edad > 27:
+                    st.error("El tiempo de edad en días no debe ser mayor a 27.", icon=":material/error:")
                     return
-
+                elif tiempo == "Horas" and edad > 23:
+                    st.error("El tiempo de edad en horas no debe ser mayor a 23.", icon=":material/error:")
+                    return
+    
                 fecha_formateada_nacimiento = fecha_nacimiento.strftime("%d/%m/%Y")
                 fecha_formateada_ingreso = fecha_ingreso.strftime("%d/%m/%Y")
                 fecha_formateada_defuncion = fecha_defuncion.strftime("%d/%m/%Y")
-                hora_12_nacimiento = hora_ingreso.strftime("%I:%M %p")
-                hora_12_ingreso = hora_ingreso.strftime("%I:%M %p")
-                hora_12_defuncion = hora_defuncion.strftime("%I:%M %p")
                 
                 hora_nacimiento_str = hora_nacimiento.strftime("%H:%M:%S") if isinstance(hora_nacimiento, datetime.time) else str(hora_nacimiento) if hora_nacimiento else ""
                 hora_ingreso_str = hora_ingreso.strftime("%H:%M:%S") if isinstance(hora_ingreso, datetime.time) else str(hora_ingreso) if hora_ingreso else ""
@@ -852,8 +904,9 @@ def formulario_infantil(db=DB_PATH):
     
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Infantil", anchor=False)
-        with st.form("form_infantil"):
-            # 1. CSS base (solo para limpiar las flechas nativas del navegador, no las de Streamlit)
+        with st.container(border=True):
+            # Se removió with st.form para permitir cálculos automáticos (reactividad)
+            # 1. CSS base
             st.markdown("""
                 <style>
                 /* Quitar flechas por defecto del navegador (spinners) */
@@ -869,7 +922,7 @@ def formulario_infantil(db=DB_PATH):
                     display: none !important;
                     height: 0 !important;
                     margin: 0 !important;
-                
+                }
                 /* Ocultamos el contenedor del script para que no deje hueco */
                 [data-testid="stHtml"] {
                     display: none !important;
@@ -882,6 +935,7 @@ def formulario_infantil(db=DB_PATH):
             fecha_maxima = datetime.date.today()
             fecha_maxima_hoy = datetime.date.today()
             fecha_minimi_1935 = datetime.date(1935, 1, 1)
+
             col_hc, col_nombres, col_madre = st.columns(3)
             with col_hc:
                 historia_clinica = st.text_input("Historia clínica", 
@@ -909,25 +963,34 @@ def formulario_infantil(db=DB_PATH):
                     max_chars=40,
                     label="Nombre de la madre"
                 )
+
             col_fecha_nacimiento, col_fecha_ingreso, col_hora_ingreso, col_fecha_defuncion = st.columns(4)
             with col_fecha_nacimiento:
                 fecha_nacimiento = st.date_input("Fecha de nacimiento", format=DATE_FORMAT, min_value=fecha_minima_7_anos, 
-                                                max_value=fecha_maxima_hoy, key="fecha_nacimiento_infantil")
+                                                max_value=fecha_maxima_hoy, key="fecha_nacimiento_infantil",
+                                                on_change=calcular_edad_infantil_cb)
             with col_fecha_ingreso:
                 fecha_ingreso = st.date_input("Fecha de ingreso", format=DATE_FORMAT, min_value=fecha_minima, 
                                               max_value=fecha_maxima, key="fecha_ingreso_infantil")
             with col_hora_ingreso:
                 hora_ingreso = st.time_input("Hora de ingreso", key="hora_ingreso_infantil", value=datetime.datetime.now().time())
             with col_fecha_defuncion:
-                fecha_defuncion = st.date_input("Fecha de defunción", format='DD/MM/YYYY', min_value=fecha_minima_7_anos, 
-                                                max_value=fecha_maxima_hoy, key="fecha_defuncion_infantil")
+                fecha_defuncion = st.date_input("Fecha de defunción", format=DATE_FORMAT, min_value=fecha_minimi_1935, 
+                                                max_value=fecha_maxima_hoy, key="fecha_defuncion_infantil",
+                                                on_change=calcular_edad_infantil_cb)
+
             col_hora_defuncion, col_edad, col_tiempo = st.columns(3)
             with col_hora_defuncion:
                 hora_defuncion = st.time_input("Hora de defunción", key="hora_defuncion_infantil", value=datetime.datetime.now().time())
-            with col_edad:
-                edad = st.number_input("Edad", min_value=0, step=1, key="edad_infantil")
             with col_tiempo:
-                tiempo = st.selectbox("Tiempo de edad", ["Meses", "Año(s)"], key="tiempo_infantil")
+                tiempo = st.selectbox("Tiempo de edad", ["Meses", "Año(s)"], key="tiempo_infantil", disabled=True)
+            with col_edad:
+                max_i = 11 if tiempo == "Meses" else 5
+                limit_i = 2 if tiempo == "Meses" else 1
+                edad = st.number_input("Edad", min_value=0, max_value=max_i, step=1, key="edad_infantil", disabled=True)
+                # Bloqueo de caracteres y límite de dígitos
+                bloquear_caracteres(caracteres="eE+-.,", tipo_de_input="number", max_chars=limit_i, label="Edad")
+
             edad_junto = f"{edad} {tiempo}"
             col1, col2 = st.columns(2)
             with col1:
@@ -998,20 +1061,17 @@ def formulario_infantil(db=DB_PATH):
             )
             col_reg, col_limp = st.columns([30, 1])
             with col_reg:
-                registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
+                registrar = st.button("Registrar", icon=":material/save:", type="primary")
             with col_limp:
-                limpiar = st.form_submit_button("", icon=":material/cleaning_services:", on_click=limpiar_campos_infantil, 
-                                                type="tertiary", help="Limpia todos los campos del formulario.")  
+                st.button("", icon=":material/cleaning_services:", key="btn_limpiar_infantil",
+                          on_click=limpiar_campos_infantil, type="tertiary", help="Limpia todos los campos.")
             if registrar:
                 # guardar fechas formateadas y validar
-                if fecha_defuncion < fecha_nacimiento or fecha_defuncion > fecha_nacimiento + relativedelta(days=1825):
-                    st.error("La defuncion tiene que estar entre los primeros cinco años del nacimiento.", icon=":material/error:")
+                if tiempo == "Meses" and edad > 11:
+                    st.error("El tiempo de edad en meses no debe ser mayor a 11.", icon=":material/error:")
                     return
-                if tiempo == "Año(s)" and edad > 5:
-                    st.error("EL tiempo de edad no debe ser mayor a cinco años.", icon=":material/error:")
-                    return
-                if tiempo == "Meses" and edad > 60:
-                    st.error("EL tiempo de edad no debe ser mayor a sesenta meses.", icon=":material/error:")
+                elif tiempo == "Año(s)" and edad > 5:
+                    st.error("El registro infantil tiene un límite de 5 años.", icon=":material/error:")
                     return
                 
                 fecha_formateada_nacimiento = fecha_nacimiento.strftime("%d/%m/%Y")
@@ -1269,8 +1329,9 @@ def formulario_materna(db=DB_PATH):
 
     if rol_usuario != "Secretario (a)":
         st.subheader(":material/new_label: Registrar Muerte Materna", anchor=False)
-        with st.form("form_materna"):
-            # 1. CSS base (solo para limpiar las flechas nativas del navegador, no las de Streamlit)
+        with st.container(border=True):
+            # Se removió with st.form para permitir cálculos automáticos (reactividad)
+            # 1. CSS base
             st.markdown("""
                 <style>
                 /* Quitar flechas por defecto del navegador (spinners) */
@@ -1286,22 +1347,23 @@ def formulario_materna(db=DB_PATH):
                     display: none !important;
                     height: 0 !important;
                     margin: 0 !important;
-                
+                }
                 /* Ocultamos el contenedor del script para que no deje hueco */
                 [data-testid="stHtml"] {
                     display: none !important;
                 }
                 </style>
                 """, unsafe_allow_html=True)
-            fecha_minima = datetime.date.today() - relativedelta(months=1)
+            
             fecha_maxima = datetime.date.today()
             fecha_maxima_hoy = datetime.date.today()
+            fecha_minima = datetime.date.today() - relativedelta(months=1)
             fecha_minimi_1935 = datetime.date(1935, 1, 1)
+    
             col_hc, col_nombres = st.columns(2)
             with col_hc:
-                historia_clinica = st.text_input("Historia clínica", 
-                    placeholder="Ej. 12345678", max_chars=8,
-                    key="historia_clinica_materna")
+                historia_clinica = st.text_input("Historia clínica", key="historia_clinica_materna", 
+                                                placeholder="Ej. 12345678", max_chars=8)
                 bloquear_caracteres(
                     caracteres=list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZáéíóúÁÉÍÓÚñÑüÜ!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-— "),
                     tipo_de_input="text",
@@ -1319,7 +1381,8 @@ def formulario_materna(db=DB_PATH):
             col_fecha_nacimiento, col_fecha_ingreso, col_hora_ingreso, col_fecha_defuncion = st.columns(4)
             with col_fecha_nacimiento:
                 fecha_nacimiento = st.date_input("Fecha de nacimiento", format=DATE_FORMAT, min_value=fecha_minimi_1935, 
-                                                max_value=fecha_maxima_hoy, key="fecha_nacimiento_materna")
+                                                max_value=fecha_maxima_hoy, key="fecha_nacimiento_materna",
+                                                on_change=calcular_edad_materna_cb)
             with col_fecha_ingreso:
                 fecha_ingreso = st.date_input("Fecha de ingreso", format=DATE_FORMAT, min_value=fecha_minima, 
                                               max_value=fecha_maxima, key="fecha_ingreso_materna")
@@ -1327,15 +1390,20 @@ def formulario_materna(db=DB_PATH):
                 hora_ingreso = st.time_input("Hora de ingreso", key="hora_ingreso_materna", value=datetime.datetime.now().time())
             with col_fecha_defuncion:
                 fecha_defuncion = st.date_input("Fecha de defunción", format="DD/MM/YYYY", min_value=fecha_minimi_1935, 
-                                                max_value=fecha_maxima_hoy, key="fecha_defuncion_materna")
+                                                max_value=fecha_maxima_hoy, key="fecha_defuncion_materna",
+                                                on_change=calcular_edad_materna_cb)
             col_hora_defuncion, col_edad, col_tiempo = st.columns(3)
             with col_hora_defuncion:
                 hora_defuncion = st.time_input("Hora de defunción", key="hora_defuncion_materna", value=datetime.datetime.now().time())
-            with col_edad:
-                edad = st.number_input("Edad", min_value=0, step=1, key="edad_materna")
             with col_tiempo:
-                tiempo = st.selectbox("Tiempo de edad", ["Años"], key="tiempo_materna")
+                tiempo = st.selectbox("Tiempo de edad", ["Años"], key="tiempo_materna", disabled=True)
+            with col_edad:
+                edad = st.number_input("Edad", min_value=0, max_value=120, step=1, key="edad_materna", disabled=True)
+                # Bloqueo de caracteres y límite de 3 dígitos
+                bloquear_caracteres(caracteres="eE+-.,", tipo_de_input="number", max_chars=3, label="Edad")
+    
             edad_junto = f"{edad} {tiempo}"
+
             col1, col2 = st.columns(2)
             with col1:
                 idx_ingreso = st.text_area("IDX de ingreso", max_chars=150, key="idx_ingreso_materna", placeholder="Descripción de la IDX de ingreso")
@@ -1405,10 +1473,10 @@ def formulario_materna(db=DB_PATH):
             )
             col_reg, col_limp = st.columns([30, 1])
             with col_reg:
-                registrar = st.form_submit_button("Registrar", icon=":material/save:", type="primary")
+                registrar = st.button("Registrar", icon=":material/save:", type="primary")
             with col_limp:
-                limpiar = st.form_submit_button("", icon=":material/cleaning_services:", on_click=limpiar_campos_materna, 
-                                                type="tertiary", help="Limpia todos los campos del formulario.")  
+                st.button("", icon=":material/cleaning_services:", key="btn_limpiar_materna",
+                          on_click=limpiar_campos_materna, type="tertiary", help="Limpia todos los campos.")
             if registrar:
                 fecha_formateada_nacimiento = fecha_nacimiento.strftime("%d/%m/%Y")
                 fecha_formateada_ingreso = fecha_ingreso.strftime("%d/%m/%Y")
@@ -1445,6 +1513,9 @@ def formulario_materna(db=DB_PATH):
                 elif not validar_pais(ciudad_hogar, "La", "cuidad del hogar"):
                     return
                 elif not val_notas(direccion_exacta_hogar, "La", "direccion exacta del hogar"):
+                    return
+                elif edad > 120:
+                    st.error("La edad materna no puede ser mayor a 120 años.", icon=":material/error:")
                     return
                 else:
                     if operaciones_sql_materna("registrar", datos_registro=datos_registro):
