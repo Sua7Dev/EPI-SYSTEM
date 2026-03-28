@@ -115,6 +115,10 @@ def data_editor_natalidad(df, rol_usuario, columnas_activas=None):
         if df[col].dtype == object:
             df[col] = df[col].apply(lambda x: "" if x is None else str(x))
 
+    if df.empty:
+        st.warning("No se encontraron registros de natalidad que coincidan con la búsqueda.", icon=":material/search_off:")
+        return df
+
     edited_df = st.data_editor(
         df,
         hide_index=True,

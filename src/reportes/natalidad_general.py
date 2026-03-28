@@ -383,8 +383,14 @@ def formulario_reporte_general_natalidad():
             with col_f4:
                 st.button("Limpiar filtros", icon=":material/cleaning_services:", use_container_width=True, key="nata_gen_btn_limpiar", on_click=_defaults_nata)
 
-            if pdf_df_final is None or pdf_df_final.empty:
-                st.warning("No hay datos para mostrar.", icon=":material/warning:")
+            if pdf_df_final is not None and not pdf_df_final.empty:
+                num = len(pdf_df_final)
+                if timeframe == "Todo" and not any([sexo_sel, tipo_sel]):
+                    st.info(f"Mostrando todos los registros de natalidad disponibles ({num} en total).", icon=":material/info:")
+                else:
+                    st.info(f"Se encontraron {num} registros de natalidad que coinciden con los filtros aplicados.", icon=":material/filter_alt:")
+            else:
+                st.warning("No hay datos para mostrar con los filtros actuales.", icon=":material/warning:")
 
 
 

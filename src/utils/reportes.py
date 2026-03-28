@@ -304,7 +304,13 @@ def formulario_reporte_general():
         with col_f_limp:
             st.button("Limpiar filtros", icon=":material/cleaning_services:", use_container_width=True, key="morta_btn_limpiar", on_click=limpiar_filtros_morta)
 
-        if pdf_df_final.empty:
+        if not pdf_df_final.empty:
+            num = len(pdf_df_final)
+            if timeframe == "Todo" and not any([hc_busq, nom_busq, madre_busq, edad_sel_val != "Todos", sem_sel_val != "Todos", idx_ing_busq, idx_def_busq]):
+                st.info(f"Mostrando todos los registros de mortalidad disponibles ({num} en total).", icon=":material/info:")
+            else:
+                st.info(f"Se encontraron {num} registros de mortalidad que coinciden con los filtros aplicados.", icon=":material/filter_alt:")
+        else:
             st.warning("No hay datos para mostrar con los filtros actuales.", icon=":material/warning:")
 
     st.markdown("#")

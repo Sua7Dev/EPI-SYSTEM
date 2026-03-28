@@ -333,6 +333,9 @@ def formulario_reporte_general_morbilidad():
                 t = texto.lower()
                 return ''.join(c for c in unicodedata.normalize('NFKD', t) if unicodedata.category(c) != 'Mn')
 
+            with col_f4:
+                st.button("Limpiar filtros", icon=":material/cleaning_services:", use_container_width=True, key="gen_morbi_btn_limpiar", on_click=_defaults_morbi)
+
             if pdf_df is not None and not pdf_df.empty:
                 df_cat = pdf_df.copy()
 
@@ -353,6 +356,12 @@ def formulario_reporte_general_morbilidad():
                         ver_pdf(df_cat, "morbilidad", key_btn="ver_reporte_general_morbilidad")
                     with col_f3:
                         descargar_pdf(df_cat, "morbilidad", label="Descargar Reporte")
+                    
+                    num = len(df_cat)
+                    if timeframe == "Todo" and not any([nombre_activo, diag_activo, edad_activa != "Todos"]):
+                        st.info(f"Mostrando todos los registros de morbilidad disponibles ({num} en total).", icon=":material/info:")
+                    else:
+                        st.info(f"Se encontraron {num} registros de morbilidad que coinciden con los filtros aplicados.", icon=":material/filter_alt:")
                 else:
                     with col_f2: st.write("")
                     with col_f3: st.write("")
@@ -361,9 +370,6 @@ def formulario_reporte_general_morbilidad():
                 with col_f2: st.write("")
                 with col_f3: st.write("")
                 st.error("No hay datos para el período seleccionado.", icon=":material/error:")
-
-            with col_f4:
-                st.button("Limpiar filtros", icon=":material/cleaning_services:", use_container_width=True, key="gen_morbi_btn_limpiar", on_click=_defaults_morbi)
 
 
 

@@ -200,6 +200,10 @@ def mostrar_modo_edicion():
         if df[col].dtype == object:
             df[col] = df[col].apply(lambda x: "" if x is None else str(x))
 
+    if df.empty:
+        st.warning("No hay usuarios registrados que coincidan con la búsqueda.", icon=":material/person_off:")
+        return df
+
     edited_df = st.data_editor(
         df,
         column_config=column_config,

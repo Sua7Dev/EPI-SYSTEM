@@ -301,10 +301,13 @@ def mostrar_historial_actividades():
             "ID del registro": st.column_config.TextColumn("ID del registro")
         }
 
-        st.data_editor(
-            display_df,
-            use_container_width=True,
-            hide_index=True,
-            disabled=True, 
-            column_config=column_config
-        )
+        if display_df.empty:
+            st.warning("No se encontraron actividades que coincidan con los filtros seleccionados.", icon=":material/search_off:")
+        else:
+            st.data_editor(
+                display_df,
+                use_container_width=True,
+                hide_index=True,
+                disabled=True, 
+                column_config=column_config
+            )

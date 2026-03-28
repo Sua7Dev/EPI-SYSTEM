@@ -187,6 +187,10 @@ def data_editor_neonatal(df_filtrado, rol_usuario):
         if df_filtrado[col].dtype == object:
             df_filtrado[col] = df_filtrado[col].apply(lambda x: "" if x is None else str(x))
 
+    if df_filtrado.empty:
+        st.warning("No se encontraron registros de mortalidad neonatal que coincidan con la búsqueda.", icon=":material/search_off:")
+        return df_filtrado
+
     edited_df = st.data_editor(
         df_filtrado,
         hide_index=True,
@@ -742,6 +746,10 @@ def data_editor_infantil(df, rol_usuario):
         if df[col].dtype == object:
             df[col] = df[col].apply(lambda x: "" if x is None else str(x))
 
+    if df.empty:
+        st.warning("No se encontraron registros de mortalidad infantil que coincidan con la búsqueda.", icon=":material/search_off:")
+        return df
+
     edited_df = st.data_editor(
         df,
         hide_index=True,
@@ -1169,6 +1177,10 @@ def data_editor_materna(df, rol_usuario):
     for col in df.columns:
         if df[col].dtype == object:
             df[col] = df[col].apply(lambda x: "" if x is None else str(x))
+
+    if df.empty:
+        st.warning("No se encontraron registros de mortalidad materna que coincidan con la búsqueda.", icon=":material/search_off:")
+        return df
 
     edited_df = st.data_editor(
         df,
