@@ -651,37 +651,26 @@ def procesar_guardado_cambios_natalidad(edited_df, DB_PATH=DB_PATH):
                 return
 
          
-            if sexo_gemelar == "No aplica" and gemelar > 0:
-                st.warning(
-                    "Al seleccionar 'No aplica', la cantidad de gemelares se ajusta automáticamente a 0.",
-                    icon=":material/info:"
-                )
-                gemelar = 0
-
-            varones_aj = varones
-            hembras_aj = hembras
-            if sexo_gemelar == "Varones":
-                varones_aj += gemelar * 2
-            elif sexo_gemelar == "Hembras":
-                hembras_aj += gemelar * 2
-            elif sexo_gemelar == "Mixto":
-                varones_aj += gemelar
-                hembras_aj += gemelar
-
-            total_nacidos = varones_aj + hembras_aj + mto
+            total_nacidos = varones + hembras + mto
             total_eventos = partos + cesareas
 
-            if total_nacidos != total_eventos:
-                st.error(
-                    f"La suma de nacidos vivos + MTO ({total_nacidos}) no coincide "
-                    f"con el total de partos + cesáreas ({total_eventos}).",
-                    icon=":material/error:"
-                )
-                return
-
-            # Actualizamos varones y hembras con los valores ajustados para guardar en DB
-            varones = varones_aj
-            hembras = hembras_aj
+            # Validaciones de coherencia numérica
+            if gemelar > 0:
+                if total_eventos == 0:
+                    st.error(f"Fila {idx}: Si hay registros gemelares, debe haber al menos un Parto o Cesárea.")
+                    error_occured = True; continue
+                if total_eventos < gemelar:
+                    st.error(f"Fila {idx}: Los casos gemelares ({gemelar}) no pueden superar los eventos ({total_eventos}).")
+                    error_occured = True; continue
+                if total_nacidos < (gemelar * 2):
+                    st.error(f"Fila {idx}: Con {gemelar} casos gemelares, debe haber al menos {gemelar * 2} nacidos.")
+                    error_occured = True; continue
+                if total_nacidos < (total_eventos + gemelar):
+                    st.error(f"Fila {idx}: Coherencia fallida: Para {total_eventos} eventos y {gemelar} gemelares, se esperan al menos {total_eventos + gemelar} nacidos.")
+                    error_occured = True; continue
+            elif total_nacidos != total_eventos:
+                st.error(f"Fila {idx}: Al no ser gemelar, nacidos ({total_nacidos}) debe igualar a eventos ({total_eventos}).")
+                error_occured = True; continue
 
             # ─────────────────────────────────────────────────────────────
             # 4. Guardar el registro

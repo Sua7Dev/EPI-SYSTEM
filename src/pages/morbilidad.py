@@ -344,8 +344,14 @@ def formulario_morb_extenso(db=DB_PATH):
                 return
             if not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"): 
                 return
-            if edad > 120:
-                st.error("La edad no puede ser mayor a 120 años", icon=":material/error:")
+            try:
+                edad_val = int(edad) if edad else 0
+            except ValueError:
+                st.error("Por favor ingresa una edad numérica válida.", icon=":material/error:")
+                return
+
+            if edad_val > 120:
+                st.error("La edad no puede ser mayor a 120 años.", icon=":material/error:")
                 return
             if not val_diagnostico(diagnostico, "El", "diagnóstico"): 
                 return
