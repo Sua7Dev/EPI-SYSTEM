@@ -315,7 +315,7 @@ def formulario_morb_extenso(db=DB_PATH):
                 label="Parroquia (Opcional)"
             )
         with col_ciudad:
-            ciudad_hogar = st.text_input("Ciudad (Opcional)", max_chars=56, key="cuidad_hogar_morb_extenso", placeholder="El Tigre")
+            ciudad_hogar = st.text_input("Ciudad (Opcional)", max_chars=56, key="ciudad_hogar_morb_extenso", placeholder="El Tigre")
             bloquear_caracteres(
                 caracteres=list("0123456789!@#$%¨&*()_+=[]{};:'\"\\|<>,.?/`~-—^"),
                 tipo_de_input="text",
