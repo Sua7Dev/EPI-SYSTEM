@@ -260,7 +260,7 @@ for i in range(NUM_REGISTROS):
     # --- PASO 1: Insertar en persona_paciente (para obtener ID_PACIENTE) ---
     # Usaremos una edad de 0 para evitar conflictos si existe 'edad' en esta tabla.
     sql_statements_paciente.append(
-        f"INSERT INTO persona_paciente (edad) VALUES (0);"
+        f"INSERT INTO persona_paciente (edad) VALUES ('{fechas['edad_junto']}');"
     )
 
     # --- PASO 2: Insertar en direccion (para obtener ID_DIRECCION) ---

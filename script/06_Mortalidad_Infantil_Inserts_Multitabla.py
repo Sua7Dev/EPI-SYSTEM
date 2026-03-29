@@ -277,7 +277,7 @@ for i in range(NUM_REGISTROS):
     
     # --- PASO 1: Insertar en persona_paciente (para obtener ID_PACIENTE) ---
     sql_statements_paciente.append(
-        f"INSERT INTO persona_paciente (edad) VALUES ({fechas['edad_solo']});"
+        f"INSERT INTO persona_paciente (edad) VALUES ('{fechas['edad_junto']}');"
     )
 
     # --- PASO 2: Insertar en direccion (para obtener ID_DIRECCION) ---
