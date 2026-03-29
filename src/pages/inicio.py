@@ -198,7 +198,7 @@ def dashboard():
     contenedores_totales()
     # graficas
     graficas_dashboard()
-    copyright_footer_dos("Equipo Investigador")
+    copyright_footer_dos("Equipo Investigador", bottom="-450px")
 
  
 def inicio():
