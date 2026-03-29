@@ -362,6 +362,7 @@ def formulario_reporte_general_morbilidad():
                         st.info(f"Mostrando todos los registros de morbilidad disponibles ({num} en total).", icon=":material/info:")
                     else:
                         st.info(f"Se encontraron {num} registros de morbilidad que coinciden con los filtros aplicados.", icon=":material/filter_alt:")
+                    st.data_editor(df_cat, use_container_width=True, hide_index=True)
                 else:
                     with col_f2: st.write("")
                     with col_f3: st.write("")

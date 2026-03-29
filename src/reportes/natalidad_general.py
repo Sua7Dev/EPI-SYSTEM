@@ -389,6 +389,7 @@ def formulario_reporte_general_natalidad():
                     st.info(f"Mostrando todos los registros de natalidad disponibles ({num} en total).", icon=":material/info:")
                 else:
                     st.info(f"Se encontraron {num} registros de natalidad que coinciden con los filtros aplicados.", icon=":material/filter_alt:")
+                st.data_editor(pdf_df_final, use_container_width=True, hide_index=True)
             else:
                 st.warning("No hay datos para mostrar con los filtros actuales.", icon=":material/warning:")
 
