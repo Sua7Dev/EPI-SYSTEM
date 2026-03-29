@@ -237,9 +237,9 @@ def formulario_reporte_general_natalidad():
                     )
 
                 pdf_df = _consultar_natalidad(year=year)
-                if meses_filtro and pdf_df is not None and not pdf_df.empty:
-                    m_nums = [k for k, v in MESES_ES.items() if v in meses_filtro]
-                    pdf_df = pdf_df[pdf_df["fecha_dt"].dt.month.isin(m_nums)]
+                if _editor_nata is not None and isinstance(_editor_nata, dict):
+                    _sel_nata = [int(i) for i, row in _editor_nata.get("edited_rows", {}).items() if row.get(" ", False)]
+                else:    pdf_df = pdf_df[pdf_df["fecha_dt"].dt.month.isin(m_nums)]
 
             elif timeframe == "Año y Semana":
                 col_y, col_s = st.columns(2)
@@ -372,10 +372,19 @@ def formulario_reporte_general_natalidad():
             
             if pdf_df_final is not None and not pdf_df_final.empty:
                 from utils.filtro import ver_pdf, descargar_pdf
+                # Leer selección desde session_state del data_editor
+                _editor_nata = st.session_state.get("editor_nata_general")
+                if _editor_nata is not None and isinstance(_editor_nata, dict):
+                    _sel_nata = [int(i) for i, row in _editor_nata.get("edited_rows", {}).items() if row.get(" ", False)]
+                else:
+                    _sel_nata = []
+                
+                _df_export_nata = pdf_df_final.iloc[_sel_nata] if _sel_nata else pdf_df_final
+                
                 with col_f2:
-                    ver_pdf(pdf_df_final, "natalidad_general", key_btn="ver_reporte_general_natalidad")
+                    ver_pdf(_df_export_nata, "natalidad_general", key_btn="ver_reporte_general_natalidad")
                 with col_f3:
-                    descargar_pdf(pdf_df_final, "natalidad_general", label="Descargar Reporte")
+                    descargar_pdf(_df_export_nata, "natalidad_general", label="Descargar Reporte")
             else:
                 with col_f2: st.write("")
                 with col_f3: st.write("")
@@ -389,7 +398,58 @@ def formulario_reporte_general_natalidad():
                     st.info(f"Mostrando todos los registros de natalidad disponibles ({num} en total).", icon=":material/info:")
                 else:
                     st.info(f"Se encontraron {num} registros de natalidad que coinciden con los filtros aplicados.", icon=":material/filter_alt:")
-                st.data_editor(pdf_df_final, use_container_width=True, hide_index=True)
+
+                # Preparar el dataframe
+                df_show_nata = pdf_df_final.copy()
+                
+                # 1. Definir columnas y orden
+                desired_cols = ["fecha", "partos", "cesareas", "varones", "hembras", "gemelar", "mto", "partos_extrahospitalarios", "fecha_registro_formulario", "id"]
+                df_show_nata = df_show_nata[[c for c in desired_cols if c in df_show_nata.columns]]
+
+                # 2. Formatear y manejar nulos
+                def format_date_robust(val):
+                    if pd.isna(val) or val == "" or str(val).lower() in ["none", "nat", "nan"]:
+                        return "Dato no disponible"
+                    try:
+                        dt = pd.to_datetime(val, dayfirst=True, errors='coerce')
+                        if pd.notnull(dt):
+                            return dt.strftime('%d/%m/%Y')
+                        return "Dato no disponible"
+                    except:
+                        return "Dato no disponible"
+
+                for col in df_show_nata.columns:
+                    if col in ["fecha", "fecha_registro_formulario"]:
+                        df_show_nata[col] = df_show_nata[col].apply(format_date_robust)
+                    elif col in ["partos", "cesareas", "varones", "hembras", "gemelar", "mto", "partos_extrahospitalarios"]:
+                        df_show_nata[col] = df_show_nata[col].apply(lambda x: str(int(float(x))) if pd.notnull(x) and x != "" and str(x).replace('.','',1).isdigit() else "Dato no disponible")
+                    else:
+                        df_show_nata[col] = df_show_nata[col].fillna("Dato no disponible").astype(str).replace(["", "None", "nan", "NaN"], "Dato no disponible")
+
+                if " " not in df_show_nata.columns:
+                    df_show_nata.insert(0, " ", False)
+
+                column_config_nata = {
+                    " ": st.column_config.CheckboxColumn("✓", default=False),
+                    "fecha": st.column_config.TextColumn("Fecha", disabled=True),
+                    "partos": st.column_config.TextColumn("Partos", disabled=True),
+                    "cesareas": st.column_config.TextColumn("Cesáreas", disabled=True),
+                    "varones": st.column_config.TextColumn("Varones", disabled=True),
+                    "hembras": st.column_config.TextColumn("Hembras", disabled=True),
+                    "gemelar": st.column_config.TextColumn("Gemelar", disabled=True),
+                    "mto": st.column_config.TextColumn("MTO", disabled=True),
+                    "partos_extrahospitalarios": st.column_config.TextColumn("PEH", disabled=True),
+                    "fecha_registro_formulario": st.column_config.TextColumn("Registro Formulario", disabled=True),
+                    "id": st.column_config.TextColumn("ID", disabled=True),
+                }
+
+                st.data_editor(
+                    df_show_nata,
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config=column_config_nata,
+                    key="editor_nata_general"
+                )
             else:
                 st.warning("No hay datos para mostrar con los filtros actuales.", icon=":material/warning:")
 

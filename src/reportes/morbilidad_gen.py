@@ -352,17 +352,71 @@ def formulario_reporte_general_morbilidad():
 
                 from utils.filtro import ver_pdf, descargar_pdf
                 if not df_cat.empty:
+                    # Leer selección desde session_state del data_editor
+                    _editor_morbi = st.session_state.get("editor_morbi_general")
+                    if _editor_morbi is not None and isinstance(_editor_morbi, dict):
+                        _sel_morbi = [int(i) for i, row in _editor_morbi.get("edited_rows", {}).items() if row.get(" ", False)]
+                    else:
+                        _sel_morbi = []
+                    _df_export_morbi = df_cat.iloc[_sel_morbi] if _sel_morbi else df_cat
                     with col_f2:
-                        ver_pdf(df_cat, "morbilidad", key_btn="ver_reporte_general_morbilidad")
+                        ver_pdf(_df_export_morbi, "morbilidad", key_btn="ver_reporte_general_morbilidad")
                     with col_f3:
-                        descargar_pdf(df_cat, "morbilidad", label="Descargar Reporte")
+                        descargar_pdf(_df_export_morbi, "morbilidad", label="Descargar Reporte")
                     
                     num = len(df_cat)
                     if timeframe == "Todo" and not any([nombre_activo, diag_activo, edad_activa != "Todos"]):
                         st.info(f"Mostrando todos los registros de morbilidad disponibles ({num} en total).", icon=":material/info:")
                     else:
                         st.info(f"Se encontraron {num} registros de morbilidad que coinciden con los filtros aplicados.", icon=":material/filter_alt:")
-                    st.data_editor(df_cat, use_container_width=True, hide_index=True)
+
+                    # Preparar el dataframe
+                    df_show_morbi = df_cat.copy()
+                    
+                    # 1. Columnas deseadas y orden
+                    desired_cols = ["nombres_apellidos", "edad", "diagnostico", "direccion_hogar", "fecha_registro_formulario", "id"]
+                    df_show_morbi = df_show_morbi[[c for c in desired_cols if c in df_show_morbi.columns]]
+
+                    # 2. Formatear y manejar nulos
+                    def format_date_robust(val):
+                        if pd.isna(val) or val == "" or str(val).lower() in ["none", "nat", "nan"]:
+                            return "Dato no disponible"
+                        try:
+                            dt = pd.to_datetime(val, dayfirst=True, errors='coerce')
+                            if pd.notnull(dt):
+                                return dt.strftime('%d/%m/%Y')
+                            return "Dato no disponible"
+                        except:
+                            return "Dato no disponible"
+
+                    for col in df_show_morbi.columns:
+                        if col == "fecha_registro_formulario":
+                            df_show_morbi[col] = df_show_morbi[col].apply(format_date_robust)
+                        elif col == "edad":
+                             df_show_morbi[col] = df_show_morbi[col].apply(lambda x: str(int(float(x))) if pd.notnull(x) and x != "" and str(x).replace('.','',1).isdigit() else "Dato no disponible")
+                        else:
+                            df_show_morbi[col] = df_show_morbi[col].fillna("Dato no disponible").astype(str).replace(["", "None", "nan", "NaN"], "Dato no disponible")
+
+                    if " " not in df_show_morbi.columns:
+                        df_show_morbi.insert(0, " ", False)
+
+                    column_config_morbi = {
+                        " ": st.column_config.CheckboxColumn("✓", default=False),
+                        "nombres_apellidos": st.column_config.TextColumn("Nombres y Apellidos", disabled=True),
+                        "edad": st.column_config.TextColumn("Edad", disabled=True),
+                        "diagnostico": st.column_config.TextColumn("Diagnóstico", disabled=True),
+                        "direccion_hogar": st.column_config.TextColumn("Dirección", disabled=True),
+                        "fecha_registro_formulario": st.column_config.TextColumn("Registro Formulario", disabled=True),
+                        "id": st.column_config.TextColumn("ID", disabled=True),
+                    }
+
+                    edited_df_morbi = st.data_editor(
+                        df_show_morbi,
+                        use_container_width=True,
+                        hide_index=True,
+                        column_config=column_config_morbi,
+                        key="editor_morbi_general"
+                    )
                 else:
                     with col_f2: st.write("")
                     with col_f3: st.write("")

@@ -293,10 +293,23 @@ def formulario_reporte_general():
             st.button("Filtrar", icon=":material/search:", use_container_width=True, type="primary", key="morta_btn_filtrar")
         
         if not pdf_df_final.empty:
+            # Leer selección desde session_state del data_editor
+            _editor_state = st.session_state.get("editor_morta_general")
+            if _editor_state is not None and isinstance(_editor_state, dict):
+                try:
+                    # Las claves en edited_rows son strings, castear a int
+                    _sel_indices = [int(i) for i, row in _editor_state.get("edited_rows", {}).items() if row.get(" ", False)]
+                except Exception:
+                    _sel_indices = []
+            else:
+                _sel_indices = []
+            
+            _df_export_morta = pdf_df_final.iloc[_sel_indices] if _sel_indices else pdf_df_final
+            
             with col_f_ver:
-                ver_pdf(pdf_df_final, "mortalidad_general", key_btn="ver_reporte_general_morta")
+                ver_pdf(_df_export_morta, "mortalidad_general", key_btn="ver_reporte_general_morta")
             with col_f_desc:
-                descargar_pdf(pdf_df_final, "mortalidad_general", label="Descargar Reporte")
+                descargar_pdf(_df_export_morta, "mortalidad_general", label="Descargar Reporte")
         else:
             with col_f_ver: st.write("")
             with col_f_desc: st.write("")
@@ -310,7 +323,92 @@ def formulario_reporte_general():
                 st.info(f"Mostrando todos los registros de mortalidad disponibles ({num} en total).", icon=":material/info:")
             else:
                 st.info(f"Se encontraron {num} registros de mortalidad que coinciden con los filtros aplicados.", icon=":material/filter_alt:")
-            st.data_editor(pdf_df_final, use_container_width=True, hide_index=True)
+
+            # Preparar el dataframe para mostrar
+            df_show = pdf_df_final.copy()
+            
+            # 1. Definir columnas y orden
+            desired_columns = [
+                "tipo", "historia_clinica", "nombres_apellidos", "nombre_madre", "edad",
+                "fecha_nacimiento", "hora_nacimiento", "fecha_defuncion", "hora_defuncion",
+                "idx_ingreso", "idx_defuncion", "semanas_gestacion", "peso", "talla",
+                "direccion", "id"
+            ]
+            df_show = df_show[[c for c in desired_columns if c in df_show.columns]]
+
+            # 2. Formatear y manejar nulos (Todo a string para visualización uniforme)
+            for col in df_show.columns:
+                if col == "tipo":
+                    # Limpiar tipo (sin emojis, usaremos colores de fondo)
+                    df_show[col] = df_show[col].astype(str).str.strip().replace(["None", "nan", "NaN", ""], "Dato no disponible")
+                elif col in ["fecha_defuncion", "fecha_nacimiento", "fecha_ingreso"]:
+                    # Robustecer el parseo de fechas para asegurar formato DD/MM/YYYY
+                    def format_date_robust(val):
+                        if pd.isna(val) or val == "" or str(val).lower() in ["none", "nat", "nan"]:
+                            return "Dato no disponible"
+                        try:
+                            # Intentar varios formatos comunes
+                            dt = pd.to_datetime(val, dayfirst=True, errors='coerce')
+                            if pd.notnull(dt):
+                                return dt.strftime('%d/%m/%Y')
+                            return "Dato no disponible"
+                        except:
+                            return "Dato no disponible"
+                    
+                    df_show[col] = df_show[col].apply(format_date_robust)
+                    
+                elif col in ["peso", "talla"]:
+                    # Formatear números a 1 decimal
+                    df_show[col] = df_show[col].apply(lambda x: f"{float(x):.1f}" if pd.notnull(x) and x != "" and str(x).replace('.','',1).isdigit() else "Dato no disponible")
+                elif col in ["semanas_gestacion", "id"]:
+                    # Enteros o IDs
+                    df_show[col] = df_show[col].apply(lambda x: str(int(float(x))) if pd.notnull(x) and x != "" and str(x).replace('.','',1).isdigit() else str(x) if pd.notnull(x) and x != "" else "Dato no disponible")
+                else:
+                    # Texto general
+                    df_show[col] = df_show[col].fillna("Dato no disponible").astype(str).replace(["", "None", "nan", "NaN"], "Dato no disponible")
+
+            # Agregar columna de selección
+            if " " not in df_show.columns:
+                df_show.insert(0, " ", False)
+
+            column_config_morta = {
+                " ": st.column_config.CheckboxColumn("✓", default=False),
+                "tipo": st.column_config.TextColumn("Tipo", disabled=True),
+                "historia_clinica": st.column_config.TextColumn("Historia clínica", disabled=True),
+                "nombres_apellidos": st.column_config.TextColumn("Nombres y Apellidos", disabled=True),
+                "nombre_madre": st.column_config.TextColumn("Nombre de la madre", disabled=True),
+                "fecha_nacimiento": st.column_config.TextColumn("Fecha de nacimiento", disabled=True),
+                "hora_nacimiento": st.column_config.TextColumn("Hora de nacimiento", disabled=True),
+                "fecha_defuncion": st.column_config.TextColumn("Fecha de defunción", disabled=True),
+                "hora_defuncion": st.column_config.TextColumn("Hora de defunción", disabled=True),
+                "edad": st.column_config.TextColumn("Edad", disabled=True),
+                "idx_ingreso": st.column_config.TextColumn("IDX de ingreso", disabled=True),
+                "idx_defuncion": st.column_config.TextColumn("IDX de defunción", disabled=True),
+                "semanas_gestacion": st.column_config.TextColumn("Semanas de gestación", disabled=True),
+                "peso": st.column_config.TextColumn("Peso (kg)", disabled=True),
+                "talla": st.column_config.TextColumn("Talla (cm)", disabled=True),
+                "direccion": st.column_config.TextColumn("Dirección", disabled=True),
+                "id": st.column_config.TextColumn("ID", disabled=True),
+            }
+
+            # Aplicar estilos de realce tipo "Badge" Pastel para la columna Tipo
+            def style_tipo(val):
+                # Paleta Pastel con texto contrastado para estética Material
+                if "Neonatal" in val:
+                    return 'background-color: #E3F2FD; color: #1565C0; font-weight: bold; border-radius: 8px; border: 1px solid #BBDEFB; text-align: center;'
+                elif "Infantil" in val:
+                    return 'background-color: #E8F5E9; color: #2E7D32; font-weight: bold; border-radius: 8px; border: 1px solid #C8E6C9; text-align: center;'
+                elif "Materna" in val:
+                    return 'background-color: #FCE4EC; color: #C2185B; font-weight: bold; border-radius: 8px; border: 1px solid #F8BBD0; text-align: center;'
+                return ''
+
+            st.data_editor(
+                df_show.style.applymap(style_tipo, subset=['tipo']),
+                use_container_width=True,
+                hide_index=True,
+                column_config=column_config_morta,
+                key="editor_morta_general"
+            )
         else:
             st.warning("No hay datos para mostrar con los filtros actuales.", icon=":material/warning:")
 

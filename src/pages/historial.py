@@ -292,22 +292,35 @@ def mostrar_historial_actividades():
 
 
         column_config = {
-            "Fecha": st.column_config.TextColumn("Fecha"),
-            "Hora": st.column_config.TextColumn(
-                "Hora", 
-                help="Hora de la actividad",
-                disabled=True
-            ),
-            "ID del registro": st.column_config.TextColumn("ID del registro")
+            "Fecha": st.column_config.TextColumn("Fecha", disabled=True),
+            "Hora": st.column_config.TextColumn("Hora", help="Hora de la actividad", disabled=True),
+            "Usuario": st.column_config.TextColumn("Usuario", disabled=True),
+            "Módulo": st.column_config.TextColumn("Módulo", disabled=True),
+            "Acción realizada": st.column_config.TextColumn("Acción realizada", disabled=True),
+            "ID del registro": st.column_config.TextColumn("ID del registro", disabled=True)
         }
 
+        # Función de estilo para las acciones siguiendo la teoría del color (Pastel)
+        def style_acciones(val):
+            v = str(val).lower()
+            if "creado" in v:
+                return 'background-color: #E8F5E9; color: #2E7D32; font-weight: bold; border-radius: 8px; border: 1px solid #C8E6C9; text-align: center;'
+            elif "editado" in v:
+                return 'background-color: #FFF8E1; color: #F57F17; font-weight: bold; border-radius: 8px; border: 1px solid #FFECB3; text-align: center;'
+            elif "eliminado" in v:
+                return 'background-color: #FFEBEE; color: #C62828; font-weight: bold; border-radius: 8px; border: 1px solid #FFCDD2; text-align: center;'
+            elif "sesión" in v:
+                return 'background-color: #E3F2FD; color: #1565C0; font-weight: bold; border-radius: 8px; border: 1px solid #BBDEFB; text-align: center;'
+            elif "descarga" in v:
+                return 'background-color: #E0F2F1; color: #00695C; font-weight: bold; border-radius: 8px; border: 1px solid #B2DFDB; text-align: center;'
+            return ''
+
         if display_df.empty:
-            st.warning("No se encontraron actividades que coincidan con los filtros seleccionados.", icon=":material/search_off:")
+            st.warning("No se encontraron actividades que coinciden con los filtros seleccionados.", icon=":material/search_off:")
         else:
-            st.data_editor(
-                display_df,
+            st.dataframe(
+                display_df.style.applymap(style_acciones, subset=["Acción realizada"]),
                 use_container_width=True,
                 hide_index=True,
-                disabled=True, 
                 column_config=column_config
             )
