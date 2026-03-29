@@ -482,7 +482,7 @@ def formulario_neonatal(db=DB_PATH):
             with col_tiempo:
                 tiempo = st.selectbox("Tiempo de edad", ["Horas", "Días"], key="tiempo_neonatal", disabled=True)
             with col_edad:
-                max_e = 23 if tiempo == "Horas" else 27
+                max_e = 23 if tiempo == "Horas" else 28
                 edad_disabled = True if tiempo == "Días" else False
                 edad = st.number_input("Edad", min_value=0, max_value=max_e, step=1, key="edad_neonatal", disabled=edad_disabled)
                 # Bloqueo de caracteres y límite de 2 dígitos
@@ -993,7 +993,7 @@ def formulario_infantil(db=DB_PATH):
             with col_tiempo:
                 tiempo = st.selectbox("Tiempo de edad", ["Meses", "Año(s)"], key="tiempo_infantil", disabled=True)
             with col_edad:
-                max_i = 11 if tiempo == "Meses" else 5
+                max_i = 11 if tiempo == "Meses" else 7
                 limit_i = 2 if tiempo == "Meses" else 1
                 edad = st.number_input("Edad", min_value=0, max_value=max_i, step=1, key="edad_infantil", disabled=True)
                 # Bloqueo de caracteres y límite de dígitos
