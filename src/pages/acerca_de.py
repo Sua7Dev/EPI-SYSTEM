@@ -40,7 +40,7 @@ def acerca_de():
     tab1, tab2, tab3, tab4 = st.tabs([
         ":material/local_hospital: Institución", 
         ":material/emoji_objects: Misión y Visión", 
-        ":material/dvr: Sobre EPI-SYSTEM", 
+        ":material/dvr: Sobre SEE", 
         ":material/support_agent: Soporte y Manuales"
     ])
     

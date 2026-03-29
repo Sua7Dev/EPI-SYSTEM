@@ -351,8 +351,8 @@ def mostrar_olvido():
 
     with coltext:
         informacion()
-    st.markdown("#")
-    copyright_footer_dos("Equipo Investigador", margin_right="0px")
+    #st.markdown("#")
+    copyright_footer_dos("Equipo Investigador", margin_right="0px", bottom="-350px")
 
 # ------------------- Ejecución -------------------
 mostrar_olvido()
