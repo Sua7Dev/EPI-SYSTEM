@@ -151,8 +151,9 @@ def registro_formulario():
             if registrar_btn:
                 if not all([nombre, sexo, nacimiento, nombre_usuario, correo, ci, nacionalidad, contrasena, confirmar_contra, rol]):
                     st.error("Todos los campos son obligatorios. Por favor, completa todos los campos.", icon=":material/error:")
-                #elif not val_solo_numeros(ci, "La", "cédula de identidad"):
-                #    return
+                elif len(ci) < 6:
+                    st.error("La cédula de identidad es muy corta.", icon=":material/error:")
+                    return
                 elif not validar_texto(nombre, "El", "nombre"):
                     return
                 elif not validar_cinco_espacios(nombre, "El", "nombre"):

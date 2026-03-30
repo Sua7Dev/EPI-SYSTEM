@@ -610,6 +610,9 @@ def formulario_neonatal(db=DB_PATH):
                             estado_hogar, parroquia_hogar, ciudad_hogar, direccion_exacta]):
                     st.error("Por favor completa todos los campos", icon=":material/error:")
                     return
+                elif len(historia_clinica) < 3:
+                    st.error("La Historia clínica es muy corta.", icon=":material/error:")
+                    return
                 elif not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"):
                     return
                 elif not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"):
@@ -1098,6 +1101,9 @@ def formulario_infantil(db=DB_PATH):
                             idx_ingreso, idx_defuncion]):
                     st.error("Por favor completa todos los campos", icon=":material/error:")
                     return
+                elif len(historia_clinica) < 3:
+                    st.error("La Historia clínica es muy corta.", icon=":material/error:")
+                    return
                 elif not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"):
                     return
                 elif not validar_cinco_espacios(nombres_apellidos, "Los", "nombres y apellidos"):
@@ -1505,6 +1511,9 @@ def formulario_materna(db=DB_PATH):
                             estado_hogar, parroquia_hogar, ciudad_hogar, direccion_exacta_hogar, 
                             idx_ingreso, idx_defuncion]):
                     st.error("Por favor completa todos los campos", icon=":material/error:")
+                    return
+                elif len(historia_clinica) < 3:
+                    st.error("La Historia clínica es muy corta.", icon=":material/error:")
                     return
                 elif not validar_texto(nombres_apellidos, "Los", "nombres y apellidos"):
                     return
